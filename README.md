@@ -1,2 +1,2 @@
 # cvtoolkit
-Toolkit of Computer Vision
+Tool for Research.

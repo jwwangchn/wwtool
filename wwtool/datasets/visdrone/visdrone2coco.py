@@ -7,6 +7,7 @@ import numpy as np
 
 from wwtool.datasets.convert2coco import Convert2COCO
 
+
 class VisDrone2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
         """
@@ -120,7 +121,7 @@ if __name__ == "__main__":
                 {'supercategory': 'none', 'id': 9,  'name': 'bus',                          },
                 {'supercategory': 'none', 'id': 10, 'name': 'motor',                        }]
 
-    imagesets = ['train', 'val', 'test']
+    imagesets = ['trainval']
     release_version = 'v1'
     core_dataset = 'visdrone'
     groundtruth = True

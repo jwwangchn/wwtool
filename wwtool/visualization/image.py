@@ -142,3 +142,5 @@ def imshow_rbboxes(img_or_path,
         dir_name = osp.abspath(osp.dirname(out_file))
         mkdir_or_exist(dir_name)
         cv2.imwrite(out_file, img)
+
+#TODO: show both ground truth and detection results

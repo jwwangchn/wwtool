@@ -4,7 +4,7 @@ WWTOOL is a foundational python library for Computer Vision Research.
 It will provide the following functionalities.
 
 - Detection annotation visualization
-- Toolkit for object detection dataset ([dota](https://captain-whu.github.io/DOTA/index.html), [visdrone](http://aiskyeye.com/), [uav-bd](https://jwwangchn.cn/UAV-BD), ...)
+- Toolkit for object detection dataset ([DOTA](https://captain-whu.github.io/DOTA/index.html), [VisDrone](http://aiskyeye.com/), [UAV-BD](https://jwwangchn.cn/UAV-BD), ...)
 
 ### Requirements
 

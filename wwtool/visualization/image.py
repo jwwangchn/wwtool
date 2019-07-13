@@ -16,7 +16,8 @@ def imshow_bboxes(img_or_path,
                   show=True,
                   win_name='',
                   wait_time=0,
-                  out_file=None):
+                  out_file=None,
+                  origin_file=None):
     """ Draw horizontal bounding boxes on image
 
     Args:
@@ -27,8 +28,10 @@ def imshow_bboxes(img_or_path,
     """
     if is_str(img_or_path):
         img = cv2.imread(img_or_path)
+        img_origin = img.copy()
     else:
         img = img_or_path
+        img_origin = img.copy()
 
     if isinstance(bboxes, list):
         bboxes = np.array(bboxes)
@@ -71,6 +74,10 @@ def imshow_bboxes(img_or_path,
         dir_name = osp.abspath(osp.dirname(out_file))
         mkdir_or_exist(dir_name)
         cv2.imwrite(out_file, img)
+    if origin_file is not None:
+        dir_name = osp.abspath(osp.dirname(origin_file))
+        mkdir_or_exist(dir_name)
+        cv2.imwrite(origin_file, img_origin)
 
 
 def imshow_rbboxes(img_or_path,

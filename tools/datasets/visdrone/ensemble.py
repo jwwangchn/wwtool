@@ -5,21 +5,29 @@ import numpy as np
 import torch
 from torchvision.ops.boxes import nms
 from wwtool.visualization import imshow_bboxes
-
+from mmcv.utils.progressbar import ProgressBar
 
 if __name__ == '__main__':
     result1 = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/submit_method1'
     result2 = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/submit_method2'
     result3 = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/submit_method3'
+    result4 = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/submit_method4'
 
     ensemble = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/ensemble'
     imgpath = '/media/jwwangchn/data/visdrone/v1/coco/test/'
 
+    vis_save_dir = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/vis/fasterrcnn'
+    origin_save_dir = '/home/jwwangchn/Documents/Research/Projects/2019-visdrone/09-Results/vis/origin'
+
     nms_threshold = 0.5
     show_flag = True
-    ensemble_list = [result1, result2]
+    ensemble_list = [result4]
 
-    for file_name in os.listdir(result1):
+    file_list = os.listdir(result1)
+
+    prog_bar = ProgressBar(len(file_list))
+
+    for file_name in file_list:
         bboxes = []
         scores = []
         labels = []
@@ -66,7 +74,12 @@ if __name__ == '__main__':
             im = cv2.imread(os.path.join(imgpath, file_name.split('.')[0] + '.jpg'))
             imshow_bboxes(im, 
                         final_bboxes, 
-                        scores = None, 
-                        score_threshold = 0.0, 
-                        colors = 'red', 
-                        wait_time = 2000)
+                        scores=None, 
+                        score_threshold=0.8, 
+                        colors='red',
+                        thickness=3,
+                        wait_time=5,
+                        out_file=os.path.join(vis_save_dir, file_name.split('.')[0] + '.jpg'),
+                        origin_file=os.path.join(origin_save_dir, file_name.split('.')[0] + '.jpg'))
+
+        prog_bar.update()

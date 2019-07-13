@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
         plt.scatter(t, target, c='b', alpha=0.4, marker='*')
         plt.scatter(t, current, c='r', alpha=0.4)
-        # plt.scatter(t, error, c='r', alpha=0.4)
+        plt.scatter(t, error, c='y', alpha=0.4)
 
         time.sleep(0.01)
         plt.pause(0.0001)

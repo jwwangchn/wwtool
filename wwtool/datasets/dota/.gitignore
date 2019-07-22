@@ -1,0 +1,5 @@
+build/
+polyiou_wrap.cxx
+*.so
+*pyc
+__pycache__/

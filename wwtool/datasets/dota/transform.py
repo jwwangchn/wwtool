@@ -1,39 +1,14 @@
+from pycocotools.coco import COCO
+import numpy as np
+import skimage.io as io
+import matplotlib.pyplot as plt
+import pylab
 import cv2
 import math
-import numpy as np
-
-from pycocotools.coco import COCO
-from pycocotools.cocoeval import COCOeval
 import pycocotools.mask as maskUtils
 
-
-def segm2rbbox(segms):
-    mask = maskUtils.decode(segms).astype(np.bool)
-    gray = np.array(mask*255, dtype=np.uint8)
-    images, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    if contours != []:
-        imax_cnt_area = -1
-        imax = -1
-        for i, cnt in enumerate(contours):
-            cnt_area = cv2.contourArea(cnt)
-            if imax_cnt_area < cnt_area:
-                imax = i
-                imax_cnt_area = cnt_area
-        cnt = contours[imax]
-        rect = cv2.minAreaRect(cnt)
-        x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
-        thetaobb = [x, y, w, h, theta]
-        theta = theta * np.pi / 180.0
-        pointobb = thetaobb2pointobb([x, y, w, h, theta])
-            
-    else:
-        thetaobb = [0, 0, 0, 0, 0]
-        pointobb = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-    return thetaobb, pointobb
-
-
 # ================== obb convert =======================
+
 def pointobb2pointobb(pointobb):
     """
     docstring here
@@ -201,7 +176,6 @@ def maskobb2thetaobb(maskobb):
 
     return thetaobb
 
-
 # ================== flip obb =======================
 
 def thetaobb_flip(thetaobbs, img_shape):
@@ -254,6 +228,7 @@ def pointobb_flip(pointobbs, img_shape):
             flipped = flipped.squeeze()
 
     return flipped
+
 
 def hobb_flip(hobbs, img_shape):
     """
@@ -331,3 +306,83 @@ def hobb_rescale(hobbs, scale_factor, reverse_flag=False):
         hobbs /= scale_factor
     return hobbs
 
+# def mask2quadrilateral(cnt):    
+#     epsilon = 0.01 * cv2.arcLength(cnt, True)
+#     epsilon_high, epsilon_low = cv2.arcLength(cnt, True), 0
+#     approx = cv2.approxPolyDP(cnt, epsilon, True)
+#     crt = approx.shape[0]
+#     # epsilon 是从原始轮廓到近似轮廓的最大距离, 越小越精细, 边数越多
+#     idx_high, idx_low = 1, 1
+#     idx = 0
+#     while crt != 4:
+#         idx += 1
+#         approx = cv2.approxPolyDP(cnt, epsilon, True)
+#         crt = approx.shape[0]
+        
+#         if crt > 4:
+#             idx_low += 1
+#             epsilon_low = epsilon
+
+#         elif crt < 4:
+#             idx_high += 1
+#             epsilon_high = epsilon
+
+#         else:
+#             break
+
+#         if idx > 100000:
+#             if crt <= 2:
+#                 approx = np.zeros((4, 2))
+#             if crt == 3:
+#                 approx = np.vstack((approx.squeeze(), approx.squeeze()[2, :]))
+#             if crt >= 5:
+#                 approx = approx[:4, ::]
+                    
+#             break
+
+#         epsilon = (epsilon_low + epsilon_high) / 2.0
+#         #if idx < 20 or idx % 100000 == 0:
+#          #   print("area:", cv2.contourArea(cnt))
+#           #  print(idx, idx_high, idx_low, epsilon_high, epsilon_low, epsilon, crt)
+#     return approx, crt
+
+def mask2quadrilateral(cnt):
+    epsilon = 0.01 * cv2.arcLength(cnt, True)
+    approx = cv2.approxPolyDP(cnt, epsilon, True)
+    crt = approx.shape[0]
+    eps = epsilon
+    flag = 0
+    eps_high_old = 0.0
+    idx = 0
+    eps_weight = 1.1
+    idx_first = 0
+    while crt > 4:
+        idx += 1
+        idx_first += 1
+        eps_high_old = eps
+        eps=eps_weight * eps
+        if idx > 5000:
+            eps_weight = eps_weight * 10
+            idx = 0
+        app = cv2.approxPolyDP(cnt, eps, True)
+        crt = app.shape[0]
+        flag = 0
+        if idx_first > 10000000:
+            return [], False
+
+    eps_high = eps
+    if crt < 4:
+        idx = 0
+        while eps_high_old <= eps_high:
+            idx += 1
+            eps = (eps_high_old + eps_high) / 2.0
+            app = cv2.approxPolyDP(cnt, eps, True)
+            crt = app.shape[0]
+            if crt > 4:
+                eps_high_old = eps
+            if crt < 4:
+                eps_high = eps
+            else:
+                break
+    app = cv2.approxPolyDP(cnt, eps, True)
+    return app, True

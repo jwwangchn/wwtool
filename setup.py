@@ -1,7 +1,11 @@
 import os
+import platform
 import subprocess
 import time
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup, Extension
+
+from Cython.Build import cythonize
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
 
 def readme():
@@ -80,17 +84,33 @@ def get_version():
     return locals()['__version__']
 
 
+def make_cython_ext(name, module, sources):
+    extra_compile_args = None
+    if platform.system() != 'Windows':
+        extra_compile_args = {
+            'cxx': ['-Wno-unused-function', '-Wno-write-strings']
+        }
+    print(name, module, sources)
+    extension = Extension(
+        '{}.{}'.format(module, name),
+        [os.path.join(*module.split('.'), p) for p in sources],
+        include_dirs=[np.get_include()],
+        language='c++',
+        extra_compile_args=extra_compile_args)
+    extension, = cythonize(extension)
+    return extension
+
 if __name__ == '__main__':
     write_version_py()
     setup(
         name='wwtool',
         version=get_version(),
         description='Tools for jwwangchn Research',
-        long_description=readme(),
+        # long_description=readme(),
         keywords='computer vision, object detection',
         url='https://github.com/jwwangchn/wwtool',
         packages=find_packages(),
-        # package_data={'wwtool.ops': ['*/*.so']},
+        package_data={'wwtool.ops': ['*/*.so']},
         classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: Apache Software License',
@@ -104,10 +124,17 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.7',
         ],
         license='Apache License 2.0',
-        # setup_requires=['pytest-runner'],
+        setup_requires=['cython', 'numpy'],
         # tests_require=['pytest'],
         install_requires=[
             'mmcv>=0.2.6', 'numpy', 'matplotlib', 'six', 'terminaltables',
             'pycocotools', 'pySerial'
         ],
+        ext_modules=[
+            make_cython_ext(
+                name='bbox_overlaps_cpu',
+                module='wwtool.ops.bbox',
+                sources=['src/bbox_overlaps_cpu.pyx']),
+        ],
+        cmdclass={'build_ext': BuildExtension},
         zip_safe=False)

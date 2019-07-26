@@ -2,6 +2,7 @@ import os
 import platform
 import subprocess
 import time
+import numpy as np
 from setuptools import find_packages, setup, Extension
 
 from Cython.Build import cythonize

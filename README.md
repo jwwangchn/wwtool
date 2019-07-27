@@ -16,7 +16,7 @@ It will provide the following functionalities.
 ### Installation
 ```
 git clone https://github.com/jwwangchn/wwtool.git
-cv wwtool
+cd wwtool
 python setup.py develop
 ```
 

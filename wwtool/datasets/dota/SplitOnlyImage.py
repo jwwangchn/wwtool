@@ -57,7 +57,6 @@ class splitbase():
                 left = left + self.slide
 
     def splitdata(self, rate):
-        
         imagelist = util.GetFileFromThisRootDir(self.srcpath)
         imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
         for name in imagenames:
@@ -65,4 +64,4 @@ class splitbase():
 if __name__ == '__main__':
     split = splitbase(r'example/images',
                       r'example/imagesSplit')
-    split.splitdata(1)
+    split.splitdata(1.0)

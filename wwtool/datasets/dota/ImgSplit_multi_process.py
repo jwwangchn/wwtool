@@ -281,20 +281,20 @@ class splitbase():
 
 if __name__ == '__main__':
     dota_version = 'v1.0'
-    rate = 0.5
+    rate = 1.0
 
-    trainval_base_path = "./data/dota/v0/trainval"
-    test_base_path = "./data/dota/v0/test"
+    trainval_base_path = "./data/dota/v0/val"
+    # test_base_path = "./data/dota/v0/test"
 
-    trainval_out_path = "./data/dota/v4/trainval"
-    test_out_path = "./data/dota/v4/test"
+    trainval_out_path = "./data/dota/v5/val"
+    # test_out_path = "./data/dota/v5/test"
 
-    print(trainval_out_path, test_out_path)
+    # print(trainval_out_path, test_out_path)
 
     print("Begin to split trainval set")
-    split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=1024, num_process=32, dota_version=dota_version)
+    split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=1024, num_process=4, dota_version=dota_version)
     split.splitdata(rate)
 
-    print("Begin to split test set")
-    split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=32, dota_version=dota_version)
-    split.splitdata(rate)
+    # print("Begin to split test set")
+    # split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=32, dota_version=dota_version)
+    # split.splitdata(rate)

@@ -143,7 +143,7 @@ if __name__ == "__main__":
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
-    single_category = 'plane'
+    single_category = 'ship'
 
     extra_info = ''
     if groundtruth == False:

@@ -85,11 +85,11 @@ if __name__ == "__main__":
 
     # basic dataset information
     info = {"year" : 2019,
-                "version" : "1.5",
-                "description" : "VOC-COCO",
-                "contributor" : "Jinwang Wang",
-                "url" : "jwwangchn.cn",
-                "date_created" : "2019"
+            "version" : "1.0",
+            "description" : "VOC-COCO",
+            "contributor" : "Jinwang Wang",
+            "url" : "jwwangchn.cn",
+            "date_created" : "2019"
             }
     
     licenses = [{"id": 1,

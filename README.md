@@ -1,9 +1,10 @@
 ## WWTOOL
-WWTOOL is a foundational python library for Computer Vision Research.
+wwtool is a python library for Computer Vision Research.
 
 It will provide the following functionalities.
 
 - Detection annotation visualization
+- Dataset convert
 - Toolkit for object detection dataset ([DOTA](https://captain-whu.github.io/DOTA/index.html), [VisDrone](http://aiskyeye.com/), [UAV-BD](https://jwwangchn.cn/UAV-BD), ...)
 
 ### Requirements
@@ -24,19 +25,3 @@ python setup.py develop
 - [ ] Dataset statistic
 - [ ] Results generation tools for dota and visdrone dataset
 - [ ] Data augmentation
-
-### Datasets
-
-```
-wwtool
-├── wwtool
-├── tests
-├── data (symlink)
-│   ├── dota
-│   │   ├── coco
-│   │   │   ├── annotations
-│   │   ├── train
-│   │   ├── val
-│   │   ├── test
-
-```

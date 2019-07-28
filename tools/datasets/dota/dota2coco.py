@@ -17,7 +17,7 @@ class DOTA2COCO(Convert2COCO):
             :param return: dict()  
         """
         objects = self.__dota_parse__(annotpath, imgpath)
-
+        
         coco_annotations = []
         
         for object_struct in objects:
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
-    single_category = 'ship'
+    single_category = 'plane'
 
     extra_info = ''
     if groundtruth == False:
@@ -151,9 +151,9 @@ if __name__ == "__main__":
 
     # only save single category
     if single_category is not None:
-        extra_info += '_' + single_category
-        original_dota_class = {'ship': 1}
-        converted_dota_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship',                }]
+        extra_info += single_category
+        original_dota_class = {single_category: 1}
+        converted_dota_class = [{'supercategory': 'none', 'id': 1,  'name': single_category,                }]
 
     # pointobb sort method
     pointobb_sort_method = 'best' # or "extreme"

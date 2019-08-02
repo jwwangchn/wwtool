@@ -135,7 +135,7 @@ if __name__ == '__main__':
                   'pointobb': show_pointobb, 
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb}
-    show_flag = 'bbox'
+    show_flag = 'maskobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
     imageset = 'val'
     rate = '1.0'
     pointobb_sort_method = 'best'
-    extra_info = 'plane'
+    extra_info = ''
 
     imgDir = './data/dota/{}/coco/{}/'.format(release_version, imageset)
     annFile='./data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)

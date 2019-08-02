@@ -85,6 +85,30 @@ def pointobb2bbox(pointobb):
     
     return bbox
 
+def pointobb2sampleobb(pointobb, rate):
+    """
+    pointobb to sampleobb
+        :param self: 
+        :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+        :param rate: 0 < rate < 0.5, rate=0 -> pointobb, rate=0.5 -> center point
+        return [x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8]
+    """
+    px1, py1, px2, py2, px3, py3, px4, py4 = pointobb
+
+    sx1, sy1 = (px1 + px2) // 2, (py1 + py2) // 2
+    sx2, sy2 = (px2 + px3) // 2, (py2 + py3) // 2
+    sx3, sy3 = (px3 + px4) // 2, (py3 + py4) // 2
+    sx4, sy4 = (px4 + px1) // 2, (py4 + py1) // 2
+
+    sx5, sy5 = (1 - rate) * px2 + rate * px4, (1 - rate) * py2 + rate * py4
+    sx6, sy6 = (1 - rate) * px3 + rate * px1, (1 - rate) * py3 + rate * py1
+    sx7, sy7 = (1 - rate) * px4 + rate * px2, (1 - rate) * py4 + rate * py2
+    sx8, sy8 = (1 - rate) * px1 + rate * px3, (1 - rate) * py1 + rate * py3
+
+    sampleobb = [sx1, sy1, sx5, sy5, sx2, sy2, sx6, sy6, sx3, sy3, sx7, sy7, sx4, sy4, sx8, sy8]
+    sampleobb = [int(point) for point in sampleobb]
+    return sampleobb
+
 
 def thetaobb2hobb(thetaobb, pointobb_sort_fun):
     """

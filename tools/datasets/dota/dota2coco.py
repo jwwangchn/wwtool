@@ -6,7 +6,7 @@ import json
 import numpy as np
 
 from wwtool.datasets import Convert2COCO
-from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb_extreme_sort, pointobb_best_point_sort
+from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb2sampleobb, pointobb_extreme_sort, pointobb_best_point_sort
 
 class DOTA2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
@@ -60,15 +60,16 @@ class DOTA2COCO(Convert2COCO):
                         continue
                 obj_struct = {}
 
-                obj_struct['segmentation'] = [float(xy) for xy in dota_label.split(' ')[:8]]
-                obj_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](obj_struct['segmentation'])
-                obj_struct['thetaobb'] = pointobb2thetaobb(obj_struct['segmentation'])
+                pointobb = [float(xy) for xy in dota_label.split(' ')[:8]]
+                obj_struct['segmentation'] = pointobb2sampleobb(pointobb, rate=0.25)
+                obj_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](pointobb)
+                obj_struct['thetaobb'] = pointobb2thetaobb(pointobb)
                 obj_struct['hobb'] = thetaobb2hobb(obj_struct['thetaobb'], pointobb_sort_function[pointobb_sort_method])
 
-                xmin = min(obj_struct['segmentation'][0::2])
-                ymin = min(obj_struct['segmentation'][1::2])
-                xmax = max(obj_struct['segmentation'][0::2])
-                ymax = max(obj_struct['segmentation'][1::2])
+                xmin = min(pointobb[0::2])
+                ymin = min(pointobb[1::2])
+                xmax = max(pointobb[0::2])
+                ymax = max(pointobb[1::2])
                 bbox_w = xmax - xmin
                 bbox_h = ymax - ymin
                 obj_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
@@ -138,14 +139,14 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    imagesets = ['trainval', 'test']
+    imagesets = ['trainval', 'val']
     dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
-    single_category = 'plane'
+    single_category = None
 
-    extra_info = ''
+    extra_info = 'sampleobb'
     if groundtruth == False:
         extra_info += '_no_ground_truth'
 

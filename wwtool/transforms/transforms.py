@@ -85,7 +85,7 @@ def pointobb2bbox(pointobb):
     
     return bbox
 
-def pointobb2sampleobb(pointobb, rate):
+def l(pointobb, rate):
     """
     pointobb to sampleobb
         :param self: 

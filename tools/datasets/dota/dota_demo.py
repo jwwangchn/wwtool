@@ -10,13 +10,13 @@ import os
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale
 
-def draw_rectangle_by_points(im, points):
+def draw_rectangle_by_points(im, points, color=(0, 0, 255)):
     """
     docstring here
         :param points: [x,y,...] (1*8) 
     """
     for idx in range(-1, 3, 1):
-        cv2.line(im, (int(points[idx*2]), int(points[idx*2+1])), (int(points[(idx+1)*2]), int(points[(idx+1)*2+1])), (0, 0, 255), 3)
+        cv2.line(im, (int(points[idx*2]), int(points[idx*2+1])), (int(points[(idx+1)*2]), int(points[(idx+1)*2+1])), color, 3)
     return im
 
 def show_bbox(imgDir, img, anns):
@@ -38,6 +38,10 @@ def show_pointobb(imgDir, img, anns):
     im = cv2.imread(imgDir + img['file_name'])
     flip = np.random.choice([True, False])
     scale = np.random.uniform(0.8, 1.0, 1)[0]
+
+    flip = False
+    scale = 1
+
     im = cv2.resize(im, (0, 0), fx=scale, fy=scale)
     print("pointobb flip: {}, pointobb scale: {}".format(flip, scale))
     if flip:
@@ -49,13 +53,16 @@ def show_pointobb(imgDir, img, anns):
         if flip:
             img_shape = im.shape
             pointobb = pointobb_flip(pointobb, img_shape)
-        for idx in range(4):
-            if idx == 0:
-                color = (0, 0, 255)
-            else:
-                color = (255, 0, 0)
-            cv2.circle(im, (int(pointobb[2 * idx]), int(pointobb[2 * idx + 1])), 5, color, -1)
-        
+        # for idx in range(4):
+        #     if idx == 0:
+        #         color = (0, 0, 255)
+        #     else:
+        #         color = (255, 0, 0)
+        #     color = (255, 153, 102)
+        #     cv2.circle(im, (int(pointobb[2 * idx]), int(pointobb[2 * idx + 1])), 5, color, -1)
+        color = (255, 153, 102)
+        im = draw_rectangle_by_points(im, pointobb, color=color)
+    cv2.imwrite('1.jpg', im)
     cv2.imshow('demo', im)
     cv2.waitKey(10000)
 
@@ -117,12 +124,12 @@ def show_hobb(imgDir, img, anns):
 
         pointobb = [first_point_x, first_point_y, second_point_x, second_point_y, third_point_x, third_point_y, forth_point_x, forth_point_y]
 
-        for idx in range(4):
-            if idx == 0:
-                color = (0, 0, 255)
-            else:
-                color = (255, 0, 0)
-            cv2.circle(im, (int(pointobb[2*idx]), int(pointobb[2*idx+1])), 5, color, -1)
+        # for idx in range(4):
+        #     if idx == 0:
+        #         color = (0, 0, 255)
+        #     else:
+        #         color = (255, 0, 0)
+        #     cv2.circle(im, (int(pointobb[2*idx]), int(pointobb[2*idx+1])), 5, color, -1)
         im = draw_rectangle_by_points(im, pointobb)
 
     cv2.imshow('demo', im)
@@ -135,12 +142,12 @@ if __name__ == '__main__':
                   'pointobb': show_pointobb, 
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb}
-    show_flag = 'maskobb'
+    show_flag = 'pointobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
     release_version = 'v1'
-    imageset = 'val'
+    imageset = 'test'
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = ''
@@ -156,8 +163,8 @@ if __name__ == '__main__':
     for idx, imgId in enumerate(imgIds):
         img = coco.loadImgs(imgIds[idx])[0]
 
-        # if img['file_name'] != 'P0002__1.0__1533___0.png':
-        #     continue
+        if img['file_name'] != 'P2246__1.0__0___84.png':
+            continue
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)

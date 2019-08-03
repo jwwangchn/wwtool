@@ -139,14 +139,14 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    imagesets = ['trainval', 'test']
+    imagesets = ['val']
     dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
     single_category = None
 
-    extra_info = 'sampleobb'
+    extra_info = ''
     if groundtruth == False:
         extra_info += '_no_ground_truth'
 

@@ -286,7 +286,7 @@ if __name__ == '__main__':
     trainval_base_path = "./data/dota/v0/val"
     # test_base_path = "./data/dota/v0/test"
 
-    trainval_out_path = "./data/dota/v5/val"
+    trainval_out_path = "./data/dota/v1/val"
     # test_out_path = "./data/dota/v5/test"
 
     # print(trainval_out_path, test_out_path)

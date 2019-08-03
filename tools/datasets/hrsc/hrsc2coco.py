@@ -142,7 +142,7 @@ if __name__ == "__main__":
     for imageset in imagesets:
         
         imgpath = './data/hrsc/{}/{}/images'.format(release_version, imageset)
-        annopath = './data/hrsc/{}/{}/labels'.format(release_version, imageset)
+        annopath = './data/hrsc/{}/{}/annotations'.format(release_version, imageset)
         save_path = './data/hrsc/{}/coco/annotations'.format(release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)

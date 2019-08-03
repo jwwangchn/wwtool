@@ -71,7 +71,7 @@ class HRSC2COCO(Convert2COCO):
                 rbbox_w = float(hrsc_sub_object.find('mbox_w').text)
                 rbbox_h = float(hrsc_sub_object.find('mbox_h').text)
                 angle = float(hrsc_sub_object.find('mbox_ang').text)
-                angle = angle * 180.0 / np.pi
+                # angle = angle * 180.0 / np.pi
 
                 obj_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
                 obj_struct['thetaobb'] = [cx, cy, rbbox_w, rbbox_h, angle]
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     converted_hrsc_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship',                },]
 
     imagesets = ['trainval', 'test']
-    release_version = 'v2'
+    release_version = 'v1'
     rate = '1.0'
     groundtruth = True
 

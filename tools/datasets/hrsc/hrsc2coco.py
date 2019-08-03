@@ -123,7 +123,7 @@ if __name__ == "__main__":
                 }]
 
     image_format='.bmp'
-    anno_format='.txt'
+    anno_format='.xml'
 
     original_hrsc_class = {'ship': 1}
 

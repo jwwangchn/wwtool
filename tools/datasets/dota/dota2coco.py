@@ -155,13 +155,13 @@ if __name__ == "__main__":
     single_category = None
     keypoint = True
 
+    extra_info = ''
     if keypoint:
         for idx in range(len(converted_dota_class)):
             converted_dota_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
             converted_dota_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
-            extra_info += 'keypoint'
-
-    extra_info = ''
+        extra_info += 'keypoint'
+    
     if groundtruth == False:
         extra_info += '_no_ground_truth'
 

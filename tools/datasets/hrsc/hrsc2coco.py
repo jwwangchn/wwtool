@@ -28,6 +28,7 @@ class HRSC2COCO(Convert2COCO):
             pointobb = object_struct['pointobb']
             thetaobb = object_struct['thetaobb']
             hobb = object_struct['hobb']
+            keypoint = object_struct['keypoints']
 
             width = bbox[2]
             height = bbox[3]
@@ -45,6 +46,8 @@ class HRSC2COCO(Convert2COCO):
             coco_annotation['pointobb'] = pointobb
             coco_annotation['thetaobb'] = thetaobb
             coco_annotation['hobb'] = hobb
+            coco_annotation['keypoints'] = keypoint
+            coco_annotation['num_keypoints'] = 4
 
             coco_annotations.append(coco_annotation)
             
@@ -77,6 +80,9 @@ class HRSC2COCO(Convert2COCO):
                 obj_struct['thetaobb'] = [cx, cy, rbbox_w, rbbox_h, angle]
                 obj_struct['segmentation'] = thetaobb2pointobb(obj_struct['thetaobb'])
                 obj_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](obj_struct['segmentation'])
+                obj_struct['keypoints'] = obj_struct['pointobb'][:]
+                for idx in [2, 5, 8, 11]:
+                    obj_struct['keypoints'].insert(idx, 2)
                 obj_struct['hobb'] = thetaobb2hobb(obj_struct['thetaobb'], pointobb_sort_function[pointobb_sort_method])
                 obj_struct['label'] = 1
 
@@ -84,6 +90,7 @@ class HRSC2COCO(Convert2COCO):
         else:
             obj_struct = {}
             obj_struct['segmentation'] = [0, 0, 0, 0, 0, 0, 0, 0]
+            obj_struct['keypoint'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['pointobb'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['thetaobb'] = [0, 0, 0, 0, 0]
             obj_struct['hobb'] = [0, 0, 0, 0, 0]
@@ -133,6 +140,14 @@ if __name__ == "__main__":
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
+    keypoint = True
+
+    extra_info = ''
+    if keypoint:
+        for idx in range(len(converted_hrsc_class)):
+            converted_hrsc_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
+            converted_hrsc_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
+        extra_info += 'keypoint'
 
     # pointobb sort method
     pointobb_sort_method = 'best' # or "extreme"
@@ -140,7 +155,6 @@ if __name__ == "__main__":
                             "extreme": pointobb_extreme_sort}
 
     for imageset in imagesets:
-        
         imgpath = './data/hrsc/{}/{}/images'.format(release_version, imageset)
         annopath = './data/hrsc/{}/{}/annotations'.format(release_version, imageset)
         save_path = './data/hrsc/{}/coco/annotations'.format(release_version)
@@ -167,5 +181,5 @@ if __name__ == "__main__":
                     "annotations" : annotations,
                     "categories" : hrsc.categories}
 
-        with open(os.path.join(save_path, "hrsc_" + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + ".json"), "w") as jsonfile:
+        with open(os.path.join(save_path, "hrsc_" + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + "_" + extra_info + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

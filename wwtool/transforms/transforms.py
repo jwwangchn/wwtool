@@ -1,6 +1,7 @@
 import cv2
 import math
 import numpy as np
+import mmcv
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -44,10 +45,11 @@ def pointobb2pointobb(pointobb):
     return pointobb.tolist()
 
 def pointobb2thetaobb(pointobb):
-    """
-    docstring here
-        :param self: 
-        :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+    """convert pointobb to thetaobb
+    Input:
+        pointobb (list[1x8]): [x1, y1, x2, y2, x3, y3, x4, y4]
+    Output:
+        thetaobb (list[1x5])
     """
     pointobb = np.int0(np.array(pointobb))
     pointobb.resize(4, 2)
@@ -225,14 +227,109 @@ def maskobb2thetaobb(maskobb):
 
     return thetaobb
 
+def pointobb2pseudomask(mask_height, mask_width, pointobb):
+    """convert pointobb to pseudo mask
+    
+    Arguments:
+        mask_height {int} -- the height of mask
+        mask_width {int} -- the widht of mask
+        pointobb {list, [1x8]} -- [x1, y1, x2, y2, x3, y3, x4, y4]
+    
+    Returns:
+        numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
+    """
+    thetaobb = pointobb2thetaobb(pointobb)
+    pointobb = thetaobb2pointobb(thetaobb)
+
+    rotation_anchor_x, rotation_anchor_y = thetaobb[0], thetaobb[1]
+    theta = thetaobb[4]
+
+    pointobb = rotate_pointobb(pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
+
+    bbox = pointobb2bbox(pointobb)
+    bbox_pseudomask = bbox2pseudomask(mask_height, mask_width, bbox)
+
+    # convert pseudo to centerness
+    left = bbox_pseudomask[..., 0]
+    top = bbox_pseudomask[..., 1]
+    right = bbox_pseudomask[..., 2]
+    bottom = bbox_pseudomask[..., 3]
+    centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom)  + 1 )))
+    centerness = mmcv.imrotate(centerness, theta*180.0/np.pi, center=(rotation_anchor_x + mask_width//2, rotation_anchor_y + mask_height//2))
+    
+    pointobb_pseudo_mask = centerness[mask_height // 2 : mask_height * 3 // 2, mask_width // 2 : mask_width * 3 // 2]
+
+    return pointobb_pseudo_mask
+
+def bbox2pseudomask(mask_height, mask_width, bbox):
+    """convert bbox to pseudomask
+    
+    Arguments:
+        mask_height {int} -- height of mask
+        mask_width {int} -- width of mask
+        bbox {list, [1x4]} -- bbox as [xmin, ymin, xmax, ymax]
+    
+    Returns:
+        numpy.ndarray, [mask_height, mask_width] -- generated pseudo mask
+    """
+    # for keeping bbox on the boundary, I extend the image size
+    x_range = np.arange(0 - mask_width // 2, mask_width * 3//2)
+    y_range = np.arange(0 - mask_height // 2, mask_height * 3//2)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    left = index_x - bbox[0]
+    left = np.maximum(left, 0)
+    right = bbox[2] - index_x
+    right = np.maximum(right, 0)
+    top = index_y - bbox[1]
+    top = np.maximum(top, 0)
+    bottom = bbox[3] - index_y
+    bottom = np.maximum(bottom, 0)
+
+    bbox_pseudo_mask = np.stack((left, top, right, bottom), -1)
+
+    return bbox_pseudo_mask
+
+
+# ================== rotate obb ======================= 
+
+def rotate_pointobb(pointobb, theta, anchor=None):
+    """rotate pointobb around anchor
+    
+    Arguments:
+        pointobb {list or numpy.ndarray, [1x8]} -- vertices of obb region
+        theta {int, rad} -- angle in radian measure
+    
+    Keyword Arguments:
+        anchor {list or tuple} -- fixed position during rotation (default: {None}, use left-top vertice as the anchor)
+    
+    Returns:
+        numpy.ndarray, [1x8] -- rotated pointobb
+    """
+    if type(pointobb) == list:
+        pointobb = np.array(pointobb)
+    if type(anchor) == list:
+        anchor = np.array(anchor).reshape(2, 1)
+    v = pointobb.reshape((4, 2)).T
+    if anchor is None:
+        anchor = v[:,:1]
+
+    rotate_mat = np.array([[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]])
+    res = np.dot(rotate_mat, v - anchor)
+    
+    return (res + anchor).T.reshape(-1)
 
 # ================== flip obb =======================
 
 def thetaobb_flip(thetaobbs, img_shape):
-    """
-    flip thetaobb
-        :param self: 
-        :param thetaobbs: np.array, [[x, y, w, h, theta]], (..., 5)
+    """flip thetaobb
+    
+    Arguments:
+        thetaobbs {numpy.ndarray, [..., 5]} -- theta based obb, can be one or two dimension
+        img_shape {numpy.ndarray, [1x3]} -- thetaobb corresponding image shape
+    
+    Returns:
+        numpy.ndarray -- fliped thetaobb
     """
     assert thetaobbs.shape[-1] % 5 == 0
     w = img_shape[1]

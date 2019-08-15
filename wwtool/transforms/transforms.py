@@ -290,6 +290,8 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     
     pointobb_pseudo_mask = centerness[mask_height // 2 : mask_height * 3 // 2, mask_width // 2 : mask_width * 3 // 2]
 
+    pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)
+
     return pointobb_pseudo_mask
 
 

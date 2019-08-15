@@ -283,10 +283,10 @@ if __name__ == '__main__':
     dota_version = 'v1.0'
     rate = 1.0
 
-    trainval_base_path = "./data/dota/v0/train"
+    trainval_base_path = "./data/dota/v0/val"
     # test_base_path = "./data/dota/v0/test"
 
-    trainval_out_path = "./data/dota/v1/train"
+    trainval_out_path = "./data/dota/v1/val"
     # test_out_path = "./data/dota/v5/test"
 
     # print(trainval_out_path, test_out_path)

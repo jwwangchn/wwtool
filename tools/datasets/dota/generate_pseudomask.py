@@ -19,8 +19,8 @@ if __name__ == '__main__':
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
-    show = False
-    save = True
+    show = True
+    save = False
 
     imgDir = './data/dota/{}/coco/{}/'.format(release_version, imageset)
     annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
@@ -61,9 +61,11 @@ if __name__ == '__main__':
         if show:
             pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
 
-            alpha = 0.4
+            alpha = 0.6
             beta = (1.0 - alpha)
             dst = cv2.addWeighted(pseudomasks_, alpha, img, beta, 0.0)
-            cv2.imshow("demo", dst)
-            cv2.waitKey(0)
+            print(os.path.join(save_path, image_name))
+            cv2.imwrite(os.path.join(save_path, image_name), dst)
+            # cv2.imshow("demo", dst)
+            # cv2.waitKey(0)
         # print("idx: {}, image file name: {}".format(idx, img_info['file_name']))

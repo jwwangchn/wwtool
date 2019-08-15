@@ -238,9 +238,8 @@ def bbox2pseudomask(mask_height, mask_width, bbox):
     Returns:
         numpy.ndarray, [mask_height, mask_width] -- generated pseudo mask
     """
-    # for keeping bbox on the boundary, I extend the image size
-    x_range = np.arange(0 - mask_width // 2, mask_width * 3//2)
-    y_range = np.arange(0 - mask_height // 2, mask_height * 3//2)
+    x_range = np.arange(0, mask_width)
+    y_range = np.arange(0, mask_height)
     index_x, index_y = np.meshgrid(x_range, y_range)
 
     left = index_x - bbox[0]
@@ -277,6 +276,9 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     pointobb = rotate_pointobb(pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
 
     bbox = pointobb2bbox(pointobb)
+    bbox_w, bbox_h, bbox_cx, bbox_cy = bbox[2] - bbox[0], bbox[3] - bbox[1], (bbox[2] + bbox[0]) // 2, (bbox[3] + bbox[1]) // 2
+    bbox = [(mask_width - bbox_w) // 2, (mask_height - bbox_h) // 2, (mask_width + bbox_w) // 2, (mask_height + bbox_h) // 2]
+    move_x, move_y = bbox_cx - mask_width // 2, bbox_cy - mask_height // 2
     bbox_pseudomask = bbox2pseudomask(mask_height, mask_width, bbox)
 
     # convert pseudo to centerness
@@ -286,9 +288,10 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     bottom = bbox_pseudomask[..., 3]
     
     centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
-    centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(rotation_anchor_x + mask_width // 2, rotation_anchor_y + mask_height // 2))
+    centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(mask_width // 2, mask_height // 2))
     
-    pointobb_pseudo_mask = centerness[mask_height // 2 : mask_height * 3 // 2, mask_width // 2 : mask_width * 3 // 2]
+    M = np.float32([[1, 0, move_x], [0, 1, move_y]])
+    pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_height, mask_width))
 
     pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)
 

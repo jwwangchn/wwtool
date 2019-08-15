@@ -261,7 +261,7 @@ class splitbase():
         :param rate: resize rate before cut
         """
 
-        imagelist = GetFileFromThisRootDir(self.imagepath)
+        imagelist = GetFileFromThisRootDir(self.labelpath)
         imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
 
         worker = partial(self.SplitSingle, rate=rate, extent=self.ext)

@@ -2,17 +2,7 @@ import numpy as np
 cimport numpy as np
 
 
-def pointobb2pseudomask_cpu(int mask_height, int mask_width, pointobb):
-    """convert pointobb to pseudo mask
-    
-    Arguments:
-        mask_height {int} -- the height of mask
-        mask_width {int} -- the widht of mask
-        pointobb {list, [1x8]} -- [x1, y1, x2, y2, x3, y3, x4, y4]
-    
-    Returns:
-        numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
-    """
+cdef pointobb2pseudomask_cpu(int mask_height, int mask_width, pointobb):
     thetaobb = pointobb2thetaobb(pointobb)
     pointobb = thetaobb2pointobb(thetaobb)
 

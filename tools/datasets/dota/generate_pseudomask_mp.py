@@ -67,9 +67,11 @@ class Core():
     def _mp_(self):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             counter = 0
+            progress_bar = mmcv.ProgressBar(len(self.imgIds))
             for image_name in executor.map(self.core, self.imgIds):
                 counter += 1
-                print("processing {}, {}: ".format(counter, image_name))
+                # print("processing {}, {}".format(counter, image_name))
+                progress_bar.update()
 
 if __name__ == '__main__':
     release_version = 'v1'

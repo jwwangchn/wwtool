@@ -6,12 +6,75 @@ import pylab
 import cv2
 import math
 import os
+import sys
+import concurrent.futures
 
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
 from wwtool.visualization import show_centerness
 
+class Core():
+    def __init__(self,
+                release_version,
+                imageset,
+                rate,
+                pointobb_sort_method,
+                extra_info,
+                show,
+                save,
+                multi_processing=False):
+        self.release_version = release_version
+        self.imageset = imageset
+        self.rate = rate
+        self.pointobb_sort_method = pointobb_sort_method
+        self.extra_info = extra_info
+        self.show = show
+        self.save = save
+
+        self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
+        self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
+
+        self.coco = COCO(self.annFile)
+        self.catIds = self.coco.getCatIds(catNms=[''])
+        self.imgIds = self.coco.getImgIds(catIds=self.catIds)
+        self.progress_bar = mmcv.ProgressBar(len(self.imgIds))
+        self.multi_processing = multi_processing
+
+    def _core_(self, imgId):
+        img_info = self.coco.loadImgs(imgId)[0]
+        image_name = img_info['file_name']
+
+        # image_file = os.path.join(self.imgDir, image_name)
+
+        annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)
+        anns = self.coco.loadAnns(annIds)
+        pseudomasks = []
+        height = img_info['height']
+        width = img_info['width']
+        pseudomasks = np.zeros((height, width), dtype=np.float64)
+
+        for ann in anns:
+            pointobb = ann['pointobb']
+            pseudomask = pointobb2pseudomask(height, width, pointobb)
+            pseudomasks += pseudomask
+
+        # self.progress_bar.update()
+        if save:
+            pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
+            np.save(pseudomask_file, pseudomasks)
+        return image_name
+
+    def generate_pseudomask(self):
+        if self.multi_processing:
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                for image_name in executor.map(self._core_, self.imgIds):
+                    self.progress_bar.update()
+        else:
+            for idx, imgId in enumerate(self.imgIds):
+                self._core_(imgId)
+                self.progress_bar.update()
 
 if __name__ == '__main__':
     release_version = 'v1'
@@ -19,54 +82,16 @@ if __name__ == '__main__':
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
-    show = True
-    save = False
+    show = False
+    save = True
 
-    imgDir = './data/dota/{}/coco/{}/'.format(release_version, imageset)
-    annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
-    save_path = './data/dota/{}/{}/pseudomasks'.format(release_version, imageset)
+    core = Core(release_version=release_version, 
+                imageset=imageset,
+                rate=rate,
+                pointobb_sort_method=pointobb_sort_method,
+                extra_info=extra_info,
+                show=show,
+                save=save,
+                multi_processing=True)
 
-    coco=COCO(annFile)
-
-    catIds = coco.getCatIds(catNms=[''])
-    imgIds = coco.getImgIds(catIds=catIds)
-
-    progress_bar = mmcv.ProgressBar(len(imgIds))
-    for idx, imgId in enumerate(imgIds):
-        # if idx >= 1:
-        #     break
-        img_info = coco.loadImgs(imgIds[idx])[0]
-        image_name = img_info['file_name']
-        image_file = os.path.join(imgDir, image_name)
-        # if img_info['file_name'] != 'P1440__1.0__950___0.png':
-        #     continue
-        img = cv2.imread(image_file)
-        annIds = coco.getAnnIds(imgIds=img_info['id'], catIds=catIds, iscrowd=None)
-        anns = coco.loadAnns(annIds)
-        pseudomasks = []
-        height = img_info['height']
-        width = img_info['width']
-        pseudomasks = np.zeros((height, width), dtype=np.float64)
-
-        # print(os.path.join(image_name))
-        for ann in anns:
-            pointobb = ann['pointobb']
-            pseudomask = pointobb2pseudomask(height, width, pointobb)
-            pseudomasks += pseudomask
-
-        
-        progress_bar.update()
-        if save:
-            pseudomask_file = os.path.join(save_path, image_name.split('.png')[0])
-            np.save(pseudomask_file, pseudomasks)
-
-        if show:
-            pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
-
-            alpha = 0.6
-            beta = (1.0 - alpha)
-            dst = cv2.addWeighted(pseudomasks_, alpha, img, beta, 0.0)
-            cv2.imwrite(os.path.join(save_path, image_name), dst)
-            # cv2.imshow("demo", dst)
-            # cv2.waitKey(0)
-        # print("idx: {}, image file name: {}".format(idx, img_info['file_name']))
+    core.generate_pseudomask()

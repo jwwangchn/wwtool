@@ -92,6 +92,6 @@ if __name__ == '__main__':
                 extra_info=extra_info,
                 show=show,
                 save=save,
-                multi_processing=True)
+                multi_processing=False)
 
     core.generate_pseudomask()

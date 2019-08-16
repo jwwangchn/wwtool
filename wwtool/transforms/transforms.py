@@ -294,13 +294,14 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     rotated_bbox[1::2] = np.clip(rotated_bbox[1::2], 0, mask_height - 1)
 
     # 6. centered_bbox and rotated_bbox union
+    # print(centered_bbox, rotated_bbox)
     union_xmin = np.minimum(centered_bbox[0], rotated_bbox[0])
     union_ymin = np.minimum(centered_bbox[1], rotated_bbox[1])
     union_xmax = np.maximum(centered_bbox[2], rotated_bbox[2])
     union_ymax = np.maximum(centered_bbox[3], rotated_bbox[3])
     union_cx, union_cy = (union_xmin + union_xmax) // 2, (union_ymin + union_ymax) // 2
-    union_w = int(union_xmax - union_xmin)
-    union_h = int(union_ymax - union_ymin)
+    union_w = np.maximum(int(union_xmax - union_xmin), 1)
+    union_h = np.maximum(int(union_ymax - union_ymin), 1)
 
     # 7. rotated_bbox to union bbox coordinate
     rotated_bbox[::2] = rotated_bbox[::2] - union_xmin

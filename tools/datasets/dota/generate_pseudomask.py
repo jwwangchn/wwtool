@@ -22,7 +22,7 @@ class Core():
                 pointobb_sort_method,
                 extra_info,
                 show,
-                save,
+                save_np,
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
@@ -30,7 +30,7 @@ class Core():
         self.pointobb_sort_method = pointobb_sort_method
         self.extra_info = extra_info
         self.show = show
-        self.save = save
+        self.save_np = save_np
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
@@ -45,9 +45,7 @@ class Core():
     def _core_(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
-
-        # image_file = os.path.join(self.imgDir, image_name)
-
+        print(image_name)
         annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)
         anns = self.coco.loadAnns(annIds)
         pseudomasks = []
@@ -61,18 +59,28 @@ class Core():
             pseudomasks += pseudomask
 
         # self.progress_bar.update()
-        if save:
+        if save_np:
             pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
             np.save(pseudomask_file, pseudomasks)
+        else:
+            image_file = os.path.join(self.imgDir, image_name)
+            img = cv2.imread(image_file)
+            pseudomask_file = os.path.join(self.save_path, image_name)
+            pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
+
+            alpha = 0.6
+            beta = (1.0 - alpha)
+            pseudomasks = cv2.addWeighted(pseudomasks_, alpha, img, beta, 0.0)
+            cv2.imwrite(pseudomask_file, pseudomasks)
         return image_name
 
     def generate_pseudomask(self):
         if self.multi_processing:
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                for image_name in executor.map(self._core_, self.imgIds):
+                for _ in executor.map(self._core_, self.imgIds):
                     self.progress_bar.update()
         else:
-            for idx, imgId in enumerate(self.imgIds):
+            for _, imgId in enumerate(self.imgIds):
                 self._core_(imgId)
                 self.progress_bar.update()
 
@@ -83,7 +91,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
     show = False
-    save = True
+    save_np = True
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
@@ -91,7 +99,7 @@ if __name__ == '__main__':
                 pointobb_sort_method=pointobb_sort_method,
                 extra_info=extra_info,
                 show=show,
-                save=save,
+                save_np=save_np,
                 multi_processing=False)
 
     core.generate_pseudomask()

@@ -38,8 +38,8 @@ if __name__ == '__main__':
         img_info = coco.loadImgs(imgIds[idx])[0]
         image_name = img_info['file_name']
         image_file = os.path.join(imgDir, image_name)
-        # if img_info['file_name'] != 'P1440__1.0__950___0.png':
-        #     continue
+        if img_info['file_name'] != 'P2702__1.0__824___1448.png':
+            continue
         img = cv2.imread(image_file)
         annIds = coco.getAnnIds(imgIds=img_info['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)

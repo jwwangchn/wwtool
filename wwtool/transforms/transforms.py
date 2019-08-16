@@ -267,30 +267,65 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     Returns:
         numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
     """
+    # 1. pointobb to thetaobb
     thetaobb = pointobb2thetaobb(pointobb)
     pointobb = thetaobb2pointobb(thetaobb)
 
-    rotation_anchor_x, rotation_anchor_y = thetaobb[0], thetaobb[1]
+    # 2. move the pointobb center to mask center
+    pointobb_cx, pointobb_cy = thetaobb[0], thetaobb[1]
+    move_x, move_y = mask_width // 2 - pointobb_cx, mask_height // 2 - pointobb_cy
+    centered_pointobb = np.array(pointobb[:])
+    centered_pointobb[::2] = centered_pointobb[::2] + move_x
+    centered_pointobb[1::2] = centered_pointobb[1::2] + move_y
+
+    # 3. pointobb to bbox
+    centered_bbox = np.array(pointobb2bbox(centered_pointobb))
+    centered_bbox[::2] = np.clip(centered_bbox[::2], 0, mask_width - 1)
+    centered_bbox[1::2] = np.clip(centered_bbox[1::2], 0, mask_height - 1)
+
+    # 4. rotate pointobb
+    rotation_anchor_x, rotation_anchor_y = mask_width // 2, mask_height // 2
     theta = thetaobb[4]
+    rotated_pointobb = rotate_pointobb(centered_pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
 
-    pointobb = rotate_pointobb(pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
+    # 5. rotated pointobb to bbox
+    rotated_bbox = np.array(pointobb2bbox(rotated_pointobb))
+    rotated_bbox[::2] = np.clip(rotated_bbox[::2], 0, mask_width - 1)
+    rotated_bbox[1::2] = np.clip(rotated_bbox[1::2], 0, mask_height - 1)
 
-    bbox = pointobb2bbox(pointobb)
-    bbox_w, bbox_h, bbox_cx, bbox_cy = bbox[2] - bbox[0], bbox[3] - bbox[1], (bbox[2] + bbox[0]) // 2, (bbox[3] + bbox[1]) // 2
-    bbox = [(mask_width - bbox_w) // 2, (mask_height - bbox_h) // 2, (mask_width + bbox_w) // 2, (mask_height + bbox_h) // 2]
-    move_x, move_y = bbox_cx - mask_width // 2, bbox_cy - mask_height // 2
-    bbox_pseudomask = bbox2pseudomask(mask_height, mask_width, bbox)
+    # 6. centered_bbox and rotated_bbox union
+    union_xmin = np.minimum(centered_bbox[0], rotated_bbox[0])
+    union_ymin = np.minimum(centered_bbox[1], rotated_bbox[1])
+    union_xmax = np.maximum(centered_bbox[2], rotated_bbox[2])
+    union_ymax = np.maximum(centered_bbox[3], rotated_bbox[3])
+    union_cx, union_cy = (union_xmin + union_xmax) // 2, (union_ymin + union_ymax) // 2
+    union_w = int(union_xmax - union_xmin)
+    union_h = int(union_ymax - union_ymin)
 
-    # convert pseudo to centerness
+    # 7. rotated_bbox to union bbox coordinate
+    rotated_bbox[::2] = rotated_bbox[::2] - union_xmin
+    rotated_bbox[1::2] = rotated_bbox[1::2] - union_ymin
+
+    # 8. rotated_bbox to pseudo mask
+    bbox_pseudomask = bbox2pseudomask(union_h, union_w, rotated_bbox)
+
+    # 8. convert pseudo to centerness
     left = bbox_pseudomask[..., 0]
     top = bbox_pseudomask[..., 1]
     right = bbox_pseudomask[..., 2]
     bottom = bbox_pseudomask[..., 3]
     
     centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
-    centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(mask_width // 2, mask_height // 2))
-    
-    M = np.float32([[1, 0, move_x], [0, 1, move_y]])
+    centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
+
+    # 9. padding the centerness
+    pad_1 = int(union_ymin)
+    pad_2 = int(mask_height - union_ymax)
+    pad_3 = int(union_xmin)
+    pad_4 = int(mask_width - union_xmax)
+    centerness = np.pad(centerness, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
+
+    M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
     pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_height, mask_width))
 
     pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)

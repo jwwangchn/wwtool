@@ -38,7 +38,7 @@ if __name__ == '__main__':
         img_info = coco.loadImgs(imgIds[idx])[0]
         image_name = img_info['file_name']
         image_file = os.path.join(imgDir, image_name)
-        # if img['file_name'] != 'P2246__1.0__0___84.png':
+        # if img_info['file_name'] != 'P1440__1.0__950___0.png':
         #     continue
         img = cv2.imread(image_file)
         annIds = coco.getAnnIds(imgIds=img_info['id'], catIds=catIds, iscrowd=None)
@@ -48,11 +48,13 @@ if __name__ == '__main__':
         width = img_info['width']
         pseudomasks = np.zeros((height, width), dtype=np.float64)
 
+        # print(os.path.join(image_name))
         for ann in anns:
             pointobb = ann['pointobb']
             pseudomask = pointobb2pseudomask(height, width, pointobb)
             pseudomasks += pseudomask
 
+        
         progress_bar.update()
         if save:
             pseudomask_file = os.path.join(save_path, image_name.split('.png')[0])
@@ -64,7 +66,6 @@ if __name__ == '__main__':
             alpha = 0.6
             beta = (1.0 - alpha)
             dst = cv2.addWeighted(pseudomasks_, alpha, img, beta, 0.0)
-            print(os.path.join(save_path, image_name))
             cv2.imwrite(os.path.join(save_path, image_name), dst)
             # cv2.imshow("demo", dst)
             # cv2.waitKey(0)

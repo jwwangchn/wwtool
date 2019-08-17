@@ -328,7 +328,7 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     centerness = np.pad(centerness, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
 
     M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
-    pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_height, mask_width))
+    pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_width, mask_height))
 
     # pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)
 

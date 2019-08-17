@@ -34,7 +34,10 @@ class Core():
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
-        self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
+        if save_np:
+            self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
+        else:
+            self.save_path = './data/dota/{}/{}/pseudomasks_png'.format(self.release_version, self.imageset)
 
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -91,7 +94,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
     show = False
-    save_np = True
+    save_np = False
 
     core = Core(release_version=release_version, 
                 imageset=imageset,

@@ -317,6 +317,7 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     bottom = bbox_pseudomask[..., 3]
     
     centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
+    centerness = np.clip(centerness, 0.0, 1.0)
     centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
 
     # 9. padding the centerness
@@ -329,7 +330,7 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
     pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_height, mask_width))
 
-    pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)
+    # pointobb_pseudo_mask = pointobb_pseudo_mask.astype(np.float16)
 
     return pointobb_pseudo_mask
 

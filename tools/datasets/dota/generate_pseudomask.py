@@ -13,6 +13,7 @@ import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
 from wwtool.visualization import show_centerness
+from wwtool.datasets import cocoSegmentationToPng
 
 class Core():
     def __init__(self,
@@ -23,6 +24,7 @@ class Core():
                 extra_info,
                 show,
                 save_np,
+                add_seg,
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
@@ -31,11 +33,14 @@ class Core():
         self.extra_info = extra_info
         self.show = show
         self.save_np = save_np
+        self.add_seg = add_seg
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
         if save_np:
             self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
+            if self.add_seg:
+                self.save_path = './data/dota/{}/{}/pseudomasks_seg'.format(self.release_version, self.imageset)
         else:
             self.save_path = './data/dota/{}/{}/pseudomasks_png'.format(self.release_version, self.imageset)
 
@@ -63,8 +68,26 @@ class Core():
 
         # self.progress_bar.update()
         if save_np:
-            pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
-            np.save(pseudomask_file, pseudomasks)
+            if self.add_seg:
+                return_flag = True
+                pseudomask_file = os.path.join(self.save_path, image_name)
+                stuff_things = cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=return_flag)
+
+                pseudomask_seg = (stuff_things[:, :, 0] + pseudomasks)
+                pseudomask_seg_max = np.max(pseudomask_seg)
+                pseudomask_seg_min = np.min(pseudomask_seg)
+                print(pseudomask_seg_max, pseudomask_seg_min)
+                pseudomask_seg = (pseudomask_seg - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
+                pseudomask_seg = pseudomask_seg.astype(np.uint8)
+                
+                # pseudomasks_ = show_centerness(pseudomask_seg, True, return_img=True)
+                if return_flag:
+                    # pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
+                    # np.save(pseudomask_file, pseudomasks)
+                    cv2.imwrite(pseudomask_file, pseudomask_seg)
+            else:
+                pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
+                np.save(pseudomask_file, pseudomasks)
         else:
             image_file = os.path.join(self.imgDir, image_name)
             img = cv2.imread(image_file)
@@ -94,7 +117,8 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
     show = False
-    save_np = False
+    save_np = True
+    add_seg = True
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
@@ -103,6 +127,7 @@ if __name__ == '__main__':
                 extra_info=extra_info,
                 show=show,
                 save_np=save_np,
+                add_seg=add_seg,
                 multi_processing=False)
 
     core.generate_pseudomask()

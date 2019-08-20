@@ -74,12 +74,12 @@ class Core():
                 stuff_things = cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=return_flag)
 
                 pseudomask_seg = (stuff_things[:, :, 0] + pseudomasks)
-                pseudomask_seg_max = np.max(pseudomask_seg)
-                pseudomask_seg_min = np.min(pseudomask_seg)
-                print(pseudomask_seg_max, pseudomask_seg_min)
-                pseudomask_seg = (pseudomask_seg - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
+                # pseudomask_seg_max = np.max(pseudomask_seg)
+                # pseudomask_seg_min = np.min(pseudomask_seg)
+                # pseudomask_seg = (pseudomask_seg - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
+                pseudomask_seg = pseudomask_seg * 10.0
                 pseudomask_seg = pseudomask_seg.astype(np.uint8)
-                
+
                 # pseudomasks_ = show_centerness(pseudomask_seg, True, return_img=True)
                 if return_flag:
                     # pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])

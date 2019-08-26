@@ -264,8 +264,8 @@ def bbox2gaussmask(mask_height, mask_width, bbox):
     u_x = xmin + bbox_w // 2
     u_y = ymin + bbox_h // 2
 
-    sigma_x = 4 * bbox_w
-    sigma_y = 4 * bbox_h
+    sigma_x = 12.0 * bbox_w
+    sigma_y = 12.0 * bbox_h
 
     x_range = np.arange(xmin, xmax)
     y_range = np.arange(ymin, ymax)

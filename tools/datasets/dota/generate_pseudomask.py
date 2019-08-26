@@ -40,9 +40,9 @@ class Core():
         if save_np:
             self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
             if self.add_seg:
-                self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
+                self.save_path = './data/dota/{}/{}/pseudomasks_png'.format(self.release_version, self.imageset)
         else:
-            self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
+            self.save_path = './data/dota/{}/{}/pseudomasks_png'.format(self.release_version, self.imageset)
 
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -71,19 +71,20 @@ class Core():
             if self.add_seg:
                 return_flag = True
                 pseudomask_file = os.path.join(self.save_path, image_name)
-                
                 # stuff_things = cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=return_flag)
+
                 # pseudomask_seg = (stuff_things[:, :, 0] + pseudomasks)
-                # pseudomask_seg_max = np.max(pseudomasks)
-                # pseudomask_seg_min = np.min(pseudomasks)
-                # pseudomasks = (pseudomasks - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
-                # # pseudomask_seg = pseudomask_seg * 10.0
-                # # pseudomask_seg = pseudomask_seg.astype(np.uint8)
-                pseudomasks = np.clip(pseudomasks, 0.0, 1.0)
+                # pseudomask_seg_max = np.max(pseudomask_seg)
+                # pseudomask_seg_min = np.min(pseudomask_seg)
+                # pseudomask_seg = (pseudomask_seg - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
+                # pseudomask_seg = pseudomask_seg * 10.0
+                # pseudomask_seg = pseudomask_seg.astype(np.uint8)
+
                 pseudomasks = pseudomasks * 255.0
                 pseudomasks = pseudomasks.astype(np.uint8)
+                print(np.max(pseudomasks))
 
-                # pseudomasks_ = show_centerness(pseudomasks, True, return_img=True)
+                # pseudomasks_ = show_centerness(pseudomask_seg, True, return_img=True)
                 if return_flag:
                     # pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
                     # np.save(pseudomask_file, pseudomasks)

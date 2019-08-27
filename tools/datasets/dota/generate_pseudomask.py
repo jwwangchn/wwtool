@@ -103,7 +103,7 @@ if __name__ == '__main__':
     encode = 'ellipsemask'   # centernessmask, gaussmask, ellipsemask
 
     save_vis = True
-    show_pseudomask = False
+    show_pseudomask = True
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version, 
                 imageset=imageset,

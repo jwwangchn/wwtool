@@ -290,6 +290,8 @@ def bbox2ellipse(mask_height, mask_width, bbox):
     c_y = ymin + bbox_h // 2
     a = bbox_w / 2
     b = bbox_h / 2
+    a = np.maximum(a, 1.0)
+    b = np.maximum(b, 1.0)
 
     x_range = np.arange(0, mask_width)
     y_range = np.arange(0, mask_height)
@@ -299,8 +301,6 @@ def bbox2ellipse(mask_height, mask_width, bbox):
 
     ellipsemask[ellipsemask <= 1] = 0
     ellipsemask[ellipsemask > 1] = 1
-    
-
     ellipsemask = 1 - ellipsemask
 
     return ellipsemask

@@ -147,7 +147,7 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    imagesets = ['vis']
+    imagesets = ['trainval', 'test']
     dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'

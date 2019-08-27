@@ -1,6 +1,7 @@
 import cv2
 import math
 import numpy as np
+import mmcv
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -44,10 +45,11 @@ def pointobb2pointobb(pointobb):
     return pointobb.tolist()
 
 def pointobb2thetaobb(pointobb):
-    """
-    docstring here
-        :param self: 
-        :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+    """convert pointobb to thetaobb
+    Input:
+        pointobb (list[1x8]): [x1, y1, x2, y2, x3, y3, x4, y4]
+    Output:
+        thetaobb (list[1x5])
     """
     pointobb = np.int0(np.array(pointobb))
     pointobb.resize(4, 2)
@@ -84,6 +86,30 @@ def pointobb2bbox(pointobb):
     bbox = [xmin, ymin, xmax, ymax]
     
     return bbox
+
+def pointobb2sampleobb(pointobb, rate):
+    """
+    pointobb to sampleobb
+        :param self: 
+        :param pointobb: list, [x1, y1, x2, y2, x3, y3, x4, y4]
+        :param rate: 0 < rate < 0.5, rate=0 -> pointobb, rate=0.5 -> center point
+        return [x1, y1, x2, y2, x3, y3, x4, y4, x5, y5, x6, y6, x7, y7, x8, y8]
+    """
+    px1, py1, px2, py2, px3, py3, px4, py4 = pointobb
+
+    sx1, sy1 = (px1 + px2) // 2, (py1 + py2) // 2
+    sx2, sy2 = (px2 + px3) // 2, (py2 + py3) // 2
+    sx3, sy3 = (px3 + px4) // 2, (py3 + py4) // 2
+    sx4, sy4 = (px4 + px1) // 2, (py4 + py1) // 2
+
+    sx5, sy5 = (1 - rate) * px2 + rate * px4, (1 - rate) * py2 + rate * py4
+    sx6, sy6 = (1 - rate) * px3 + rate * px1, (1 - rate) * py3 + rate * py1
+    sx7, sy7 = (1 - rate) * px4 + rate * px2, (1 - rate) * py4 + rate * py2
+    sx8, sy8 = (1 - rate) * px1 + rate * px3, (1 - rate) * py1 + rate * py3
+
+    sampleobb = [sx1, sy1, sx5, sy5, sx2, sy2, sx6, sy6, sx3, sy3, sx7, sy7, sx4, sy4, sx8, sy8]
+    sampleobb = [int(point) for point in sampleobb]
+    return sampleobb
 
 
 def thetaobb2hobb(thetaobb, pointobb_sort_fun):
@@ -201,14 +227,200 @@ def maskobb2thetaobb(maskobb):
 
     return thetaobb
 
+def bbox2centerness(mask_height, mask_width, bbox):
+    """convert bbox to centerness
+    
+    Arguments:
+        mask_height {int} -- height of mask
+        mask_width {int} -- width of mask
+        bbox {list, [1x4]} -- bbox as [xmin, ymin, xmax, ymax]
+    
+    Returns:
+        numpy.ndarray, [mask_height, mask_width] -- generated centerness weight
+    """
+    x_range = np.arange(0, mask_width)
+    y_range = np.arange(0, mask_height)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    left = index_x - bbox[0]
+    left = np.maximum(left, 0)
+    right = bbox[2] - index_x
+    right = np.maximum(right, 0)
+    top = index_y - bbox[1]
+    top = np.maximum(top, 0)
+    bottom = bbox[3] - index_y
+    bottom = np.maximum(bottom, 0)
+
+    centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
+    centerness = np.clip(centerness, 0.0, 1.0)
+
+    return centerness
+
+def bbox2gaussmask(mask_height, mask_width, bbox):
+    xmin, ymin, xmax, ymax = bbox
+    bbox_w = xmax - xmin
+    bbox_h = ymax - ymin
+
+    u_x = xmin + bbox_w // 2
+    u_y = ymin + bbox_h // 2
+
+    sigma_x = 12.0 * bbox_w
+    sigma_y = 12.0 * bbox_h
+
+    x_range = np.arange(xmin, xmax)
+    y_range = np.arange(ymin, ymax)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    gaussmask = np.exp(-1 / 2 * ((index_x - u_x) ** 2 / sigma_x + (index_y - u_y) ** 2 / sigma_y))
+
+    pad_1 = int(ymin)
+    pad_2 = int(mask_height - ymax)
+    pad_3 = int(xmin)
+    pad_4 = int(mask_width - xmax)
+    gaussmask = np.pad(gaussmask, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
+
+    return gaussmask
+
+def bbox2ellipse(mask_height, mask_width, bbox):
+    xmin, ymin, xmax, ymax = bbox
+    bbox_w = xmax - xmin
+    bbox_h = ymax - ymin
+
+    c_x = xmin + bbox_w // 2
+    c_y = ymin + bbox_h // 2
+    a = bbox_w / 2
+    b = bbox_h / 2
+    a = np.maximum(a, 1.0)
+    b = np.maximum(b, 1.0)
+
+    x_range = np.arange(0, mask_width)
+    y_range = np.arange(0, mask_height)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    ellipsemask = ((index_x - c_x) / a) ** 2 + ((index_y - c_y) / b) ** 2
+
+    ellipsemask[ellipsemask <= 1] = 0
+    ellipsemask[ellipsemask > 1] = 1
+    ellipsemask = 1 - ellipsemask
+
+    return ellipsemask
+
+def pointobb2pseudomask(mask_height, mask_width, pointobb, encode='centernessmask'):
+    """convert pointobb to pseudo mask
+    
+    Arguments:
+        mask_height {int} -- the height of mask
+        mask_width {int} -- the widht of mask
+        pointobb {list, [1x8]} -- [x1, y1, x2, y2, x3, y3, x4, y4]
+    
+    Returns:
+        numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
+    """
+    # 1. pointobb to thetaobb
+    thetaobb = pointobb2thetaobb(pointobb)
+    pointobb = thetaobb2pointobb(thetaobb)
+
+    # 2. move the pointobb center to mask center
+    pointobb_cx, pointobb_cy = thetaobb[0], thetaobb[1]
+    move_x, move_y = mask_width // 2 - pointobb_cx, mask_height // 2 - pointobb_cy
+    centered_pointobb = np.array(pointobb[:])
+    centered_pointobb[::2] = centered_pointobb[::2] + move_x
+    centered_pointobb[1::2] = centered_pointobb[1::2] + move_y
+
+    # 3. pointobb to bbox
+    centered_bbox = np.array(pointobb2bbox(centered_pointobb))
+    centered_bbox[::2] = np.clip(centered_bbox[::2], 0, mask_width - 1)
+    centered_bbox[1::2] = np.clip(centered_bbox[1::2], 0, mask_height - 1)
+
+    # 4. rotate pointobb
+    rotation_anchor_x, rotation_anchor_y = mask_width // 2, mask_height // 2
+    theta = thetaobb[4]
+    rotated_pointobb = rotate_pointobb(centered_pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
+
+    # 5. rotated pointobb to bbox
+    rotated_bbox = np.array(pointobb2bbox(rotated_pointobb))
+    rotated_bbox[::2] = np.clip(rotated_bbox[::2], 0, mask_width - 1)
+    rotated_bbox[1::2] = np.clip(rotated_bbox[1::2], 0, mask_height - 1)
+
+    # 6. centered_bbox and rotated_bbox union
+    # print(centered_bbox, rotated_bbox)
+    union_xmin = np.minimum(centered_bbox[0], rotated_bbox[0])
+    union_ymin = np.minimum(centered_bbox[1], rotated_bbox[1])
+    union_xmax = np.maximum(centered_bbox[2], rotated_bbox[2])
+    union_ymax = np.maximum(centered_bbox[3], rotated_bbox[3])
+    union_cx, union_cy = (union_xmin + union_xmax) // 2, (union_ymin + union_ymax) // 2
+    union_w = np.maximum(int(union_xmax - union_xmin), 1)
+    union_h = np.maximum(int(union_ymax - union_ymin), 1)
+
+    # 7. rotated_bbox to union bbox coordinate
+    rotated_bbox[::2] = rotated_bbox[::2] - union_xmin
+    rotated_bbox[1::2] = rotated_bbox[1::2] - union_ymin
+
+    # 8. rotated_bbox to pseudo mask
+    if encode == 'centernessmask':
+        # use the centerness of FCOS as the weight
+        pseudomask = bbox2centerness(union_h, union_w, rotated_bbox)
+    elif encode == 'gaussmask':
+        # use the gauss distribution as the weight
+        pseudomask = bbox2gaussmask(union_h, union_w, rotated_bbox)
+    elif encode == 'ellipsemask':
+        # use the ellipse mask as the weight
+        pseudomask = bbox2ellipse(union_h, union_w, rotated_bbox)
+
+    pseudomask = mmcv.imrotate(pseudomask, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
+
+    # 9. padding the pseudomask
+    pad_1 = int(union_ymin)
+    pad_2 = int(mask_height - union_ymax)
+    pad_3 = int(union_xmin)
+    pad_4 = int(mask_width - union_xmax)
+    pseudomask = np.pad(pseudomask, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
+
+    M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
+    pointobb_pseudo_mask = cv2.warpAffine(pseudomask, M, (mask_width, mask_height))
+    pointobb_pseudo_mask = np.clip(pointobb_pseudo_mask, 0.0, 1.0)
+
+    return pointobb_pseudo_mask
+
+# ================== rotate obb ======================= 
+
+def rotate_pointobb(pointobb, theta, anchor=None):
+    """rotate pointobb around anchor
+    
+    Arguments:
+        pointobb {list or numpy.ndarray, [1x8]} -- vertices of obb region
+        theta {int, rad} -- angle in radian measure
+    
+    Keyword Arguments:
+        anchor {list or tuple} -- fixed position during rotation (default: {None}, use left-top vertice as the anchor)
+    
+    Returns:
+        numpy.ndarray, [1x8] -- rotated pointobb
+    """
+    if type(pointobb) == list:
+        pointobb = np.array(pointobb)
+    if type(anchor) == list:
+        anchor = np.array(anchor).reshape(2, 1)
+    v = pointobb.reshape((4, 2)).T
+    if anchor is None:
+        anchor = v[:,:1]
+
+    rotate_mat = np.array([[math.cos(theta), -math.sin(theta)], [math.sin(theta), math.cos(theta)]])
+    res = np.dot(rotate_mat, v - anchor)
+    
+    return (res + anchor).T.reshape(-1)
 
 # ================== flip obb =======================
 
 def thetaobb_flip(thetaobbs, img_shape):
-    """
-    flip thetaobb
-        :param self: 
-        :param thetaobbs: np.array, [[x, y, w, h, theta]], (..., 5)
+    """flip thetaobb
+    
+    Arguments:
+        thetaobbs {numpy.ndarray, [..., 5]} -- theta based obb, can be one or two dimension
+        img_shape {numpy.ndarray, [1x3]} -- thetaobb corresponding image shape
+    
+    Returns:
+        numpy.ndarray -- fliped thetaobb
     """
     assert thetaobbs.shape[-1] % 5 == 0
     w = img_shape[1]

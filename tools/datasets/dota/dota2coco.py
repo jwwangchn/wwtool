@@ -6,7 +6,7 @@ import json
 import numpy as np
 
 from wwtool.datasets import Convert2COCO
-from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb_extreme_sort, pointobb_best_point_sort
+from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb2sampleobb, pointobb_extreme_sort, pointobb_best_point_sort
 
 class DOTA2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
@@ -27,6 +27,7 @@ class DOTA2COCO(Convert2COCO):
             pointobb = object_struct['pointobb']
             thetaobb = object_struct['thetaobb']
             hobb = object_struct['hobb']
+            keypoint = object_struct['keypoints']
 
             width = bbox[2]
             height = bbox[3]
@@ -44,6 +45,8 @@ class DOTA2COCO(Convert2COCO):
             coco_annotation['pointobb'] = pointobb
             coco_annotation['thetaobb'] = thetaobb
             coco_annotation['hobb'] = hobb
+            coco_annotation['keypoints'] = keypoint
+            coco_annotation['num_keypoints'] = 4
 
             coco_annotations.append(coco_annotation)
             
@@ -60,15 +63,20 @@ class DOTA2COCO(Convert2COCO):
                         continue
                 obj_struct = {}
 
-                obj_struct['segmentation'] = [float(xy) for xy in dota_label.split(' ')[:8]]
-                obj_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](obj_struct['segmentation'])
-                obj_struct['thetaobb'] = pointobb2thetaobb(obj_struct['segmentation'])
+                pointobb = [float(xy) for xy in dota_label.split(' ')[:8]]
+                obj_struct['segmentation'] = pointobb2sampleobb(pointobb, rate=0.0)
+                obj_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](pointobb)
+                obj_struct['thetaobb'] = pointobb2thetaobb(pointobb)
                 obj_struct['hobb'] = thetaobb2hobb(obj_struct['thetaobb'], pointobb_sort_function[pointobb_sort_method])
 
-                xmin = min(obj_struct['segmentation'][0::2])
-                ymin = min(obj_struct['segmentation'][1::2])
-                xmax = max(obj_struct['segmentation'][0::2])
-                ymax = max(obj_struct['segmentation'][1::2])
+                obj_struct['keypoints'] = obj_struct['pointobb'][:]
+                for idx in [2, 5, 8, 11]:
+                    obj_struct['keypoints'].insert(idx, 2)
+
+                xmin = min(pointobb[0::2])
+                ymin = min(pointobb[1::2])
+                xmax = max(pointobb[0::2])
+                ymax = max(pointobb[1::2])
                 bbox_w = xmax - xmin
                 bbox_h = ymax - ymin
                 obj_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
@@ -78,6 +86,7 @@ class DOTA2COCO(Convert2COCO):
         else:
             obj_struct = {}
             obj_struct['segmentation'] = [0, 0, 0, 0, 0, 0, 0, 0]
+            obj_struct['keypoint'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['pointobb'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['thetaobb'] = [0, 0, 0, 0, 0]
             obj_struct['hobb'] = [0, 0, 0, 0, 0]
@@ -143,9 +152,16 @@ if __name__ == "__main__":
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
-    single_category = 'plane'
+    single_category = None
+    keypoint = True
 
     extra_info = ''
+    if keypoint:
+        for idx in range(len(converted_dota_class)):
+            converted_dota_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
+            converted_dota_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
+        extra_info += 'keypoint'
+    
     if groundtruth == False:
         extra_info += '_no_ground_truth'
 

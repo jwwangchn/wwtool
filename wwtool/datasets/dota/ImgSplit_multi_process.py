@@ -260,8 +260,8 @@ class splitbase():
         """
         :param rate: resize rate before cut
         """
-
-        imagelist = GetFileFromThisRootDir(self.imagepath)
+        
+        imagelist = GetFileFromThisRootDir(self.labelpath)
         imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
 
         worker = partial(self.SplitSingle, rate=rate, extent=self.ext)
@@ -284,10 +284,10 @@ if __name__ == '__main__':
     rate = 1.0
 
     trainval_base_path = "./data/dota/v0/val"
-    # test_base_path = "./data/dota/v0/test"
+    test_base_path = "./data/dota/v0/test"
 
-    trainval_out_path = "./data/dota/v5/val"
-    # test_out_path = "./data/dota/v5/test"
+    trainval_out_path = "./data/dota/v1/val"
+    test_out_path = "./data/dota/v1/test"
 
     # print(trainval_out_path, test_out_path)
 
@@ -295,6 +295,6 @@ if __name__ == '__main__':
     split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=1024, num_process=4, dota_version=dota_version)
     split.splitdata(rate)
 
-    # print("Begin to split test set")
-    # split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=32, dota_version=dota_version)
+    print("Begin to split test set")
+    # split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=4, dota_version=dota_version)
     # split.splitdata(rate)

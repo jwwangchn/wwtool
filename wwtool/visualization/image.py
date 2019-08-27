@@ -17,7 +17,8 @@ def imshow_bboxes(img_or_path,
                   win_name='',
                   wait_time=0,
                   out_file=None,
-                  origin_file=None):
+                  origin_file=None,
+                  return_img=False):
     """ Draw horizontal bounding boxes on image
 
     Args:
@@ -78,6 +79,8 @@ def imshow_bboxes(img_or_path,
         dir_name = osp.abspath(osp.dirname(origin_file))
         mkdir_or_exist(dir_name)
         cv2.imwrite(origin_file, img_origin)
+    if return_img:
+        return img
 
 
 def imshow_rbboxes(img_or_path,
@@ -90,7 +93,8 @@ def imshow_rbboxes(img_or_path,
                   show=True,
                   win_name='',
                   wait_time=0,
-                  out_file=None):
+                  out_file=None,
+                  return_img=False):
     """ Draw oriented bounding boxes on image
 
     Args:
@@ -149,5 +153,25 @@ def imshow_rbboxes(img_or_path,
         dir_name = osp.abspath(osp.dirname(out_file))
         mkdir_or_exist(dir_name)
         cv2.imwrite(out_file, img)
+    if return_img:
+        return img
 
 #TODO: show both ground truth and detection results
+
+def show_centerness(centerness, 
+                    show=True,
+                    win_name='',
+                    wait_time=0,
+                    return_img=False):
+    centerness_max = np.max(centerness)
+    centerness_min = np.min(centerness)
+    centerness = 255 * (centerness - centerness_min) / (centerness_max - centerness_min)
+    centerness = centerness.astype(np.uint8)
+    img_color = cv2.applyColorMap(centerness, cv2.COLORMAP_JET)
+
+    if show:
+        cv2.imshow(win_name, img_color)
+        cv2.waitKey(wait_time)
+    
+    if return_img:
+        return img_color

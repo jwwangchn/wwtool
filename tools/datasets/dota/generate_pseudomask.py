@@ -38,7 +38,7 @@ class Core():
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
         if save_np:
-            self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
+            self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
             if self.add_seg:
                 self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
         else:

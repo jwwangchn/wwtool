@@ -15,34 +15,35 @@ from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, 
 from wwtool.visualization import show_centerness
 from wwtool.datasets import cocoSegmentationToPng
 
-class Core():
+class PseudomaskGenerate():
     def __init__(self,
                 release_version,
                 imageset,
                 rate,
                 pointobb_sort_method,
                 extra_info,
-                show,
-                save_np,
-                add_seg,
+                save_vis=False,
+                show_pseudomask=False,
+                encode='centernessmask',
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
         self.rate = rate
         self.pointobb_sort_method = pointobb_sort_method
         self.extra_info = extra_info
-        self.show = show
-        self.save_np = save_np
-        self.add_seg = add_seg
+        self.encode = encode
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
-        if save_np:
-            self.save_path = './data/dota/{}/{}/pseudomasks'.format(self.release_version, self.imageset)
-            if self.add_seg:
-                self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
-        else:
-            self.save_path = './data/dota/{}/{}/gaussmask'.format(self.release_version, self.imageset)
+        
+        self.save_vis = save_vis
+        self.show_pseudomask = show_pseudomask
+
+        self.save_path = './data/dota/{}/{}/{}'.format(self.release_version, self.imageset, self.encode)
+        self.save_vis_path = './data/dota/{}/{}/pseudomask_vis'.format(self.release_version, self.imageset)
+
+        mmcv.mkdir_or_exist(self.save_path)
+        mmcv.mkdir_or_exist(self.save_vis_path)
 
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -50,10 +51,9 @@ class Core():
         self.progress_bar = mmcv.ProgressBar(len(self.imgIds))
         self.multi_processing = multi_processing
 
-    def _core_(self, imgId):
+    def __generate_centernessmask(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
-        print(image_name)
         annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)
         anns = self.coco.loadAnns(annIds)
         pseudomasks = []
@@ -63,54 +63,34 @@ class Core():
 
         for ann in anns:
             pointobb = ann['pointobb']
-            pseudomask = pointobb2pseudomask(height, width, pointobb)
+            pseudomask = pointobb2pseudomask(height, width, pointobb, encode=self.encode)
             pseudomasks += pseudomask
 
-        # self.progress_bar.update()
-        if save_np:
-            if self.add_seg:
-                return_flag = True
-                pseudomask_file = os.path.join(self.save_path, image_name)
-                
-                # stuff_things = cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=return_flag)
-                # pseudomask_seg = (stuff_things[:, :, 0] + pseudomasks)
-                # pseudomask_seg_max = np.max(pseudomasks)
-                # pseudomask_seg_min = np.min(pseudomasks)
-                # pseudomasks = (pseudomasks - pseudomask_seg_min) / (pseudomask_seg_max - pseudomask_seg_min) * 255.0
-                # # pseudomask_seg = pseudomask_seg * 10.0
-                # # pseudomask_seg = pseudomask_seg.astype(np.uint8)
-                pseudomasks = np.clip(pseudomasks, 0.0, 1.0)
-                pseudomasks = pseudomasks * 255.0
-                pseudomasks = pseudomasks.astype(np.uint8)
+        # save pseudomask
+        pseudomask_file = os.path.join(self.save_path, image_name)
+        pseudomasks = np.clip(pseudomasks, 0.0, 1.0)
+        pseudomasks = pseudomasks * 255.0
+        pseudomasks = pseudomasks.astype(np.uint8)
+        cv2.imwrite(pseudomask_file, pseudomasks)
 
-                # pseudomasks_ = show_centerness(pseudomasks, True, return_img=True)
-                if return_flag:
-                    # pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
-                    # np.save(pseudomask_file, pseudomasks)
-                    cv2.imwrite(pseudomask_file, pseudomasks)
-            else:
-                pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
-                np.save(pseudomask_file, pseudomasks)
-        else:
+        if self.save_vis:
             image_file = os.path.join(self.imgDir, image_name)
             img = cv2.imread(image_file)
-            pseudomask_file = os.path.join(self.save_path, image_name)
-            pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
-
+            pseudomask_vis_file = os.path.join(self.save_vis_path, image_name)
+            pseudomasks_ = show_centerness(pseudomasks / 255.0, self.show_pseudomask, return_img=True)
             alpha = 0.6
             beta = (1.0 - alpha)
             pseudomasks = cv2.addWeighted(pseudomasks_, alpha, img, beta, 0.0)
-            cv2.imwrite(pseudomask_file, pseudomasks)
-        return image_name
+            cv2.imwrite(pseudomask_vis_file, pseudomasks)
 
-    def generate_pseudomask(self):
+    def generate_pseudomask_core(self):
         if self.multi_processing:
             with concurrent.futures.ProcessPoolExecutor() as executor:
-                for _ in executor.map(self._core_, self.imgIds):
+                for _ in executor.map(self.__generate_centernessmask, self.imgIds):
                     self.progress_bar.update()
         else:
             for _, imgId in enumerate(self.imgIds):
-                self._core_(imgId)
+                self.__generate_centernessmask(imgId)
                 self.progress_bar.update()
 
 if __name__ == '__main__':
@@ -119,18 +99,20 @@ if __name__ == '__main__':
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
-    show = False
-    save_np = True
-    add_seg = True
 
-    core = Core(release_version=release_version, 
+    encode = 'ellipsemask'   # centernessmask, gaussmask, ellipsemask
+
+    save_vis = True
+    show_pseudomask = False
+
+    pseudomask_gen = PseudomaskGenerate(release_version=release_version, 
                 imageset=imageset,
                 rate=rate,
                 pointobb_sort_method=pointobb_sort_method,
                 extra_info=extra_info,
-                show=show,
-                save_np=save_np,
-                add_seg=add_seg,
+                save_vis=save_vis,
+                show_pseudomask=show_pseudomask,
+                encode=encode,
                 multi_processing=False)
 
-    core.generate_pseudomask()
+    pseudomask_gen.generate_pseudomask_core()

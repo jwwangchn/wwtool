@@ -100,7 +100,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'gaussmask'   # centernessmask, gaussmask, ellipsemask
+    encode = 'ellipsemask'   # centernessmask, gaussmask, ellipsemask
 
     save_vis = True
     show_pseudomask = False

@@ -227,8 +227,8 @@ def maskobb2thetaobb(maskobb):
 
     return thetaobb
 
-def bbox2pseudomask(mask_height, mask_width, bbox):
-    """convert bbox to pseudomask
+def bbox2centerness(mask_height, mask_width, bbox):
+    """convert bbox to centerness
     
     Arguments:
         mask_height {int} -- height of mask
@@ -236,7 +236,7 @@ def bbox2pseudomask(mask_height, mask_width, bbox):
         bbox {list, [1x4]} -- bbox as [xmin, ymin, xmax, ymax]
     
     Returns:
-        numpy.ndarray, [mask_height, mask_width] -- generated pseudo mask
+        numpy.ndarray, [mask_height, mask_width] -- generated centerness weight
     """
     x_range = np.arange(0, mask_width)
     y_range = np.arange(0, mask_height)
@@ -251,17 +251,6 @@ def bbox2pseudomask(mask_height, mask_width, bbox):
     bottom = bbox[3] - index_y
     bottom = np.maximum(bottom, 0)
 
-    bbox_pseudo_mask = np.stack((left, top, right, bottom), -1)
-
-    return bbox_pseudo_mask
-
-def calculate_centerness(bbox_pseudomask):
-    # 8. convert pseudo to centerness
-    left = bbox_pseudomask[..., 0]
-    top = bbox_pseudomask[..., 1]
-    right = bbox_pseudomask[..., 2]
-    bottom = bbox_pseudomask[..., 3]
-    
     centerness = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
     centerness = np.clip(centerness, 0.0, 1.0)
 
@@ -292,7 +281,31 @@ def bbox2gaussmask(mask_height, mask_width, bbox):
 
     return gaussmask
 
-def pointobb2pseudomask(mask_height, mask_width, pointobb):
+def bbox2ellipse(mask_height, mask_width, bbox):
+    xmin, ymin, xmax, ymax = bbox
+    bbox_w = xmax - xmin
+    bbox_h = ymax - ymin
+
+    c_x = xmin + bbox_w // 2
+    c_y = ymin + bbox_h // 2
+    a = bbox_w / 2
+    b = bbox_h / 2
+
+    x_range = np.arange(0, mask_width)
+    y_range = np.arange(0, mask_height)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    ellipsemask = ((index_x - c_x) / a) ** 2 + ((index_y - c_y) / b) ** 2
+
+    ellipsemask[ellipsemask <= 1] = 0
+    ellipsemask[ellipsemask > 1] = 1
+    
+
+    ellipsemask = 1 - ellipsemask
+
+    return ellipsemask
+
+def pointobb2pseudomask(mask_height, mask_width, pointobb, encode='centernessmask'):
     """convert pointobb to pseudo mask
     
     Arguments:
@@ -344,25 +357,30 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb):
     rotated_bbox[1::2] = rotated_bbox[1::2] - union_ymin
 
     # 8. rotated_bbox to pseudo mask
-    # bbox_pseudomask = bbox2pseudomask(union_h, union_w, rotated_bbox)
-    # centerness = calculate_centerness(bbox_pseudomask)
+    if encode == 'centernessmask':
+        # use the centerness of FCOS as the weight
+        pseudomask = bbox2centerness(union_h, union_w, rotated_bbox)
+    elif encode == 'gaussmask':
+        # use the gauss distribution as the weight
+        pseudomask = bbox2gaussmask(union_h, union_w, rotated_bbox)
+    elif encode == 'ellipsemask':
+        # use the ellipse mask as the weight
+        pseudomask = bbox2ellipse(union_h, union_w, rotated_bbox)
 
-    centerness = bbox2gaussmask(union_h, union_w, rotated_bbox)
-    centerness = mmcv.imrotate(centerness, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
+    pseudomask = mmcv.imrotate(pseudomask, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
 
-    # 9. padding the centerness
+    # 9. padding the pseudomask
     pad_1 = int(union_ymin)
     pad_2 = int(mask_height - union_ymax)
     pad_3 = int(union_xmin)
     pad_4 = int(mask_width - union_xmax)
-    centerness = np.pad(centerness, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
+    pseudomask = np.pad(pseudomask, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
 
     M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
-    pointobb_pseudo_mask = cv2.warpAffine(centerness, M, (mask_width, mask_height))
+    pointobb_pseudo_mask = cv2.warpAffine(pseudomask, M, (mask_width, mask_height))
     pointobb_pseudo_mask = np.clip(pointobb_pseudo_mask, 0.0, 1.0)
 
     return pointobb_pseudo_mask
-
 
 # ================== rotate obb ======================= 
 

@@ -306,82 +306,82 @@ def bbox2ellipse(mask_height, mask_width, bbox):
 
     return ellipsemask
 
-def pointobb2pseudomask(mask_height, mask_width, pointobb, encode='centernessmask'):
-    """convert pointobb to pseudo mask
+# def pointobb2pseudomask(mask_height, mask_width, pointobb, encode='centernessmask'):
+#     """convert pointobb to pseudo mask
     
-    Arguments:
-        mask_height {int} -- the height of mask
-        mask_width {int} -- the widht of mask
-        pointobb {list, [1x8]} -- [x1, y1, x2, y2, x3, y3, x4, y4]
+#     Arguments:
+#         mask_height {int} -- the height of mask
+#         mask_width {int} -- the widht of mask
+#         pointobb {list, [1x8]} -- [x1, y1, x2, y2, x3, y3, x4, y4]
     
-    Returns:
-        numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
-    """
-    # 1. pointobb to thetaobb
-    thetaobb = pointobb2thetaobb(pointobb)
-    pointobb = thetaobb2pointobb(thetaobb)
+#     Returns:
+#         numpy.ndarry, [mask_height, mask_width] -- generated pseudo mask
+#     """
+#     # 1. pointobb to thetaobb
+#     thetaobb = pointobb2thetaobb(pointobb)
+#     pointobb = thetaobb2pointobb(thetaobb)
 
-    # 2. move the pointobb center to mask center
-    pointobb_cx, pointobb_cy = thetaobb[0], thetaobb[1]
-    move_x, move_y = mask_width // 2 - pointobb_cx, mask_height // 2 - pointobb_cy
-    centered_pointobb = np.array(pointobb[:])
-    centered_pointobb[::2] = centered_pointobb[::2] + move_x
-    centered_pointobb[1::2] = centered_pointobb[1::2] + move_y
+#     # 2. move the pointobb center to mask center
+#     pointobb_cx, pointobb_cy = thetaobb[0], thetaobb[1]
+#     move_x, move_y = mask_width // 2 - pointobb_cx, mask_height // 2 - pointobb_cy
+#     centered_pointobb = np.array(pointobb[:])
+#     centered_pointobb[::2] = centered_pointobb[::2] + move_x
+#     centered_pointobb[1::2] = centered_pointobb[1::2] + move_y
 
-    # 3. pointobb to bbox
-    centered_bbox = np.array(pointobb2bbox(centered_pointobb))
-    centered_bbox[::2] = np.clip(centered_bbox[::2], 0, mask_width - 1)
-    centered_bbox[1::2] = np.clip(centered_bbox[1::2], 0, mask_height - 1)
+#     # 3. pointobb to bbox
+#     centered_bbox = np.array(pointobb2bbox(centered_pointobb))
+#     centered_bbox[::2] = np.clip(centered_bbox[::2], 0, mask_width - 1)
+#     centered_bbox[1::2] = np.clip(centered_bbox[1::2], 0, mask_height - 1)
 
-    # 4. rotate pointobb
-    rotation_anchor_x, rotation_anchor_y = mask_width // 2, mask_height // 2
-    theta = thetaobb[4]
-    rotated_pointobb = rotate_pointobb(centered_pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
+#     # 4. rotate pointobb
+#     rotation_anchor_x, rotation_anchor_y = mask_width // 2, mask_height // 2
+#     theta = thetaobb[4]
+#     rotated_pointobb = rotate_pointobb(centered_pointobb, -theta, [rotation_anchor_x, rotation_anchor_y])
 
-    # 5. rotated pointobb to bbox
-    rotated_bbox = np.array(pointobb2bbox(rotated_pointobb))
-    rotated_bbox[::2] = np.clip(rotated_bbox[::2], 0, mask_width - 1)
-    rotated_bbox[1::2] = np.clip(rotated_bbox[1::2], 0, mask_height - 1)
+#     # 5. rotated pointobb to bbox
+#     rotated_bbox = np.array(pointobb2bbox(rotated_pointobb))
+#     rotated_bbox[::2] = np.clip(rotated_bbox[::2], 0, mask_width - 1)
+#     rotated_bbox[1::2] = np.clip(rotated_bbox[1::2], 0, mask_height - 1)
 
-    # 6. centered_bbox and rotated_bbox union
-    # print(centered_bbox, rotated_bbox)
-    union_xmin = np.minimum(centered_bbox[0], rotated_bbox[0])
-    union_ymin = np.minimum(centered_bbox[1], rotated_bbox[1])
-    union_xmax = np.maximum(centered_bbox[2], rotated_bbox[2])
-    union_ymax = np.maximum(centered_bbox[3], rotated_bbox[3])
-    union_cx, union_cy = (union_xmin + union_xmax) // 2, (union_ymin + union_ymax) // 2
-    union_w = np.maximum(int(union_xmax - union_xmin), 1)
-    union_h = np.maximum(int(union_ymax - union_ymin), 1)
+#     # 6. centered_bbox and rotated_bbox union
+#     # print(centered_bbox, rotated_bbox)
+#     union_xmin = np.minimum(centered_bbox[0], rotated_bbox[0])
+#     union_ymin = np.minimum(centered_bbox[1], rotated_bbox[1])
+#     union_xmax = np.maximum(centered_bbox[2], rotated_bbox[2])
+#     union_ymax = np.maximum(centered_bbox[3], rotated_bbox[3])
+#     union_cx, union_cy = (union_xmin + union_xmax) // 2, (union_ymin + union_ymax) // 2
+#     union_w = np.maximum(int(union_xmax - union_xmin), 1)
+#     union_h = np.maximum(int(union_ymax - union_ymin), 1)
 
-    # 7. rotated_bbox to union bbox coordinate
-    rotated_bbox[::2] = rotated_bbox[::2] - union_xmin
-    rotated_bbox[1::2] = rotated_bbox[1::2] - union_ymin
+#     # 7. rotated_bbox to union bbox coordinate
+#     rotated_bbox[::2] = rotated_bbox[::2] - union_xmin
+#     rotated_bbox[1::2] = rotated_bbox[1::2] - union_ymin
 
-    # 8. rotated_bbox to pseudo mask
-    if encode == 'centernessmask':
-        # use the centerness of FCOS as the weight
-        pseudomask = bbox2centerness(union_h, union_w, rotated_bbox)
-    elif encode == 'gaussmask':
-        # use the gauss distribution as the weight
-        pseudomask = bbox2gaussmask(union_h, union_w, rotated_bbox)
-    elif encode == 'ellipsemask':
-        # use the ellipse mask as the weight
-        pseudomask = bbox2ellipse(union_h, union_w, rotated_bbox)
+#     # 8. rotated_bbox to pseudo mask
+#     if encode == 'centernessmask':
+#         # use the centerness of FCOS as the weight
+#         pseudomask = bbox2centerness(union_h, union_w, rotated_bbox)
+#     elif encode == 'gaussmask':
+#         # use the gauss distribution as the weight
+#         pseudomask = bbox2gaussmask(union_h, union_w, rotated_bbox)
+#     elif encode == 'ellipsemask':
+#         # use the ellipse mask as the weight
+#         pseudomask = bbox2ellipse(union_h, union_w, rotated_bbox)
 
-    pseudomask = mmcv.imrotate(pseudomask, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
+#     pseudomask = mmcv.imrotate(pseudomask, theta * 180.0 / np.pi, center=(union_cx - union_xmin, union_cy - union_ymin))
 
-    # 9. padding the pseudomask
-    pad_1 = int(union_ymin)
-    pad_2 = int(mask_height - union_ymax)
-    pad_3 = int(union_xmin)
-    pad_4 = int(mask_width - union_xmax)
-    pseudomask = np.pad(pseudomask, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
+#     # 9. padding the pseudomask
+#     pad_1 = int(union_ymin)
+#     pad_2 = int(mask_height - union_ymax)
+#     pad_3 = int(union_xmin)
+#     pad_4 = int(mask_width - union_xmax)
+#     pseudomask = np.pad(pseudomask, ((pad_1, pad_2), (pad_3, pad_4)), 'constant', constant_values = (0.0, 0.0))
 
-    M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
-    pointobb_pseudo_mask = cv2.warpAffine(pseudomask, M, (mask_width, mask_height))
-    pointobb_pseudo_mask = np.clip(pointobb_pseudo_mask, 0.0, 1.0)
+#     M = np.float32([[1, 0, -move_x], [0, 1, -move_y]])
+#     pointobb_pseudo_mask = cv2.warpAffine(pseudomask, M, (mask_width, mask_height))
+#     pointobb_pseudo_mask = np.clip(pointobb_pseudo_mask, 0.0, 1.0)
 
-    return pointobb_pseudo_mask
+#     return pointobb_pseudo_mask
 
 def pointobb_image_transform(img, pts):
     max_x, max_y = np.max(pts[:, 0]).astype(np.int32), np.max(pts[:, 1]).astype(np.int32)
@@ -393,24 +393,30 @@ def pointobb_image_transform(img, pts):
     wraped = cv2.warpPerspective(img, M, (max_x, max_y))
     return wraped
 
-def pointobb2gaussmask(pointobb, gaussian_image):
+def pointobb2pseudomask(pointobb, anchor_image, host_height, host_width, method='anchor_image_transform'):
     bbox = pointobb2bbox(pointobb)
     pointobb = np.array(pointobb).reshape(-1, 2).astype(np.float32)
     pointobb[:, 0] = pointobb[:, 0] - bbox[0]
     pointobb[:, 1] = pointobb[:, 1] - bbox[1]
 
-    transformed = pointobb_image_transform(gaussian_image, pointobb)
+    transformed = pointobb_image_transform(anchor_image, pointobb)
 
     bbox = [int(_) for _ in bbox]
+
+    start_x = max(bbox[0], 0) - bbox[0]
+    start_y = max(bbox[1], 0) - bbox[1]
+    end_x = min(bbox[0] + transformed.shape[1], host_width)
+    end_y = min(bbox[1] + transformed.shape[0], host_height)
+
     img_start_x = max(bbox[0], 0)
     img_start_y = max(bbox[1], 0)
-    img_end_x = bbox[0] + transformed.shape[1]
-    img_end_y = bbox[1] + transformed.shape[0]
+    img_end_x = end_x
+    img_end_y = end_y
 
-    transformed_start_x = max(bbox[0], 0) - bbox[0]
-    transformed_start_y = max(bbox[1], 0) - bbox[1]
-    transformed_end_x = min(bbox[0] + transformed.shape[1], transformed.shape[1])
-    transformed_end_y = min(bbox[1] + transformed.shape[0], transformed.shape[0])
+    transformed_start_x = start_x
+    transformed_start_y = start_y
+    transformed_end_x = end_x - bbox[0]
+    transformed_end_y = end_y - bbox[1]
 
     transformed = transformed[transformed_start_y:transformed_end_y, transformed_start_x:transformed_end_x]
 

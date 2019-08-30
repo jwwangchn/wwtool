@@ -2,6 +2,7 @@ import cv2
 import math
 import numpy as np
 import mmcv
+import wwtool
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
@@ -381,6 +382,42 @@ def pointobb2pseudomask(mask_height, mask_width, pointobb, encode='centernessmas
     pointobb_pseudo_mask = np.clip(pointobb_pseudo_mask, 0.0, 1.0)
 
     return pointobb_pseudo_mask
+
+def pointobb_image_transform(img, pts):
+    max_x, max_y = np.max(pts[:, 0]).astype(np.int32), np.max(pts[:, 1]).astype(np.int32)
+    dst = np.array([[0, 0], 
+                   [img.shape[1] - 1, 0],
+                   [img.shape[1] - 1, img.shape[0] - 1],
+                   [0, img.shape[0] - 1]], dtype=np.float32)
+    M = cv2.getPerspectiveTransform(dst, pts)
+    wraped = cv2.warpPerspective(img, M, (max_x, max_y))
+    return wraped
+
+def pointobb2gaussmask(pointobb, gaussian_image):
+    bbox = pointobb2bbox(pointobb)
+    pointobb = np.array(pointobb).reshape(-1, 2).astype(np.float32)
+    pointobb[:, 0] = pointobb[:, 0] - bbox[0]
+    pointobb[:, 1] = pointobb[:, 1] - bbox[1]
+
+    transformed = pointobb_image_transform(gaussian_image, pointobb)
+
+    bbox = [int(_) for _ in bbox]
+    img_start_x = max(bbox[0], 0)
+    img_start_y = max(bbox[1], 0)
+    img_end_x = bbox[0] + transformed.shape[1]
+    img_end_y = bbox[1] + transformed.shape[0]
+
+    transformed_start_x = max(bbox[0], 0) - bbox[0]
+    transformed_start_y = max(bbox[1], 0) - bbox[1]
+    transformed_end_x = min(bbox[0] + transformed.shape[1], transformed.shape[1])
+    transformed_end_y = min(bbox[1] + transformed.shape[0], transformed.shape[0])
+
+    transformed = transformed[transformed_start_y:transformed_end_y, transformed_start_x:transformed_end_x]
+
+    gaussianmask_location = [img_start_x, img_start_y, img_end_x, img_end_y]
+
+    return transformed, gaussianmask_location
+    
 
 # ================== rotate obb ======================= 
 

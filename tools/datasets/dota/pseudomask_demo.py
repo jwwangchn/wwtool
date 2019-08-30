@@ -10,7 +10,7 @@ import os
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
-from wwtool.visualization import show_centerness
+from wwtool.visualization import show_grayscale_as_heatmap
 
 
 if __name__ == '__main__':
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             np.save(pseudomask_file, pseudomasks)
 
         if show:
-            pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
+            pseudomasks_ = show_grayscale_as_heatmap(pseudomasks, False, return_img=True)
 
             alpha = 0.6
             beta = (1.0 - alpha)

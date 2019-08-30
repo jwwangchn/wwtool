@@ -1,6 +1,6 @@
 import numpy as np
 import mmcv
-from wwtool import pointobb2bbox, pointobb2pseudomask, thetaobb2pointobb, show_centerness
+from wwtool import pointobb2bbox, pointobb2pseudomask, thetaobb2pointobb, show_grayscale_as_heatmap
 
 
 pointobb = thetaobb2pointobb([50, 50, 20, 50, 60*np.pi/180])
@@ -21,7 +21,7 @@ pointobb[1::2] = pointobb[1::2] - union_ymin
 
 print(union_h, union_w)
 union_pseudo_mask = pointobb2pseudomask(union_h, union_w, pointobb)
-show_centerness(union_pseudo_mask, show=True)
+show_grayscale_as_heatmap(union_pseudo_mask, show=True)
 
 moved_bbox = [proposal[0] - union_xmin, proposal[1] - union_ymin, proposal[2] - union_xmin, proposal[3] - union_ymin]
 moved_bbox = [int(_) for _ in moved_bbox]
@@ -33,5 +33,5 @@ h = np.maximum(y2 - y1, 1)
 target = mmcv.imresize(union_pseudo_mask[y1:y1 + h, x1:x1 + w],
                         (28, 28), interpolation='bilinear')
 
-show_centerness(union_pseudo_mask[y1:y1 + h, x1:x1 + w], show=True)
-show_centerness(target, show=True)
+show_grayscale_as_heatmap(union_pseudo_mask[y1:y1 + h, x1:x1 + w], show=True)
+show_grayscale_as_heatmap(target, show=True)

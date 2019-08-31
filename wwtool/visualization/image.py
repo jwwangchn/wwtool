@@ -158,20 +158,27 @@ def imshow_rbboxes(img_or_path,
 
 #TODO: show both ground truth and detection results
 
-def show_centerness(centerness, 
-                    show=True,
-                    win_name='',
-                    wait_time=0,
-                    return_img=False):
-    centerness_max = np.max(centerness)
-    centerness_min = np.min(centerness)
-    centerness = 255 * (centerness - centerness_min) / (centerness_max - centerness_min)
-    centerness = centerness.astype(np.uint8)
-    img_color = cv2.applyColorMap(centerness, cv2.COLORMAP_JET)
+def show_grayscale_as_heatmap(grayscale_image, 
+                            show=True,
+                            win_name='',
+                            wait_time=0,
+                            return_img=False):
+    grayscale_image = grayscale_image.astype(np.float64)
+    max_value = np.max(grayscale_image)
+    min_value = np.min(grayscale_image)
+    grayscale_image = 255 * (grayscale_image - min_value) / (max_value - min_value)
+    grayscale_image = grayscale_image.astype(np.uint8)
+    heatmap_image = cv2.applyColorMap(grayscale_image, cv2.COLORMAP_JET)
 
     if show:
-        cv2.imshow(win_name, img_color)
+        cv2.imshow(win_name, heatmap_image)
         cv2.waitKey(wait_time)
     
     if return_img:
-        return img_color
+        return heatmap_image
+
+def show_image(img, 
+               win_name='',
+               wait_time=0):
+    cv2.imshow(win_name, img)
+    cv2.waitKey(wait_time)

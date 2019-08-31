@@ -12,7 +12,7 @@ import concurrent.futures
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
-from wwtool.visualization import show_centerness
+from wwtool.visualization import show_grayscale_as_heatmap
 from wwtool.datasets import cocoSegmentationToPng
 
 class Core():

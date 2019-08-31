@@ -12,7 +12,7 @@ import concurrent.futures
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
-from wwtool.visualization import show_centerness
+from wwtool.visualization import show_grayscale_as_heatmap
 from wwtool.datasets import cocoSegmentationToPng
 
 class Core():
@@ -80,7 +80,7 @@ class Core():
                 pseudomask_seg = pseudomask_seg * 10.0
                 pseudomask_seg = pseudomask_seg.astype(np.uint8)
 
-                # pseudomasks_ = show_centerness(pseudomask_seg, True, return_img=True)
+                # pseudomasks_ = show_grayscale_as_heatmap(pseudomask_seg, True, return_img=True)
                 if return_flag:
                     # pseudomask_file = os.path.join(self.save_path, image_name.split('.png')[0])
                     # np.save(pseudomask_file, pseudomasks)
@@ -92,7 +92,7 @@ class Core():
             image_file = os.path.join(self.imgDir, image_name)
             img = cv2.imread(image_file)
             pseudomask_file = os.path.join(self.save_path, image_name)
-            pseudomasks_ = show_centerness(pseudomasks, False, return_img=True)
+            pseudomasks_ = show_grayscale_as_heatmap(pseudomasks, False, return_img=True)
 
             alpha = 0.6
             beta = (1.0 - alpha)

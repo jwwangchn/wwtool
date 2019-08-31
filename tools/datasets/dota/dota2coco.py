@@ -33,7 +33,7 @@ class DOTA2COCO(Convert2COCO):
             height = bbox[3]
             area = height * width
 
-            if area < self.small_object_area and self.groundtruth:
+            if area <= self.small_object_area and self.groundtruth:
                 self.small_object_idx += 1
                 continue
 

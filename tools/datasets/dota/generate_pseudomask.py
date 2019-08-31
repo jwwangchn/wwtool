@@ -68,13 +68,14 @@ class PseudomaskGenerate():
         pseudomasks = []
         height = img_info['height']
         width = img_info['width']
-        pseudomasks = np.zeros((height, width), dtype=np.uint8)
+        pseudomasks = np.zeros((height, width), dtype=np.int32)
 
         anchor_image = self.anchor_image[self.encode]
 
         for ann in anns:
             pointobb = ann['pointobb']
             transformed, gaussianmask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = height, host_width = width)
+            transformed = transformed.astype(np.int32)
             pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] += transformed
             
         # save pseudomask
@@ -113,7 +114,7 @@ if __name__ == '__main__':
 
     encode = 'centerness'   # centerness, gaussian, ellipse
 
-    save_vis = True
+    save_vis = False
     show_pseudomask = False
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version, 

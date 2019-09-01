@@ -112,7 +112,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'centerness'   # centerness, gaussian, ellipse
+    encode = 'gaussian'   # centerness, gaussian, ellipse
 
     save_vis = False
     show_pseudomask = False

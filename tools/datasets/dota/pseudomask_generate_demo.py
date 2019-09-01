@@ -23,7 +23,7 @@ if __name__ == '__main__':
     thetaobbs = [[0, 0, 120, 200, 60*np.pi/180.0],
                 [300, 200, 50, 70, 30*np.pi/180.0],
                 [450, 500, 300, 230, 45*np.pi/180.0]]
-    # thetaobbs = [[50, 50, 120, 200, 60*np.pi/180.0]]
+    thetaobbs = [[300, 200, 50, 70, 30*np.pi/180.0]]
     pointobbs = []
 
     for thetaobb in thetaobbs:

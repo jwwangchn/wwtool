@@ -10,7 +10,7 @@ from wwtool.transforms import pointobb_image_transform, thetaobb2pointobb, point
 if __name__ == '__main__':
     image_size = (512, 512)
     img = generate_image(height=image_size[0], width=image_size[1], color=0)
-    encoding = 'gaussian'       # centerness, gaussian, ellipse
+    encoding = 'ellipse'       # centerness, gaussian, ellipse
 
     if encoding == 'gaussian':
         anchor_image = generate_gaussian_image(512, 512, 2.5)

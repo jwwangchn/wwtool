@@ -1,6 +1,9 @@
 import numpy as np
+import mmcv
+import cv2
 from threading import Thread
 from collections import namedtuple
+import wwtool
 
 from mmcv.runner import load_checkpoint
 from mmdet.models import build_detector
@@ -33,43 +36,49 @@ class ProducerThread(Thread):
         else:
             self.encode_method = None
 
+        print("Start to load the model")
         self.model = build_detector(self.cfg.model, test_cfg=self.cfg.test_cfg)
         _ = load_checkpoint(self.model, self.checkout_file)
-
+        print("Finish loading the model")
         
     def run(self):
         for idx, img_path in enumerate(self.imgs_list):
-            if idx > 100:
-                break
-            img = cv2.imread(img_path)
-            img_origin = img.copy()
-            image_name = img_path.split('/')[-1]
+            # print("{}, {}".format(idx, img_path))
+            # if idx > 100:
+            #     break
+            # img = cv2.imread(img_path)
+            # img_origin = img.copy()
+            # image_name = img_path.split('/')[-1]
 
-            result = dota_inference_detector(self.model, img, self.cfg, device='cuda:0')
+            # result = dota_inference_detector(self.model, img, self.cfg, device='cuda:0')
 
-            bbox_result, rbbox_result = result
-            labels = [np.full(bbox.shape[0], i, dtype=np.int32) for i, bbox in enumerate(bbox_result)]
+            # bbox_result, rbbox_result = result
+            # labels = [np.full(bbox.shape[0], i, dtype=np.int32) for i, bbox in enumerate(bbox_result)]
 
-            labels = np.concatenate(labels)
-            bboxes = np.vstack(bbox_result)
-            if self.encode_method == None:
-                rbboxs = mmcv.concat_list(rbbox_result)
-            else:
-                rbboxs = np.vstack(rbbox_result)
+            # labels = np.concatenate(labels)
+            # bboxes = np.vstack(bbox_result)
+            # if self.encode_method == None:
+            #     rbboxs = mmcv.concat_list(rbbox_result)
+            # else:
+            #     rbboxs = np.vstack(rbbox_result)
 
-            scores = bboxes[:, -1]
-            inds = scores > self.score_thr
+            # scores = bboxes[:, -1]
+            # inds = scores > self.score_thr
 
-            obbs = []
-            for idx in np.where(scores > score_thr)[0]:
-                obb = rbboxs[idx]
-                if self.model_type == 'MaskOBBRCNN':
-                    obb = maskobb2thetaobb(obb)
-                obbs.append(obb)
+            # obbs = []
+            # for idx in np.where(scores > self.score_thr)[0]:
+            #     obb = rbboxs[idx]
+            #     if self.model_type == 'MaskOBBRCNN':
+            #         obb = maskobb2thetaobb(obb)
+            #     obbs.append(obb)
                     
-            hbbs = bboxes[inds, :-1]
-            labels = labels[inds]
-            scores = scores[inds]
+            # hbbs = bboxes[inds, :-1]
+            # labels = labels[inds]
+            # scores = scores[inds]
 
+            img_origin = wwtool.generate_image()
+            image_name = ''
+            hbbs = np.array([256, 256, 50 + idx, 80 + idx])
+            scores = 1.0
             data = self.buffer_element(img_origin, image_name, hbbs, scores)
             self.buffer.put(data)

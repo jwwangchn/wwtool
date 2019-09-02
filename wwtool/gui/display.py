@@ -13,7 +13,7 @@ class MainUI(object):
         self.exit_on_end = True
 
         MainWindow.setWindowTitle('Demo for Object Detetion')
-        MainWindow.resize(1600, 900)
+        MainWindow.resize(1200, 800)
 
         # Define the ViewBoxes for each of the images to be displayed
         self.score_box = MainWindow.addViewBox(1, 1, colspan=1)
@@ -60,8 +60,8 @@ class MainUI(object):
         self.score_box.addItem(self.prior_radius)
 
         # Add the Labels to the images
-        param_dict = {'color':(255,255,255),
-                      'anchor':(0,1)}
+        param_dict = {'color': (255, 255, 255),
+                      'anchor': (0, 1)}
         label_score = pg.TextItem(text='Center Map', **param_dict)
         label_gt = pg.TextItem(text='Tracking Box', **param_dict)
 
@@ -119,16 +119,16 @@ class MainUI(object):
         # When the Producer Thread finishes publishing the data it sends a None
         # through the buffer to sinalize it has finished.
         if buffer_element is not None:
-
             img = buffer_element.img
             name = buffer_element.file_name
             bbox = buffer_element.bbox
             best_pscore = buffer_element.best_pscore
 
+            print(img, name, bbox, best_pscore)
+
             # frame
             #img_gray = self.rgb2gray(img)/255
             self.score_img.setImage(img, autoDownsample=False)
-
 
             self.gt_img.setImage(img, autoDownsample=False)
             if bbox is not None:
@@ -144,7 +144,6 @@ class MainUI(object):
             #     self.curve.setData(self.center_errors)
             # else:
             #     self.bounding_box.setRect(0, 0, 0, 0)
-
 
             # Calculate the fps rate.
             now = ptime.time()

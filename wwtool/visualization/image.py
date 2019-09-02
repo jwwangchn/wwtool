@@ -4,7 +4,7 @@ import numpy as np
 
 from mmcv.utils import is_str, mkdir_or_exist
 from .color import color_val
-
+from wwtool.transforms import thetaobb2pointobb, impad
 
 def imshow_bboxes(img_or_path,
                   bboxes,
@@ -155,6 +155,88 @@ def imshow_rbboxes(img_or_path,
         cv2.imwrite(out_file, img)
     if return_img:
         return img
+
+def imshow_segms(img_or_path,
+                  segms=None,
+                  labels=None,
+                  scores=None,
+                  score_threshold=0.0,
+                  colors='red',
+                  thickness=3,
+                  show=True,
+                  win_name='',
+                  wait_time=0,
+                  out_file=None,
+                  return_img=False,
+                  draw_contours=False):
+    
+    grayscale_image = img_or_path.astype(np.float64)
+    max_value = np.max(grayscale_image)
+    min_value = np.min(grayscale_image)
+    grayscale_image = 255 * (grayscale_image - min_value) / (max_value - min_value)
+    grayscale_image = grayscale_image.astype(np.uint8)
+
+    grayscale_image = np.pad(grayscale_image, ((25, 25), (25, 25)), 'constant', constant_values = (0, 0))
+
+    # grayscale_image[grayscale_image < 128] = 0
+
+    ret, grayscale_image = cv2.threshold(grayscale_image, 128, 255, 0)
+    nLabels, labels, stats, centroids = cv2.connectedComponentsWithStats(grayscale_image.astype(np.uint8), connectivity=4)
+
+    det = []
+    mapper = []
+    for k in range(1, nLabels):
+        # size filtering
+        size = stats[k, cv2.CC_STAT_AREA]
+        if size < 10: continue
+
+        x, y = stats[k, cv2.CC_STAT_LEFT], stats[k, cv2.CC_STAT_TOP]
+        w, h = stats[k, cv2.CC_STAT_WIDTH], stats[k, cv2.CC_STAT_HEIGHT]
+        niter = int(np.sqrt(size * min(w, h) / (w * h)) * 2)
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(1 + niter, 1 + niter))
+        grayscale_image = cv2.dilate(grayscale_image, kernel)
+
+        # make box
+        np_contours = np.roll(np.array(np.where(grayscale_image!=0)),1,axis=0).transpose().reshape(-1,2)
+        rect = cv2.minAreaRect(np_contours)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        cv2.drawContours(grayscale_image, [box], 0, (0, 0, 255), 3)
+
+        x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
+        theta = theta * np.pi / 180.0
+        thetaobb = [x, y, w, h, theta]
+        print(thetaobb)
+        pointobb = thetaobb2pointobb(thetaobb)
+        print(pointobb)
+        imshow_rbboxes(grayscale_image, pointobb, win_name='demo')
+
+    # images, contours, hierarchy = cv2.findContours(grayscale_image.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # if draw_contours:
+    #     cv2.drawContours(grayscale_image, contours, -1, (0, 255, 0), 3)
+    # if contours != []:
+    #     imax_cnt_area = -1
+    #     imax = -1
+    #     for idx, cnt in enumerate(contours):
+    #         cnt_area = cv2.contourArea(cnt)
+    #         if imax_cnt_area < cnt_area:
+    #             imax = idx
+    #             imax_cnt_area = cnt_area
+    #     cnt = contours[imax]
+    #     rect = cv2.minAreaRect(cnt)
+    #     box = cv2.boxPoints(rect)
+    #     box = np.int0(box)
+    #     cv2.drawContours(grayscale_image, [box], 0, (0, 0, 255), 3)
+
+    #     x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
+    #     theta = theta * np.pi / 180.0
+    #     thetaobb = [x, y, w, h, theta]
+    #     print(thetaobb)
+    #     pointobb = thetaobb2pointobb(thetaobb)
+    #     print(pointobb)
+    #     imshow_rbboxes(grayscale_image, pointobb, win_name='demo')
+        
 
 #TODO: show both ground truth and detection results
 

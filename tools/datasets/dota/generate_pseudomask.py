@@ -26,6 +26,7 @@ class PseudomaskGenerate():
                 save_vis=False,
                 show_pseudomask=False,
                 encode='centernessmask',
+                heatmap_rate=0.5,
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
@@ -46,9 +47,11 @@ class PseudomaskGenerate():
         mmcv.mkdir_or_exist(self.save_path)
         mmcv.mkdir_or_exist(self.save_vis_path)
 
-        self.gaussian_image = generate_gaussian_image(512, 512, 2.5)
-        self.centerness_image = generate_centerness_image(512, 512)
-        self.ellipse_image = generate_ellipse_image(512, 512)
+        self.heatmap_rate = heatmap_rate
+
+        self.gaussian_image = generate_gaussian_image(512, 512, 2.5, threshold = int(self.heatmap_rate * 255))
+        self.centerness_image = generate_centerness_image(512, 512, threshold = int(self.heatmap_rate * 255))
+        self.ellipse_image = generate_ellipse_image(512, 512, threshold = int(self.heatmap_rate * 255))
 
         self.anchor_image = {'centerness': self.centerness_image,
                             'gaussian': self.gaussian_image,
@@ -113,6 +116,7 @@ if __name__ == '__main__':
     extra_info = 'keypoint'
 
     encode = 'gaussian'   # centerness, gaussian, ellipse
+    heatmap_rate = 0.5
 
     save_vis = False
     show_pseudomask = False
@@ -125,6 +129,7 @@ if __name__ == '__main__':
                 save_vis=save_vis,
                 show_pseudomask=show_pseudomask,
                 encode=encode,
+                heatmap_rate=heatmap_rate,
                 multi_processing=False)
 
     pseudomask_gen.generate_pseudomask_core()

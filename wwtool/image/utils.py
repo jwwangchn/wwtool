@@ -25,7 +25,7 @@ def generate_gaussian_image(height, width, scale=2.5):
 
     distance_from_center = scale * np.sqrt(((index_x - width / 2) ** 2) / ((width / 2) ** 2) + ((index_y - height / 2) ** 2) / ((height / 2) ** 2))
     scaled_gaussian_prob = scaled_gaussian(distance_from_center)
-    grayscale_image = np.clip((scaled_gaussian_prob * 127 + 128), 0, 255).astype(np.uint8)
+    grayscale_image = np.clip((scaled_gaussian_prob * 51 + 204), 0, 255).astype(np.uint8)
 
     return grayscale_image
 
@@ -45,7 +45,7 @@ def generate_centerness_image(height, width):
     bottom = np.maximum(bottom, 0)
 
     centerness_image = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
-    centerness_image = np.clip((centerness_image * 127 + 128), 0, 255).astype(np.uint8)
+    centerness_image = np.clip((centerness_image * 51 + 204), 0, 255).astype(np.uint8)
 
     return centerness_image
 
@@ -65,7 +65,7 @@ def generate_ellipse_image(height, width):
     ellipse_image[ellipse_image > 1] = 1
     ellipse_image = 1 - ellipse_image
 
-    ellipse_image = np.clip((ellipse_image * 127 + 128), 0, 255).astype(np.uint8)
+    ellipse_image = np.clip((ellipse_image * 51 + 204), 0, 255).astype(np.uint8)
 
     return ellipse_image
 

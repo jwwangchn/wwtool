@@ -26,7 +26,7 @@ def update():
         pass
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     DOTA_CLASS_NAMES = ('__background__', 'harbor', 'ship', 'small-vehicle', 'large-vehicle', 'storage-tank', 'plane', 'soccer-ball-field', 'bridge', 'baseball-diamond', 'tennis-court', 'helicopter', 'roundabout', 'swimming-pool', 'ground-track-field', 'basketball-court')
 
@@ -53,8 +53,8 @@ if __name__ == '__main__':
 
     config_version = 'v301'
 
-    config_file = './configs/dota/dota_{}.py'.format(config_version)
-    checkout_file = './work_dirs/dota_{}/epoch_12.pth'.format(config_version)
+    config_file = '../whudetection/configs/dota/dota_{}.py'.format(config_version)
+    checkout_file = '../whudetection/work_dirs/dota_{}/epoch_12.pth'.format(config_version)
 
     BUFFER = Queue(maxsize = 32)
     app = QtGui.QApplication([])

@@ -12,7 +12,7 @@ if __name__ == '__main__':
     img = generate_image(height=image_size[0], width=image_size[1], color=0)
     encoding = 'centerness'       # centerness, gaussian, ellipse
     if encoding == 'gaussian':
-        anchor_image = generate_gaussian_image(512, 512, 2.5, 255 * 0.5)
+        anchor_image = generate_gaussian_image(512, 512, scale=2.5, threshold=255 * 0.5)
     elif encoding == 'centerness':
         anchor_image = generate_centerness_image(512, 512, 255 * 0.5)
     elif encoding == 'ellipse':

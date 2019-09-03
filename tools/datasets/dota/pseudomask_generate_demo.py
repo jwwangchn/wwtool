@@ -10,15 +10,15 @@ from wwtool.transforms import pointobb_image_transform, thetaobb2pointobb, point
 if __name__ == '__main__':
     image_size = (512, 512)
     img = generate_image(height=image_size[0], width=image_size[1], color=0)
-    encoding = 'ellipse'       # centerness, gaussian, ellipse
+    encoding = 'centerness'       # centerness, gaussian, ellipse
 
     if encoding == 'gaussian':
-        anchor_image = generate_gaussian_image(512, 512, 2.5)
+        anchor_image = generate_gaussian_image(512, 512, 2.5, 255*0.0)
     elif encoding == 'centerness':
-        anchor_image = generate_centerness_image(512, 512)
+        anchor_image = generate_centerness_image(512, 512, 255*0.7)
     elif encoding == 'ellipse':
         anchor_image = generate_ellipse_image(512, 512)
-    show_grayscale_as_heatmap(anchor_image, win_name='before')
+    show_image(anchor_image, win_name='before')
 
     thetaobbs = [[0, 0, 120, 200, 60*np.pi/180.0],
                 [300, 200, 50, 70, 30*np.pi/180.0],

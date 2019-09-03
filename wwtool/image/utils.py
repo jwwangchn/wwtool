@@ -15,7 +15,7 @@ def generate_image(height=512,
 
     return img
 
-def generate_gaussian_image(height, width, scale=2.5, threshold=255):
+def generate_gaussian_image(height, width, scale=2.5, threshold=128):
     gaussian = lambda x: np.exp(-(1/2) * (x**2)) / (np.sqrt(2 * np.pi))
     scaled_gaussian = lambda x: np.exp(-(1/2) * (x**2))
 
@@ -25,11 +25,11 @@ def generate_gaussian_image(height, width, scale=2.5, threshold=255):
 
     distance_from_center = scale * np.sqrt(((index_x - width / 2) ** 2) / ((width / 2) ** 2) + ((index_y - height / 2) ** 2) / ((height / 2) ** 2))
     scaled_gaussian_prob = scaled_gaussian(distance_from_center)
-    gaussian_image = np.clip((scaled_gaussian_prob * threshold + (255 - threshold)), 0, 255).astype(np.uint8)
+    gaussian_image = np.clip((scaled_gaussian_prob * (255 - threshold) + threshold), 0, 255).astype(np.uint8)
 
     return gaussian_image
 
-def generate_centerness_image(height, width, threshold=255):
+def generate_centerness_image(height, width, threshold=128):
     bbox = [0, 0, width - 1, height - 1]
     x_range = np.arange(0, width)
     y_range = np.arange(0, height)
@@ -45,11 +45,11 @@ def generate_centerness_image(height, width, threshold=255):
     bottom = np.maximum(bottom, 0)
 
     centerness_prob = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
-    centerness_image = np.clip((centerness_prob * threshold + (255 - threshold)), 0, 255).astype(np.uint8)
+    centerness_image = np.clip((centerness_prob * (255 - threshold) + threshold), 0, 255).astype(np.uint8)
 
     return centerness_image
 
-def generate_ellipse_image(height, width, threshold=255):
+def generate_ellipse_image(height, width, threshold=128):
     c_x = width // 2
     c_y = height // 2
     a = width / 2
@@ -65,7 +65,7 @@ def generate_ellipse_image(height, width, threshold=255):
     ellipse_image[ellipse_image > 1] = 1
     ellipse_image = 1 - ellipse_image
 
-    ellipse_image = np.clip((ellipse_image * threshold + (255 - threshold)), 0, 255).astype(np.uint8)
+    ellipse_image = np.clip((ellipse_image * (255 - threshold) + threshold), 0, 255).astype(np.uint8)
 
     return ellipse_image
 

@@ -11,10 +11,10 @@ import concurrent.futures
 
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
-from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask, pointobb2gaussmask
+from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
 from wwtool.visualization import show_grayscale_as_heatmap
 from wwtool.datasets import cocoSegmentationToPng
-from wwtool.image import generate_gaussian_image
+from wwtool.image import generate_gaussian_image, generate_centerness_image, generate_ellipse_image
 
 class PseudomaskGenerate():
     def __init__(self,
@@ -47,6 +47,13 @@ class PseudomaskGenerate():
         mmcv.mkdir_or_exist(self.save_vis_path)
 
         self.gaussian_image = generate_gaussian_image(512, 512, 2.5)
+        self.centerness_image = generate_centerness_image(512, 512)
+        self.ellipse_image = generate_ellipse_image(512, 512)
+
+        self.anchor_image = {'centerness': self.centerness_image,
+                            'gaussian': self.gaussian_image,
+                            'ellipse': self.ellipse_image}
+
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
         self.imgIds = self.coco.getImgIds(catIds=self.catIds)
@@ -61,16 +68,15 @@ class PseudomaskGenerate():
         pseudomasks = []
         height = img_info['height']
         width = img_info['width']
-        pseudomasks = np.zeros((height, width), dtype=np.uint8)
+        pseudomasks = np.zeros((height, width), dtype=np.int32)
+
+        anchor_image = self.anchor_image[self.encode]
 
         for ann in anns:
             pointobb = ann['pointobb']
-            if self.encode != 'gaussmask':
-                pseudomask = pointobb2pseudomask(height, width, pointobb, encode=self.encode)
-                pseudomasks += pseudomask
-            else:
-                transformed, gaussianmask_location = pointobb2gaussmask(pointobb, self.gaussian_image)
-                pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] += transformed
+            transformed, gaussianmask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = height, host_width = width)
+            transformed = transformed.astype(np.int32)
+            pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] += transformed
             
         # save pseudomask
         pseudomask_file = os.path.join(self.save_path, image_name)
@@ -106,7 +112,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'gaussmask'   # centernessmask, gaussmask, ellipsemask
+    encode = 'gaussian'   # centerness, gaussian, ellipse
 
     save_vis = False
     show_pseudomask = False

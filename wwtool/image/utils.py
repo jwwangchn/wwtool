@@ -25,7 +25,49 @@ def generate_gaussian_image(height, width, scale=2.5):
 
     distance_from_center = scale * np.sqrt(((index_x - width / 2) ** 2) / ((width / 2) ** 2) + ((index_y - height / 2) ** 2) / ((height / 2) ** 2))
     scaled_gaussian_prob = scaled_gaussian(distance_from_center)
-    grayscale_image = np.clip(scaled_gaussian_prob * 255, 0, 255)
-    grayscale_image = grayscale_image.astype(np.uint8)
+    grayscale_image = np.clip((scaled_gaussian_prob * 127 + 128), 0, 255).astype(np.uint8)
 
     return grayscale_image
+
+def generate_centerness_image(height, width):
+    bbox = [0, 0, width - 1, height - 1]
+    x_range = np.arange(0, width)
+    y_range = np.arange(0, height)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    left = index_x - bbox[0]
+    left = np.maximum(left, 0)
+    right = bbox[2] - index_x
+    right = np.maximum(right, 0)
+    top = index_y - bbox[1]
+    top = np.maximum(top, 0)
+    bottom = bbox[3] - index_y
+    bottom = np.maximum(bottom, 0)
+
+    centerness_image = np.sqrt((np.minimum(left, right) / (np.maximum(left, right) + 1)) * (np.minimum(top, bottom) / (np.maximum(top, bottom) + 1 )))
+    centerness_image = np.clip((centerness_image * 127 + 128), 0, 255).astype(np.uint8)
+
+    return centerness_image
+
+def generate_ellipse_image(height, width):
+    c_x = width // 2
+    c_y = height // 2
+    a = width / 2
+    b = height / 2
+
+    x_range = np.arange(0, width)
+    y_range = np.arange(0, height)
+    index_x, index_y = np.meshgrid(x_range, y_range)
+
+    ellipse_image = ((index_x - c_x) / a) ** 2 + ((index_y - c_y) / b) ** 2
+
+    ellipse_image[ellipse_image <= 1] = 0
+    ellipse_image[ellipse_image > 1] = 1
+    ellipse_image = 1 - ellipse_image
+
+    ellipse_image = np.clip((ellipse_image * 127 + 128), 0, 255).astype(np.uint8)
+
+    return ellipse_image
+
+    
+    

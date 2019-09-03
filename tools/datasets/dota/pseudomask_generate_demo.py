@@ -4,21 +4,22 @@ import numpy as np
 import mmcv
 import wwtool
 from wwtool.image import generate_centerness_image, generate_image, generate_gaussian_image, generate_ellipse_image
-from wwtool.visualization import show_grayscale_as_heatmap, show_image
+from wwtool.visualization import show_grayscale_as_heatmap, show_image, show_image_as_surface
 from wwtool.transforms import pointobb_image_transform, thetaobb2pointobb, pointobb2bbox, pointobb2pseudomask
 
 if __name__ == '__main__':
     image_size = (512, 512)
     img = generate_image(height=image_size[0], width=image_size[1], color=0)
     encoding = 'centerness'       # centerness, gaussian, ellipse
-
     if encoding == 'gaussian':
-        anchor_image = generate_gaussian_image(512, 512, 2.5, 255*0.0)
+        anchor_image = generate_gaussian_image(512, 512, 2.5, 255 * 0.5)
     elif encoding == 'centerness':
-        anchor_image = generate_centerness_image(512, 512, 255*0.7)
+        anchor_image = generate_centerness_image(512, 512, 255 * 0.5)
     elif encoding == 'ellipse':
         anchor_image = generate_ellipse_image(512, 512)
     show_image(anchor_image, win_name='before')
+
+    show_image_as_surface(anchor_image)
 
     thetaobbs = [[0, 0, 120, 200, 60*np.pi/180.0],
                 [300, 200, 50, 70, 30*np.pi/180.0],

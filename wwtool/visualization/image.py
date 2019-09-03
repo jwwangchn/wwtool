@@ -1,6 +1,8 @@
 import cv2
 import os.path as osp
 import numpy as np
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 from mmcv.utils import is_str, mkdir_or_exist
 from .color import color_val
@@ -264,3 +266,18 @@ def show_image(img,
                wait_time=0):
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
+
+def show_image_as_surface(img):
+    if img.ndim == 3:
+        height, width, _ = img.shape
+    else:
+        height, width = img.shape
+    X = np.arange(0, width, 1)
+    Y = np.arange(0, height, 1)
+    X, Y = np.meshgrid(X, Y)
+    Z = img
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.plot_surface(X, Y, Z, rstride=5, cstride=5, cmap='rainbow')
+
+    plt.show()

@@ -12,9 +12,9 @@ if __name__ == '__main__':
     img = generate_image(height=image_size[0], width=image_size[1], color=0)
     encoding = 'centerness'       # centerness, gaussian, ellipse
     if encoding == 'gaussian':
-        anchor_image = generate_gaussian_image(512, 512, 2.5, 255 * 0.5)
+        anchor_image = generate_gaussian_image(512, 512, scale=2.5, threshold=255 * 0.5)
     elif encoding == 'centerness':
-        anchor_image = generate_centerness_image(512, 512, 255 * 0.5)
+        anchor_image = generate_centerness_image(512, 512, factor=16, threshold=255 * 0.5)
     elif encoding == 'ellipse':
         anchor_image = generate_ellipse_image(512, 512)
     show_image(anchor_image, win_name='before')
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     for pointobb in pointobbs:
         transformed, mask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = image_size[0], host_width = image_size[1])
-        show_grayscale_as_heatmap(transformed)
+        # show_grayscale_as_heatmap(transformed)
         img[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]] += transformed
 
     show_grayscale_as_heatmap(img)

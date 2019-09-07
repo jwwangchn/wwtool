@@ -25,7 +25,7 @@ class PseudomaskGenerate():
                 extra_info,
                 save_vis=False,
                 show_pseudomask=False,
-                encode='centernessmask',
+                encode='centerness',
                 heatmap_rate=0.5,
                 multi_processing=False):
         self.release_version = release_version
@@ -35,13 +35,17 @@ class PseudomaskGenerate():
         self.extra_info = extra_info
         self.encode = encode
 
+        self.save_dir_names = {'centerness': 'centerness_seg',
+                            'gaussian': 'gaussian_seg',
+                            'ellipse': 'ellipse_seg'}
+
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
         
         self.save_vis = save_vis
         self.show_pseudomask = show_pseudomask
 
-        self.save_path = './data/dota/{}/{}/{}'.format(self.release_version, self.imageset, self.encode)
+        self.save_path = './data/dota/{}/{}/{}'.format(self.release_version, self.imageset, self.save_dir_names[self.encode])
         self.save_vis_path = './data/dota/{}/{}/pseudomask_vis'.format(self.release_version, self.imageset)
 
         mmcv.mkdir_or_exist(self.save_path)

@@ -176,7 +176,7 @@ if __name__ == '__main__':
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb,
                   'keypoint': show_keypoint}
-    show_flag = 'keypoint'
+    show_flag = 'pointobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 

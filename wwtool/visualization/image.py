@@ -267,17 +267,36 @@ def show_image(img,
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
 
-def show_image_as_surface(img):
+def show_image_surface_curve(img, direction=0, show=True):
+    """
+    direction=0 -> height direction
+    direction=1 -> width direction
+    direction=2 -> all direction
+    """
     if img.ndim == 3:
         height, width, _ = img.shape
     else:
         height, width = img.shape
-    X = np.arange(0, width, 1)
-    Y = np.arange(0, height, 1)
-    X, Y = np.meshgrid(X, Y)
-    Z = img
-    fig = plt.figure()
-    ax = Axes3D(fig)
-    ax.plot_surface(X, Y, Z, rstride=5, cstride=5, cmap='rainbow')
 
-    plt.show()
+    if direction == 2:
+        X = np.arange(0, width, 1)
+        Y = np.arange(0, height, 1)
+        X, Y = np.meshgrid(X, Y)
+        Z = img
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        ax.plot_surface(X, Y, Z, rstride=5, cstride=5, cmap='rainbow')
+        data_x, data_y = None, None
+    else:
+        x = np.arange(0, img.shape[direction], 1)
+        if direction == 0:
+            y = img[img.shape[direction] // 2, x, ...]
+        else:
+            y = img[x, img.shape[direction] // 2, ...]
+        plt.plot(x, y)
+        data_x, data_y = x, y
+
+    if show:
+        plt.show()
+
+    return data_x, data_y

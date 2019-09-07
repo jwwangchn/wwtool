@@ -31,7 +31,8 @@ class Core():
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
-        self.save_path = './data/dota/{}/{}/segmentation'.format(self.release_version, self.imageset)
+        self.save_path = './data/dota/{}/{}/obb_seg'.format(self.release_version, self.imageset)
+        mmcv.mkdir_or_exist(self.save_path)
 
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])

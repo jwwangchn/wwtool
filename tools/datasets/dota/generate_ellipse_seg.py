@@ -10,12 +10,12 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'ellipsemask'   # centernessmask, gaussmask, ellipsemask
+    encode = 'ellipse_seg'   # centernessmask, gaussmask, ellipsemask
 
     pseudomask_path = './data/dota/{}/{}/{}'.format(release_version, imageset, encode)
-    seg_path = './data/dota/{}/{}/segmentation'.format(release_version, imageset)
+    seg_path = './data/dota/{}/{}/obb_seg'.format(release_version, imageset)
 
-    save_path = './data/dota/{}/{}/ellipsemask_seg'.format(release_version, imageset)
+    save_path = './data/dota/{}/{}/ellipse_seg'.format(release_version, imageset)
     mmcv.mkdir_or_exist(save_path)
 
     image_names = os.listdir(pseudomask_path)

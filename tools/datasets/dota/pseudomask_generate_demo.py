@@ -4,7 +4,7 @@ import numpy as np
 import mmcv
 import wwtool
 from wwtool.image import generate_centerness_image, generate_image, generate_gaussian_image, generate_ellipse_image
-from wwtool.visualization import show_grayscale_as_heatmap, show_image, show_image_as_surface
+from wwtool.visualization import show_grayscale_as_heatmap, show_image, show_image_surface_curve
 from wwtool.transforms import pointobb_image_transform, thetaobb2pointobb, pointobb2bbox, pointobb2pseudomask
 
 if __name__ == '__main__':
@@ -19,12 +19,12 @@ if __name__ == '__main__':
         anchor_image = generate_ellipse_image(512, 512)
     show_image(anchor_image, win_name='before')
 
-    show_image_as_surface(anchor_image)
+    show_image_surface_curve(anchor_image, direction=2)
 
-    thetaobbs = [[0, 0, 120, 200, 60*np.pi/180.0],
-                [300, 200, 50, 70, 30*np.pi/180.0],
-                [450, 500, 300, 230, 45*np.pi/180.0]]
-    thetaobbs = [[300, 200, 50, 70, 30*np.pi/180.0]]
+    thetaobbs = [[0, 0, 120, 200, 60 * np.pi/180.0],
+                [300, 200, 50, 70, 30 * np.pi/180.0],
+                [450, 500, 300, 230, 45 * np.pi/180.0]]
+    thetaobbs = [[300, 200, 50, 70, 30 * np.pi/180.0]]
     pointobbs = []
 
     for thetaobb in thetaobbs:

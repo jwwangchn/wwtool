@@ -129,7 +129,7 @@ if __name__ == "__main__":
                  "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    image_format='.bmp'
+    image_format='.png'
     anno_format='.xml'
 
     original_hrsc_class = {'ship': 1}

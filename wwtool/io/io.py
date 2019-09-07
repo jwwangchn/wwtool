@@ -1,4 +1,5 @@
 import mmcv
+import pandas as pd
 
 from pycocotools.coco import COCO
 
@@ -47,3 +48,8 @@ def dump_detection_results(dump_dir, det_results, dataset='visdrone'):
         No 
     """
     pass
+
+
+def dict2excel(data, save_file='./dict_excel.xlsx'):
+    df = pd.DataFrame(data=data, index=[0])
+    df.to_excel(save_file)

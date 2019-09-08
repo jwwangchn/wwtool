@@ -127,7 +127,7 @@ if __name__ == '__main__':
     save_vis = False
     show_pseudomask = False
 
-    pseudomask_gen = PseudomaskGenerate(release_version=release_version, /
+    pseudomask_gen = PseudomaskGenerate(release_version=release_version,
                 imageset=imageset,
                 rate=rate,
                 pointobb_sort_method=pointobb_sort_method,

@@ -70,7 +70,7 @@ def segmentationToCocoResult(labelMap, imgId, stuffStartId=1):
         anns.append(anndata)
     return anns
 
-def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, includeCrowd=False):
+def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, includeCrowd=False, binary_mask=False):
     '''
     Convert COCO GT or results for a single image to a segmentation map.
     :param coco: an instance of the COCO API (ground-truth or result)
@@ -103,7 +103,10 @@ def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, 
         if checkUniquePixelLabel and (labelMap[labelMask] != 0).any():
             raise Exception('Error: Some pixels have more than one label (image %d)!' % (imgId))
 
-        labelMap[labelMask] = newLabel
+        if binary_mask == True:
+            labelMap[labelMask] = 1
+        else:
+            labelMap[labelMask] = newLabel
 
     return labelMap
 
@@ -127,7 +130,7 @@ def pngToCocoResult(pngPath, imgId, stuffStartId=1):
     anns = segmentationToCocoResult(labelMap, imgId, stuffStartId)
     return anns
 
-def cocoSegmentationToPng(coco, imgId, pngPath, includeCrowd=False, vis=False, return_flag=False):
+def cocoSegmentationToPng(coco, imgId, pngPath, includeCrowd=False, vis=False, return_flag=False, stuffStartId=0, stuffEndId=15, binary_mask=False):
     '''
     Convert COCO GT or results for a single image to a segmentation map and write it to disk.
     :param coco: an instance of the COCO API (ground-truth or result)
@@ -138,12 +141,12 @@ def cocoSegmentationToPng(coco, imgId, pngPath, includeCrowd=False, vis=False, r
     '''
 
     # Create label map
-    labelMap = cocoSegmentationToSegmentationMap(coco, imgId, includeCrowd=includeCrowd)
+    labelMap = cocoSegmentationToSegmentationMap(coco, imgId, includeCrowd=includeCrowd, binary_mask=binary_mask)
     labelMap = labelMap.astype(np.int8)
 
     # print(set(labelMap.flatten()))
     # Get color map and convert to PIL's format
-    cmap = getCMap(vis=vis)
+    cmap = getCMap(stuffStartId=stuffStartId, stuffEndId=stuffEndId, vis=vis)
     cmap = (cmap * 255).astype(int)
     padding = np.zeros((256-cmap.shape[0], 3), np.int8)
     cmap = np.vstack((cmap, padding))

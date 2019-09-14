@@ -87,6 +87,23 @@ def pointobb2bbox(pointobb):
     
     return bbox
 
+def bbox2pointobb(bbox):
+    """
+    docstring here
+        :param self: 
+        :param bbox: list, [xmin, ymin, xmax, ymax]
+        return [x1, y1, x2, y2, x3, y3, x4, y4]
+    """
+    xmin, ymin, xmax, ymax = bbox
+    x1, y1 = xmin, ymin
+    x2, y2 = xmax, ymin
+    x3, y3 = xmax, ymax
+    x4, y4 = xmin, ymax
+
+    pointobb = [x1, y1, x2, y2, x3, y3, x4, y4]
+    
+    return pointobb
+
 def pointobb2sampleobb(pointobb, rate):
     """
     pointobb to sampleobb

@@ -27,6 +27,7 @@ class PseudomaskGenerate():
                 show_pseudomask=False,
                 encode='centerness',
                 heatmap_rate=0.5,
+                factor=4,
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
@@ -34,6 +35,7 @@ class PseudomaskGenerate():
         self.pointobb_sort_method = pointobb_sort_method
         self.extra_info = extra_info
         self.encode = encode
+        self.factor = factor
 
         self.save_dir_names = {'centerness': 'centerness_seg',
                             'gaussian': 'gaussian_seg',
@@ -54,7 +56,7 @@ class PseudomaskGenerate():
         self.heatmap_rate = heatmap_rate
 
         self.gaussian_image = generate_gaussian_image(512, 512, 2.5, threshold = int(self.heatmap_rate * 255))
-        self.centerness_image = generate_centerness_image(512, 512, threshold = int(self.heatmap_rate * 255))
+        self.centerness_image = generate_centerness_image(512, 512, factor=self.factor, threshold = int(self.heatmap_rate * 255))
         self.ellipse_image = generate_ellipse_image(512, 512, threshold = int(self.heatmap_rate * 255))
 
         self.anchor_image = {'centerness': self.centerness_image,
@@ -118,14 +120,13 @@ if __name__ == '__main__':
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
-
-    encode = 'ellipse'   # centerness, gaussian, ellipse
+    encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
-
+    factor = 2
     save_vis = False
     show_pseudomask = False
 
-    pseudomask_gen = PseudomaskGenerate(release_version=release_version, 
+    pseudomask_gen = PseudomaskGenerate(release_version=release_version,
                 imageset=imageset,
                 rate=rate,
                 pointobb_sort_method=pointobb_sort_method,
@@ -133,6 +134,7 @@ if __name__ == '__main__':
                 save_vis=save_vis,
                 show_pseudomask=show_pseudomask,
                 encode=encode,
+                factor=factor,
                 heatmap_rate=heatmap_rate,
                 multi_processing=False)
 

@@ -22,16 +22,23 @@ class Core():
                 rate,
                 pointobb_sort_method,
                 extra_info,
-                multi_processing=False):
+                multi_processing=False,
+                binary_mask=False):
         self.release_version = release_version
         self.imageset = imageset
         self.rate = rate
         self.pointobb_sort_method = pointobb_sort_method
         self.extra_info = extra_info
+        self.binary_mask = binary_mask
 
         self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
         self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
-        self.save_path = './data/dota/{}/{}/obb_seg'.format(self.release_version, self.imageset)
+        if binary_mask == True:
+            self.save_path = './data/dota/{}/{}/obb_seg_binary'.format(self.release_version, self.imageset)
+            self.stuffEndId = 1
+        else:
+            self.save_path = './data/dota/{}/{}/obb_seg'.format(self.release_version, self.imageset)
+            self.stuffEndId = 15
         mmcv.mkdir_or_exist(self.save_path)
 
         self.coco = COCO(self.annFile)
@@ -45,7 +52,7 @@ class Core():
         image_name = img_info['file_name']
 
         pseudomask_file = os.path.join(self.save_path, image_name)
-        cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=False)
+        cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=False, return_flag=False, stuffStartId=0, stuffEndId=self.stuffEndId, binary_mask=self.binary_mask)
 
     def generate_segmentation(self):
         if self.multi_processing:
@@ -64,11 +71,14 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
+    binary_mask = True
+
     core = Core(release_version=release_version, 
                 imageset=imageset,
                 rate=rate,
                 pointobb_sort_method=pointobb_sort_method,
                 extra_info=extra_info,
-                multi_processing=False)
+                multi_processing=False,
+                binary_mask=binary_mask)
 
     core.generate_segmentation()

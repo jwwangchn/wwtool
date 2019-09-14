@@ -29,7 +29,7 @@ def generate_gaussian_image(height, width, scale=2.5, threshold=128):
 
     return gaussian_image
 
-def generate_centerness_image(height, width, factor=2, threshold=128):
+def generate_centerness_image(height, width, factor=4, threshold=128):
     bbox = [0, 0, width - 1, height - 1]
     x_range = np.arange(0, width)
     y_range = np.arange(0, height)

@@ -119,7 +119,7 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'gaussian'   # centerness, gaussian, ellipse
+    encode = 'ellipse'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
 
     save_vis = False

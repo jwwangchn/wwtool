@@ -7,6 +7,7 @@ import numpy as np
 import xml.etree.ElementTree as ET
 
 from wwtool.datasets.convert2coco import Convert2COCO
+from wwtool.transforms import bbox2pointobb, pointobb_extreme_sort, pointobb_best_point_sort
 
 
 class VOC2COCO(Convert2COCO):
@@ -17,7 +18,7 @@ class VOC2COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__rotation_voc_parse__(annotpath, imgpath)
+        objects = self.__voc_parse__(annotpath, imgpath)
 
         coco_annotations = []
         
@@ -25,6 +26,7 @@ class VOC2COCO(Convert2COCO):
             bbox = object_struct['bbox']
             label = object_struct['label']
             segmentation = object_struct['segmentation']
+            pointobb = object_struct['pointobb']
 
             width = bbox[2]
             height = bbox[3]
@@ -39,12 +41,13 @@ class VOC2COCO(Convert2COCO):
             coco_annotation['category_id'] = label
             coco_annotation['area'] = np.float(area)
             coco_annotation['segmentation'] = [segmentation]
+            coco_annotation['pointobb'] = pointobb
 
             coco_annotations.append(coco_annotation)
             
         return coco_annotations
     
-    def __rotation_voc_parse__(self, label_file, image_file):
+    def __voc_parse__(self, label_file, image_file):
         tree = ET.parse(label_file)
         root = tree.getroot()
         objects = []
@@ -60,7 +63,9 @@ class VOC2COCO(Convert2COCO):
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin
 
-            object_struct['segmentation'] = []
+            pointobb = bbox2pointobb([xmin, ymin, xmax, ymax])
+            object_struct['segmentation'] = [pointobb]
+            object_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](pointobb)
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
             object_struct['label'] = voc_class[single_object.find('name').text]
             
@@ -103,14 +108,19 @@ if __name__ == "__main__":
     voc_class = {'ship': 1}
     coco_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship',                }]
 
-    imagesets = ['train', 'val', 'test']
-    core_dataset = 'voc'
+    imagesets = ['trainval', 'test']
+    core_dataset = 'sarship'
     groundtruth = True
+    release_version = 'v1'
+
+    pointobb_sort_method = 'best' # or "extreme"
+    pointobb_sort_function = {"best": pointobb_best_point_sort,
+                            "extreme": pointobb_extreme_sort}
 
     for imageset in imagesets:
-        imgpath = '/media/jwwangchn/data/{}/{}/images'.format(core_dataset, imageset)
-        annopath = '/media/jwwangchn/data/{}/{}/labels'.format(core_dataset, imageset)
-        save_path = '/media/jwwangchn/data/{}/coco/annotations'.format(core_dataset)
+        imgpath = './data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
+        annopath = './data/{}/{}/{}/labels'.format(core_dataset, release_version, imageset)
+        save_path = './data/{}/{}/coco/annotations'.format(core_dataset, release_version)
 
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -135,5 +145,5 @@ if __name__ == "__main__":
                     "annotations" : annotations,
                     "categories" : voc.categories}
 
-        with open(os.path.join(save_path, "voc_" + imageset + "_" + ".json"), "w") as jsonfile:
+        with open(os.path.join(save_path, "sarship_" + imageset + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

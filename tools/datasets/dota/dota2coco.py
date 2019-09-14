@@ -211,4 +211,3 @@ if __name__ == "__main__":
 
         with open(os.path.join(save_path, "dota_" + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + "_" + extra_info + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)
-cats

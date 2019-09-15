@@ -1,4 +1,4 @@
 import wwtool
 
-data = {'plane': 0.8832834478386166, 'baseball-diamond': 0.7729970464004754, 'bridge': 0.570987091250668, 'ground-track-field': 0.619931864387977, 'small-vehicle': 0.7831104511435398, 'large-vehicle': 0.6578568526373316, 'ship': 0.7898718144948157, 'tennis-court': 0.8967327023511706, 'basketball-court': 0.7809856945826967, 'storage-tank': 0.8405257390833637, 'soccer-ball-field': 0.5021598090519636, 'roundabout': 0.6753729665497669, 'harbor': 0.7287846508825887, 'swimming-pool': 0.7143762630522462, 'helicopter': 0.6011309207790148}
-wwtool.dict2excel(data)
+data = {'plane': 0.883057839736689, 'baseball-diamond': 0.84474761747509, 'bridge': 0.57719902396708, 'ground-track-field': 0.6037899238470824, 'small-vehicle': 0.7818678604144524, 'large-vehicle': 0.6645229286572404, 'ship': 0.7896737475632843, 'tennis-court': 0.8923527250660408, 'basketball-court': 0.8237293942903094, 'storage-tank': 0.83750244268759, 'soccer-ball-field': 0.47451016995183687, 'roundabout': 0.6627236251577227, 'harbor': 0.7168307302432708, 'swimming-pool': 0.7915134424481486, 'helicopter': 0.6397739828140536}
+wwtool.dict2excel(data) 

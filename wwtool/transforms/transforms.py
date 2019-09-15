@@ -17,13 +17,30 @@ def segm2rbbox(segms):
     if contours != []:
         imax_cnt_area = -1
         imax = -1
-        for i, cnt in enumerate(contours):
-            cnt_area = cv2.contourArea(cnt)
-            if imax_cnt_area < cnt_area:
-                imax = i
-                imax_cnt_area = cnt_area
-        cnt = contours[imax]
+        cnt = max(contours, key = cv2.contourArea)
         rect = cv2.minAreaRect(cnt)
+        x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
+        theta = theta * np.pi / 180.0
+        thetaobb = [x, y, w, h, theta]
+        pointobb = thetaobb2pointobb([x, y, w, h, theta])
+    else:
+        thetaobb = [0, 0, 0, 0, 0]
+        pointobb = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    return thetaobb, pointobb
+
+def segm2ellipse(segms):
+    mask = maskUtils.decode(segms).astype(np.bool)
+    gray = np.array(mask*255, dtype=np.uint8)
+    images, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if contours != []:
+        imax_cnt_area = -1
+        imax = -1
+        cnt = max(contours, key = cv2.contourArea)
+        if cv2.contourArea(cnt) < 10:
+            rect = cv2.minAreaRect(cnt)
+        else:
+            rect = cv2.fitEllipse(cnt)
         x, y, w, h, theta = rect[0][0], rect[0][1], rect[1][0], rect[1][1], rect[2]
         theta = theta * np.pi / 180.0
         thetaobb = [x, y, w, h, theta]

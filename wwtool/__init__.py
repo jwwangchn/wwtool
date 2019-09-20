@@ -7,5 +7,6 @@ from .network import *
 from .transforms import *
 from .ops import *
 from .image import *
+from .cnn import *
 
 from .version import __version__

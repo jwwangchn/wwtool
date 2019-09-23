@@ -124,8 +124,8 @@ if __name__ == '__main__':
     encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
     factor = 4
-    save_vis = True
-    show_pseudomask = True
+    save_vis = False
+    show_pseudomask = False
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version,
                 imageset=imageset,

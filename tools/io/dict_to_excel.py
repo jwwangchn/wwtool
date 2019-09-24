@@ -1,5 +1,5 @@
 import wwtool
 
-data = {'plane': 0.8845910352875399, 'baseball-diamond': 0.8203372112087907, 'bridge': 0.5603849116292413, 'ground-track-field': 0.6158651080115715, 'small-vehicle': 0.787096759243718, 'large-vehicle': 0.6635556247012467, 'ship': 0.790617895644017, 'tennis-court': 0.895281746334651, 'basketball-court': 0.7867441947364027, 'storage-tank': 0.8285766600962888, 'soccer-ball-field': 0.41862243960797096, 'roundabout': 0.6577382487596026, 'harbor': 0.7267029354718022, 'swimming-pool': 0.7351054412392668, 'helicopter': 0.5999020350746267}
+data =  {'plane': 0.8856965626632286, 'baseball-diamond': 0.8386967513616284, 'bridge': 0.5678791769369548, 'ground-track-field': 0.6113081077416337, 'small-vehicle': 0.7897364064429634, 'large-vehicle': 0.6612150706301037, 'ship': 0.7918079142473706, 'tennis-court': 0.8938209504008285, 'basketball-court': 0.7764193443342207, 'storage-tank': 0.8510698073354, 'soccer-ball-field': 0.4628417347838682, 'roundabout': 0.6371940220567627, 'harbor': 0.7190792302632666, 'swimming-pool': 0.7333319141795394, 'helicopter': 0.5265369519344406}
 
 wwtool.dict2excel(data)

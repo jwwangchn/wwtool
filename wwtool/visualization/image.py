@@ -264,6 +264,7 @@ def show_grayscale_as_heatmap(grayscale_image,
 def show_image(img, 
                win_name='',
                wait_time=0):
+    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
 

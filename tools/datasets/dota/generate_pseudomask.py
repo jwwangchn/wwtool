@@ -122,7 +122,7 @@ if __name__ == '__main__':
     extra_info = 'keypoint'
     encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
-    factor = 2
+    factor = 4
     save_vis = False
     show_pseudomask = False
 

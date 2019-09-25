@@ -28,6 +28,7 @@ class PseudomaskGenerate():
                 encode='centerness',
                 heatmap_rate=0.5,
                 factor=4,
+                method='min_area',
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
@@ -36,6 +37,7 @@ class PseudomaskGenerate():
         self.extra_info = extra_info
         self.encode = encode
         self.factor = factor
+        self.method = method
 
         self.save_dir_names = {'centerness': 'centerness_seg',
                             'gaussian': 'gaussian_seg',
@@ -77,15 +79,27 @@ class PseudomaskGenerate():
         pseudomasks = []
         height = img_info['height']
         width = img_info['width']
+        area_map = np.ones((height, width)) * 1024 * 1024
         pseudomasks = np.zeros((height, width), dtype=np.int32)
-
+        
         anchor_image = self.anchor_image[self.encode]
 
         for ann in anns:
             pointobb = ann['pointobb']
-            transformed, gaussianmask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = height, host_width = width)
+            label_mask = self.coco.annToMask(ann) == 1
+            area = np.sum(label_mask)
+
+            transformed, mask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = height, host_width = width)
             transformed = transformed.astype(np.int32)
-            pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] = np.where(transformed > pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]], transformed, pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]])
+
+            if self.method == 'min_area':
+                temp_pseudomasks = np.zeros((height, width), dtype=np.int32)
+                temp_pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]] = transformed
+
+                pseudomasks[label_mask] = np.where(area < area_map[label_mask], temp_pseudomasks[label_mask], pseudomasks[label_mask])
+                area_map[label_mask] = np.where(area < area_map[label_mask], area, area_map[label_mask])
+            elif self.method == 'min_score':
+                pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]] = np.where(transformed > pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]], transformed, pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]])
             
         # save pseudomask
         pseudomask_file = os.path.join(self.save_path, image_name)
@@ -121,11 +135,12 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    encode = 'ellipse'   # centerness, gaussian, ellipse
+    encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
     factor = 4
     save_vis = False
     show_pseudomask = False
+    method = 'min_area'     # min_area, min_score
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version,
                 imageset=imageset,
@@ -137,6 +152,7 @@ if __name__ == '__main__':
                 encode=encode,
                 factor=factor,
                 heatmap_rate=heatmap_rate,
+                method=method,
                 multi_processing=False)
 
     pseudomask_gen.generate_pseudomask_core()

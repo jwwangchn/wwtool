@@ -85,7 +85,7 @@ class PseudomaskGenerate():
             pointobb = ann['pointobb']
             transformed, gaussianmask_location = pointobb2pseudomask(pointobb, anchor_image, host_height = height, host_width = width)
             transformed = transformed.astype(np.int32)
-            pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] += transformed
+            pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]] = np.where(transformed > pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]], transformed, pseudomasks[gaussianmask_location[1]:gaussianmask_location[3], gaussianmask_location[0]:gaussianmask_location[2]])
             
         # save pseudomask
         pseudomask_file = os.path.join(self.save_path, image_name)
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     encode = 'ellipse'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
-    factor = 2
+    factor = 4
     save_vis = False
     show_pseudomask = False
 

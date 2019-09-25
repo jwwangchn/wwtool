@@ -20,11 +20,5 @@ def split_image(img, subsize=1024, gap=200):
             subimage = img[start_y:end_y, start_x:end_x, ...]
             coordinate = (start_x, start_y)
             subimages[coordinate] = subimage
-            # print(subimage.shape)
 
     return subimages
-
-if __name__ == '__main__':
-    img = np.random.rand(5292, 3371)
-    subimages = split_image(img, 1024, 512)
-    print(subimages.keys())

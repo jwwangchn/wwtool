@@ -84,6 +84,9 @@ def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, 
     curImg = coco.imgs[imgId]
     imageSize = (curImg['height'], curImg['width'])
     labelMap = np.zeros(imageSize)
+    areaMap = np.ones(imageSize) * 1024 * 1024
+    tempLabel = np.ones(imageSize)
+    tempArea = np.ones(imageSize)
 
     # Get annotations of the current image (may be empty)
     imgAnnots = [a for a in coco.anns.values() if a['image_id'] == imgId]
@@ -97,6 +100,8 @@ def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, 
     #labelMasks = mask.decode([a['segmentation'] for a in imgAnnots])
     for a in range(0, len(imgAnnots)):
         labelMask = coco.annToMask(imgAnnots[a]) == 1
+        area = np.sum(labelMask)
+        
         #labelMask = labelMasks[:, :, a] == 1
         newLabel = imgAnnots[a]['category_id']
 
@@ -106,7 +111,10 @@ def cocoSegmentationToSegmentationMap(coco, imgId, checkUniquePixelLabel=False, 
         if binary_mask == True:
             labelMap[labelMask] = 1
         else:
-            labelMap[labelMask] = newLabel
+            
+            labelMap[labelMask] = np.where(areaMap[labelMask] > area, newLabel, labelMap[labelMask])
+            areaMap[labelMask] = np.where(areaMap[labelMask] > area, area, areaMap[labelMask])
+            # labelMap[labelMask] = newLabel
 
     return labelMap
 
@@ -162,12 +170,12 @@ def cocoSegmentationToPng(coco, imgId, pngPath, includeCrowd=False, vis=False, r
     else:
         png.save(pngPath, format='PNG')
 
-def getCMap(stuffStartId=0, stuffEndId=15, cmapName='Paired', addThings=False, addUnlabeled=False, addOther=False, vis=False):
+def getCMap(stuffStartId=0, stuffEndId=15, cmapName='tab20', addThings=False, addUnlabeled=False, addOther=False, vis=False):
     '''
     Create a color map for the classes in the COCO Stuff Segmentation Challenge.
     :param stuffStartId: (optional) index where stuff classes start
     :param stuffEndId: (optional) index where stuff classes end
-    :param cmapName: (optional) Matlab's name of the color map
+    :param cmapName: (optional) Matlab's name of the color map (Paired)
     :param addThings: (optional) whether to add a color for the 91 thing classes
     :param addUnlabeled: (optional) whether to add a color for the 'unlabeled' class
     :param addOther: (optional) whether to add a color for the 'other' class

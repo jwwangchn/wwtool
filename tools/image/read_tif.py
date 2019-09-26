@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-from wwtool.image import convert_16bit_to_8bit
+from wwtool.transforms import convert_16bit_to_8bit
 from wwtool.visualization import show_image
 
 

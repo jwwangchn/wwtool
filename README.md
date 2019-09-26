@@ -25,3 +25,29 @@ python setup.py develop
 - [ ] Dataset statistic
 - [ ] Results generation tools for dota and visdrone dataset
 - [ ] Data augmentation
+
+### Structure
+- scripts
+- tests
+- tools
+- wwtool
+    - cnn:              CNN Modules by PyTorch
+    - models:           Models for detection, classification and segmentation
+    - ops:              C++ or Cython codes for CNN operation
+    - datasets:         Create and read data from dataset
+    - transforms:       bbox and image transformation
+        - image
+        - bbox
+    - fileio:           file operation
+        - image
+        - file
+        - label
+    - visualization:    code for visualization
+        - image
+    - utils:            tools for other tasks
+        - pid
+        - email
+        - uart
+        - path
+        - config
+        - progressbar

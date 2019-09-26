@@ -5,7 +5,6 @@ import numpy as np
 
 import mmcv
 
-
 def copy_image_files(src_path, dst_path, dst_file_format=None):
     img_file_list = os.listdir(src_path)
     progress_bar = mmcv.ProgressBar(len(img_file_list))
@@ -22,13 +21,3 @@ def copy_image_files(src_path, dst_path, dst_file_format=None):
             dst_file = os.path.join(dst_path, os.path.splitext(img_file)[0] + '.' + dst_file_format)
             cv2.imwrite(dst_file, img)
             progress_bar.update()
-
-def copy_files(src_path, dst_path):
-    img_file_list = os.listdir(src_path)
-    progress_bar = mmcv.ProgressBar(len(img_file_list))
-    for img_file in img_file_list:
-        src_file = os.path.join(src_path, img_file)
-        dst_file = os.path.join(dst_path, img_file)
-        shutil.copy(src_file, dst_file)
-        progress_bar.update()
-    

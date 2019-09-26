@@ -68,6 +68,3 @@ def generate_ellipse_image(height, width, threshold=128):
     ellipse_image = np.clip((ellipse_image * (255 - threshold) + threshold), 0, 255).astype(np.uint8)
 
     return ellipse_image
-
-    
-    

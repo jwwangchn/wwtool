@@ -1,15 +1,23 @@
 import numpy as np
 import cv2
 
-def split_image(img, subsize=1024, gap=200):
+def split_image(img, subsize=1024, gap=200, mode='keep_all'):
     img_height, img_width = img.shape[0], img.shape[1]
 
     start_xs = np.arange(0, img_width, subsize - gap)
-    start_xs[-1] = img_width - subsize if img_width - start_xs[-1] <= subsize else start_xs[-1]
+    if mode == 'keep_all':
+        start_xs[-1] = img_width - subsize if img_width - start_xs[-1] <= subsize else start_xs[-1]
+    elif mode == 'drop_boundary':
+        if img_width - start_xs[-1] < subsize - gap:
+            start_xs = np.delete(start_xs, -1)
     start_xs[-1] = np.maximum(start_xs[-1], 0)
 
     start_ys = np.arange(0, img_height, subsize - gap)
-    start_ys[-1] = img_height - subsize if img_height - start_ys[-1] <= subsize else start_ys[-1]
+    if mode == 'keep_all':
+        start_ys[-1] = img_height - subsize if img_height - start_ys[-1] <= subsize else start_ys[-1]
+    elif mode == 'drop_boundary':
+        if img_height - start_ys[-1] < subsize - gap:
+            start_ys = np.delete(start_ys, -1)
     start_ys[-1] = np.maximum(start_ys[-1], 0)
 
     subimages = dict()

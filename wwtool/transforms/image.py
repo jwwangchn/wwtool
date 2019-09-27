@@ -1,6 +1,17 @@
 import numpy as np
 import cv2
 
+def impad(img, shape, pad_val=0, model='center'):
+    pass
+
+def convert_16bit_to_8bit(img):
+    max_value = np.max(img)
+    min_value = np.min(img)
+    img = (img - min_value) / (max_value - min_value) * 255
+    img = img.astype(np.uint8)
+
+    return img
+
 def split_image(img, subsize=1024, gap=200):
     img_height, img_width = img.shape[0], img.shape[1]
 

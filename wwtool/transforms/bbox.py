@@ -9,9 +9,16 @@ from pycocotools.cocoeval import COCOeval
 import pycocotools.mask as maskUtils
 
 
-def segm2rbbox(segms):
+def segm2rbbox(segms, dilate=False):
     mask = maskUtils.decode(segms).astype(np.bool)
     gray = np.array(mask*255, dtype=np.uint8)
+    if dilate:
+        h, w = gray.shape[0], gray.shape[1]
+        size = np.sum(gray / 255)
+        niter = int(math.sqrt(size * min(w, h) / (w * h)) * 2)
+        print(niter)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1 + niter, 1 + niter))
+        gray = cv2.dilate(gray, kernel)
     images, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if contours != []:
@@ -120,6 +127,7 @@ def bbox2pointobb(bbox):
     pointobb = [x1, y1, x2, y2, x3, y3, x4, y4]
     
     return pointobb
+
 
 def pointobb2sampleobb(pointobb, rate):
     """

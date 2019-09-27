@@ -176,7 +176,7 @@ if __name__ == '__main__':
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb,
                   'keypoint': show_keypoint}
-    show_flag = 'pointobb'
+    show_flag = 'maskobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
@@ -186,12 +186,12 @@ if __name__ == '__main__':
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    imgDir = './data/hrsc/{}/coco/{}/'.format(release_version, imageset)
-    annFile='./data/hrsc/{}/coco/annotations/hrsc_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
+    imgDir = './data/dota/{}/coco/{}/'.format(release_version, imageset)
+    annFile='./data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
 
     coco=COCO(annFile)
 
-    catIds = coco.getCatIds(catNms=[''])
+    catIds = coco.getCatIds(catNms=['swimming-pool'])
     imgIds = coco.getImgIds(catIds=catIds)
 
     for idx, imgId in enumerate(imgIds):

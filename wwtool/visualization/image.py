@@ -304,3 +304,4 @@ def show_image_surface_curve(img, direction=0, show=True):
         plt.show()
 
     return data_x, data_y
+    

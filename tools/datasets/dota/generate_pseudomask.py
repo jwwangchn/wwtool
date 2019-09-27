@@ -14,7 +14,7 @@ from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
 from wwtool.visualization import show_grayscale_as_heatmap
 from wwtool.datasets import cocoSegmentationToPng
-from wwtool.image import generate_gaussian_image, generate_centerness_image, generate_ellipse_image
+from wwtool.generation import generate_gaussian_image, generate_centerness_image, generate_ellipse_image
 
 class PseudomaskGenerate():
     def __init__(self,
@@ -95,7 +95,6 @@ class PseudomaskGenerate():
             if self.method == 'min_area':
                 temp_pseudomasks = np.zeros((height, width), dtype=np.int32)
                 temp_pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]] = transformed
-
                 pseudomasks[label_mask] = np.where(area < area_map[label_mask], temp_pseudomasks[label_mask], pseudomasks[label_mask])
                 area_map[label_mask] = np.where(area < area_map[label_mask], area, area_map[label_mask])
             elif self.method == 'min_score':

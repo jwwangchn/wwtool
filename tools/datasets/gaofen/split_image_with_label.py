@@ -1,10 +1,12 @@
 import os
 import numpy as np
 import cv2
+from PIL import Image
 from skimage.io import imread
 
 import wwtool
 
+Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 
 if __name__ == '__main__':
     image_sets = ['trainval']

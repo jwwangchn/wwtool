@@ -2,30 +2,23 @@ import os
 import numpy as np
 import xml.etree.ElementTree as ET
 
+from wwtool.utils import mkdir_or_exist
 
-def voc_dump(label_file):
-    """parse VOC style dataset label file
+
+def simpletxt_dump(objects, file):
+    """dump object information to simple txt label files
     
     Arguments:
+        objects {dict} -- object information
         label_file {str} -- label file path
     
     Returns:
-        dict, {'bbox': [xmin, ymin, xmax, ymax], 'label': class_name} -- objects' location and class
+        None
     """
-    tree = ET.parse(label_file)
-    root = tree.getroot()
-    objects = []
-    for single_object in root.findall('object'):
-        bndbox = single_object.find('bndbox')
-        object_struct = {}
-
-        xmin = float(bndbox.find('xmin').text)
-        ymin = float(bndbox.find('ymin').text)
-        xmax = float(bndbox.find('xmax').text)
-        ymax = float(bndbox.find('ymax').text)
-
-        object_struct['bbox'] = [xmin, ymin, xmax, ymax]
-        object_struct['label'] = single_object.find('name').text
-        
-        objects.append(object_struct)
-    return objects
+    with open(file, 'w') as f:
+        for obj in objects:
+            bbox = obj['bbox']
+            label = obj['label']
+            content = " ".join(list(map(str, map(int, bbox))))
+            content = content + ' ' + label + '\n'
+            f.write(content)

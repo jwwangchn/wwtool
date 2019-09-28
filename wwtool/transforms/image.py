@@ -12,7 +12,7 @@ def convert_16bit_to_8bit(img):
 
     return img
 
-def split_image(img, subsize=1024, gap=200):
+def split_image(img, subsize=1024, gap=200, model='keep_all'):
     img_height, img_width = img.shape[0], img.shape[1]
 
     start_xs = np.arange(0, img_width, subsize - gap)

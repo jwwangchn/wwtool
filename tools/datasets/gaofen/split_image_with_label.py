@@ -15,7 +15,9 @@ if __name__ == '__main__':
         label_path = '/data/gaofen/v0/{}/labels'.format(image_set)
 
         image_save_path = '/data/gaofen/v1/{}/images'.format(image_set)
+        wwtool.mkdir_or_exist(image_save_path)
         label_save_path = '/data/gaofen/v1/{}/labels'.format(image_set)
+        wwtool.mkdir_or_exist(label_save_path)
 
         # print(os.listdir(label_path))
         for idx, label_file in enumerate(os.listdir(label_path)):
@@ -31,15 +33,16 @@ if __name__ == '__main__':
 
             subimages = wwtool.split_image(img, subsize=1024, gap=200)
             subimage_coordinates = list(subimages.keys())
+            bboxes_ = bboxes.copy()
             
             for subimage_coordinate in subimage_coordinates:
                 objects = []
                 
-                bboxes[:, 0] = bboxes[:, 0] - subimage_coordinate[0]
-                bboxes[:, 1] = bboxes[:, 1] - subimage_coordinate[1]
-                cx_bool = np.logical_and(bboxes[:, 0] >= 0, bboxes[:, 0] < 1024)
-                cy_bool = np.logical_and(bboxes[:, 1] >= 0, bboxes[:, 1] < 1024)
-                subimage_bboxes = bboxes[np.logical_and(cx_bool, cy_bool)]
+                bboxes_[:, 0] = bboxes[:, 0] - subimage_coordinate[0]
+                bboxes_[:, 1] = bboxes[:, 1] - subimage_coordinate[1]
+                cx_bool = np.logical_and(bboxes_[:, 0] >= 0, bboxes_[:, 0] < 1024)
+                cy_bool = np.logical_and(bboxes_[:, 1] >= 0, bboxes_[:, 1] < 1024)
+                subimage_bboxes = bboxes_[np.logical_and(cx_bool, cy_bool)]
                 
                 if len(subimage_bboxes) == 0:
                     continue

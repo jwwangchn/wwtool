@@ -17,7 +17,9 @@ if __name__ == '__main__':
         image_save_path = '/data/gaofen/v1/{}/images'.format(image_set)
         label_save_path = '/data/gaofen/v1/{}/labels'.format(image_set)
 
-        for label_file in os.listdir(label_path):
+        # print(os.listdir(label_path))
+        for idx, label_file in enumerate(os.listdir(label_path)):
+            print(idx, label_file)
             file_name = label_file.split('.xml')[0]
             label_file = os.path.join(label_path, file_name + '.xml')
             image_file = os.path.join(image_path, file_name + '.png')
@@ -25,7 +27,34 @@ if __name__ == '__main__':
             img = imread(image_file)
 
             objects = wwtool.rovoc_parse(label_file)
-            label_save_file = os.path.join(label_save_path, file_name + '.txt')
-            wwtool.split_image(img, subsize=1024, gap=200)
+            bboxes = np.array([obj['bbox'] for obj in objects])
+
+            subimages = wwtool.split_image(img, subsize=1024, gap=200)
+            subimage_coordinates = list(subimages.keys())
+            bboxes_ = bboxes.copy()
             
-            wwtool.simpletxt_dump(objects, label_save_file)
+            for subimage_coordinate in subimage_coordinates:
+                objects = []
+                
+                bboxes_[:, 0] = bboxes[:, 0] - subimage_coordinate[0]
+                bboxes_[:, 1] = bboxes[:, 1] - subimage_coordinate[1]
+                cx_bool = np.logical_and(bboxes_[:, 0] >= 0, bboxes_[:, 0] < 1024)
+                cy_bool = np.logical_and(bboxes_[:, 1] >= 0, bboxes_[:, 1] < 1024)
+                subimage_bboxes = bboxes_[np.logical_and(cx_bool, cy_bool)]
+                
+                if len(subimage_bboxes) == 0:
+                    continue
+                img = subimages[subimage_coordinate]
+                if np.mean(img) == 0:
+                    continue
+
+                label_save_file = os.path.join(label_save_path, '{}__{}_{}.txt'.format(file_name, subimage_coordinate[0], subimage_coordinate[1]))
+                image_save_file = os.path.join(image_save_path, '{}__{}_{}.png'.format(file_name, subimage_coordinate[0], subimage_coordinate[1]))
+                cv2.imwrite(image_save_file, img)
+                
+                for subimage_bbox in subimage_bboxes:
+                    subimage_objects = dict()
+                    subimage_objects['bbox'] = subimage_bbox.tolist()
+                    subimage_objects['label'] = 'ship'
+                    objects.append(subimage_objects)
+                wwtool.simpletxt_dump(objects, label_save_file)

@@ -12,21 +12,21 @@ def convert_16bit_to_8bit(img):
 
     return img
 
-def split_image(img, subsize=1024, gap=200, model='keep_all'):
+def split_image(img, subsize=1024, gap=200, mode='keep_all'):
     img_height, img_width = img.shape[0], img.shape[1]
 
     start_xs = np.arange(0, img_width, subsize - gap)
-    if model == 'keep_all':
+    if mode == 'keep_all':
         start_xs[-1] = img_width - subsize if img_width - start_xs[-1] <= subsize else start_xs[-1]
-    elif model == 'drop_boundary':
+    elif mode == 'drop_boundary':
         if img_width - start_xs[-1] < subsize - gap:
             start_xs = np.delete(start_xs, -1)
     start_xs[-1] = np.maximum(start_xs[-1], 0)
 
     start_ys = np.arange(0, img_height, subsize - gap)
-    if model == 'keep_all':
+    if mode == 'keep_all':
         start_ys[-1] = img_height - subsize if img_height - start_ys[-1] <= subsize else start_ys[-1]
-    elif model == 'drop_boundary':
+    elif mode == 'drop_boundary':
         if img_height - start_ys[-1] < subsize - gap:
             start_ys = np.delete(start_ys, -1)
     start_ys[-1] = np.maximum(start_ys[-1], 0)

@@ -19,6 +19,8 @@ def simpletxt_dump(objects, file):
         for obj in objects:
             bbox = obj['bbox']
             label = obj['label']
-            content = " ".join(list(map(str, map(int, bbox))))
+            bbox = [round(_, 3) for _ in map(float, bbox)]
+            bbox = ["{:.4f}".format(_) for _ in bbox]
+            content = " ".join(map(str, bbox))
             content = content + ' ' + label + '\n'
             f.write(content)

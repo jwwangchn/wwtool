@@ -135,6 +135,8 @@ def imshow_rbboxes(img_or_path,
     for rbbox, label, score in zip(rbboxes, labels_vis, scores_vis):
         if score < score_threshold:
             continue
+        if len(rbbox) == 5:
+            rbbox = np.array(thetaobb2pointobb(rbbox))
         rbbox = rbbox.astype(np.int32)
 
         cx = np.mean(rbbox[::2])
@@ -149,6 +151,7 @@ def imshow_rbboxes(img_or_path,
             cv2.putText(img, "{:.2f}".format(score), (cx, cy), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = colors, thickness = 2, lineType = 8)
 
     if show:
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
         cv2.imshow(win_name, img)
         cv2.waitKey(wait_time)
     if out_file is not None:
@@ -304,3 +307,4 @@ def show_image_surface_curve(img, direction=0, show=True):
         plt.show()
 
     return data_x, data_y
+    

@@ -58,3 +58,27 @@ def rovoc_parse(label_file):
         
         objects.append(object_struct)
     return objects
+
+def simpletxt_parse(label_file):
+    """parse simpletxt style dataset label file
+    
+    Arguments:
+        label_file {str} -- label file path
+    
+    Returns:
+        dict, {'bbox': [...], 'label': class_name} -- objects' location and class
+    """
+    with open(label_file, 'r') as f:
+        lines = f.readlines()
+    
+    objects = []
+    for line in lines:
+        object_struct = dict()
+        line = line.rstrip().split(' ')
+        label = line[-1]
+        bbox = [float(_) for _ in line[:-1]]
+        object_struct['bbox'] = bbox
+        object_struct['label'] = label
+        objects.append(object_struct)
+    
+    return objects

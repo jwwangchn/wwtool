@@ -58,9 +58,11 @@ def show_pointobb(imgDir, img, anns):
         #         color = (0, 0, 255)
         #     else:
         #         color = (255, 0, 0)
-        #     color = (255, 153, 102)
+        #     # color = (255, 153, 102)
+        #     color = (75, 25, 230)
         #     cv2.circle(im, (int(pointobb[2 * idx]), int(pointobb[2 * idx + 1])), 5, color, -1)
-        color = (255, 153, 102)
+        # color = (255, 153, 102)
+        color = (75, 25, 230)
         im = draw_rectangle_by_points(im, pointobb, color=color)
     cv2.imwrite('1.jpg', im)
     cv2.imshow('demo', im)
@@ -176,7 +178,7 @@ if __name__ == '__main__':
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb,
                   'keypoint': show_keypoint}
-    show_flag = 'maskobb'
+    show_flag = 'pointobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
@@ -191,14 +193,14 @@ if __name__ == '__main__':
 
     coco=COCO(annFile)
 
-    catIds = coco.getCatIds(catNms=['swimming-pool'])
+    catIds = coco.getCatIds(catNms=[''])
     imgIds = coco.getImgIds(catIds=catIds)
 
     for idx, imgId in enumerate(imgIds):
         img = coco.loadImgs(imgIds[idx])[0]
 
-        # if img['file_name'] != 'P2246__1.0__0___84.png':
-        #     continue
+        if img['file_name'] != 'P0002__1.0__1533___0.png':
+            continue
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)

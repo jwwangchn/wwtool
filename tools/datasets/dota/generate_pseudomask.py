@@ -43,14 +43,14 @@ class PseudomaskGenerate():
                             'gaussian': 'gaussian_seg',
                             'ellipse': 'ellipse_seg'}
 
-        self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
-        self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
+        self.annFile = './data/{}/{}/coco/annotations/{}_{}_{}_{}_{}_{}.json'.format(core_dataset, self.release_version, core_dataset, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
         
         self.save_vis = save_vis
         self.show_pseudomask = show_pseudomask
 
-        self.save_path = './data/dota/{}/{}/{}'.format(self.release_version, self.imageset, self.save_dir_names[self.encode])
-        self.save_vis_path = './data/dota/{}/{}/pseudomask_vis'.format(self.release_version, self.imageset)
+        self.save_path = './data/{}/{}/{}/{}'.format(core_dataset, self.release_version, self.imageset, self.save_dir_names[self.encode])
+        self.save_vis_path = './data/{}/{}/{}/pseudomask_vis'.format(core_dataset, self.release_version, self.imageset)
 
         mmcv.mkdir_or_exist(self.save_path)
         mmcv.mkdir_or_exist(self.save_vis_path)
@@ -74,6 +74,8 @@ class PseudomaskGenerate():
     def __generate_pseudomask(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
+        # if image_name != 'P2802__1.0__4914___4225.png':
+        #     return
         annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)
         anns = self.coco.loadAnns(annIds)
         pseudomasks = []
@@ -128,6 +130,7 @@ class PseudomaskGenerate():
                 self.progress_bar.update()
 
 if __name__ == '__main__':
+    core_dataset = 'hrsc'
     release_version = 'v1'
     imageset = 'trainval'
     rate = '1.0'

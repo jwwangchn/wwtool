@@ -33,13 +33,13 @@ class Core():
         self.binary_mask = binary_mask
         self.vis = vis
 
-        self.imgDir = './data/dota/{}/coco/{}/'.format(self.release_version, self.imageset)
-        self.annFile = './data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(self.release_version, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
+        self.annFile = './data/{}/{}/coco/annotations/{}_{}_{}_{}_{}_{}.json'.format(core_dataset, self.release_version, core_dataset, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
         if binary_mask == True:
-            self.save_path = './data/dota/{}/{}/obb_seg_binary'.format(self.release_version, self.imageset)
+            self.save_path = './data/{}/{}/{}/obb_seg_binary'.format(core_dataset, self.release_version, self.imageset)
             self.stuffEndId = 1
         else:
-            self.save_path = './data/dota/{}/{}/obb_seg'.format(self.release_version, self.imageset)
+            self.save_path = './data/{}/{}/{}/obb_seg'.format(core_dataset, self.release_version, self.imageset)
             self.stuffEndId = 15
         mmcv.mkdir_or_exist(self.save_path)
 
@@ -53,7 +53,7 @@ class Core():
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
         # img_list = ['P0019__1.0__824___824.png', 'P0858__1.0__0___441.png', 'P1399__1.0__3296___3296.png', 'P1466__1.0__2472___2472.png', 'P0867__1.0__1794___1027.png']
-        # # img_list = ['P0867__1.0__1794___1027.png']
+        # img_list = ['P2802__1.0__4914___4225.png']
         # if image_name not in img_list:
         #     return
         pseudomask_file = os.path.join(self.save_path, image_name)
@@ -70,6 +70,7 @@ class Core():
                 self.progress_bar.update()
 
 if __name__ == '__main__':
+    core_dataset = 'hrsc'
     release_version = 'v1'
     imageset = 'trainval'
     rate = '1.0'

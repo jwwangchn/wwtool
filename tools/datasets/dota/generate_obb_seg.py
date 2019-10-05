@@ -56,7 +56,7 @@ class Core():
         # img_list = ['P2802__1.0__4914___4225.png']
         # if image_name not in img_list:
         #     return
-        pseudomask_file = os.path.join(self.save_path, image_name)
+        pseudomask_file = os.path.join(self.save_path, image_name.replace('bmp', 'png'))
         cocoSegmentationToPng(self.coco, imgId, pseudomask_file, vis=self.vis, return_flag=False, stuffStartId=0, stuffEndId=self.stuffEndId, binary_mask=self.binary_mask)
 
     def generate_segmentation(self):

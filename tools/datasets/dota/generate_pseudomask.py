@@ -103,7 +103,7 @@ class PseudomaskGenerate():
                 pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]] = np.where(transformed > pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]], transformed, pseudomasks[mask_location[1]:mask_location[3], mask_location[0]:mask_location[2]])
             
         # save pseudomask
-        pseudomask_file = os.path.join(self.save_path, image_name.replace)
+        pseudomask_file = os.path.join(self.save_path, image_name)
         pseudomasks = np.clip(pseudomasks, 0, 255)
         # pseudomasks = pseudomasks * 255.0
         pseudomasks = pseudomasks.astype(np.uint8)

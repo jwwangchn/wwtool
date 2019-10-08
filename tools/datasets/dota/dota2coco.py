@@ -151,7 +151,7 @@ if __name__ == "__main__":
     dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'
-    groundtruth = True
+    groundtruth = False
     single_category = None
     keypoint = True
 

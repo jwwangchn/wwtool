@@ -86,7 +86,7 @@ class DOTA2COCO(Convert2COCO):
         else:
             obj_struct = {}
             obj_struct['segmentation'] = [0, 0, 0, 0, 0, 0, 0, 0]
-            obj_struct['keypoint'] = [0, 0, 0, 0, 0, 0, 0, 0]
+            obj_struct['keypoints'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['pointobb'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['thetaobb'] = [0, 0, 0, 0, 0]
             obj_struct['hobb'] = [0, 0, 0, 0, 0]

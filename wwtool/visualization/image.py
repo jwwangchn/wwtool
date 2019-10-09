@@ -14,6 +14,8 @@ def imshow_bboxes(img_or_path,
                   scores=None,
                   score_threshold=0.0,
                   colors='red',
+                  show_label=False,
+                  show_score=False,
                   thickness=3,
                   show=True,
                   win_name='',
@@ -36,6 +38,9 @@ def imshow_bboxes(img_or_path,
         img = img_or_path
         img_origin = img.copy()
 
+    if len(bboxes) == []:
+        return
+
     if isinstance(bboxes, list):
         bboxes = np.array(bboxes)
 
@@ -56,7 +61,12 @@ def imshow_bboxes(img_or_path,
         if scores_vis.ndim == 0:
             scores_vis = np.array([scores_vis])
 
-    colors = color_val(colors)
+    if labels is None:
+        colors = dict()
+        colors[colors] = color_val(colors)
+    else:
+        max_label = max(labels)
+        colors = [color_val(_) for _ in range(max_label + 1)]
 
     for bbox, label, score in zip(bboxes, labels_vis, scores_vis):
         if score < score_threshold:
@@ -64,11 +74,13 @@ def imshow_bboxes(img_or_path,
         bbox = bbox.astype(np.int32)
         xmin, ymin, xmax, ymax = bbox
 
-        cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=colors, thickness=thickness)
-        if labels is not None:
-            cv2.putText(img, label, (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = colors, thickness = 2, lineType = 8)
-        if scores is not None:
-            cv2.putText(img, "{:.2f}".format(score), (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = colors, thickness = 2, lineType = 8)
+        current_color = colors[label]
+        cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=current_color, thickness=thickness)
+
+        if show_label:
+            cv2.putText(img, label, (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
+        if show_score:
+            cv2.putText(img, "{:.2f}".format(score), (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
 
     if show:
         cv2.imshow(win_name, img)
@@ -91,6 +103,8 @@ def imshow_rbboxes(img_or_path,
                   scores=None,
                   score_threshold=0.0,
                   colors='red',
+                  show_label=False,
+                  show_score=False,
                   thickness=3,
                   show=True,
                   win_name='',
@@ -110,9 +124,17 @@ def imshow_rbboxes(img_or_path,
     else:
         img = img_or_path
 
+    if rbboxes == []:
+        return
+
     if isinstance(rbboxes, list):
         rbboxes = np.array(rbboxes)
-
+    
+    if rbboxes.shape[1] == 5:
+        rbboxes_ = []
+        for rbbox in rbboxes:
+            rbboxes_.append(thetaobb2pointobb(rbbox))
+        rbboxes = np.array(rbboxes_)
     if rbboxes.ndim == 1:
         rbboxes = np.array([rbboxes])
 
@@ -130,7 +152,12 @@ def imshow_rbboxes(img_or_path,
         if scores_vis.ndim == 0:
             scores_vis = np.array([scores_vis])
 
-    colors = color_val(colors)
+    if labels is None:
+        colors = dict()
+        colors[colors] = color_val(colors)
+    else:
+        max_label = max(labels)
+        colors = [color_val(_) for _ in range(max_label + 1)]
 
     for rbbox, label, score in zip(rbboxes, labels_vis, scores_vis):
         if score < score_threshold:
@@ -142,13 +169,15 @@ def imshow_rbboxes(img_or_path,
         cx = np.mean(rbbox[::2])
         cy = np.mean(rbbox[1::2])
 
-        for idx in range(-1, 3, 1):
-            cv2.line(img, (int(rbbox[idx*2]), int(rbbox[idx*2+1])), (int(rbbox[(idx+1)*2]), int(rbbox[(idx+1)*2+1])), colors, thickness=thickness)
+        current_color = colors[label]
 
-        if labels is not None:
-            cv2.putText(img, label, (cx, cy), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = colors, thickness = 2, lineType = 8)
-        if scores is not None:
-            cv2.putText(img, "{:.2f}".format(score), (cx, cy), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = colors, thickness = 2, lineType = 8)
+        for idx in range(-1, 3, 1):
+            cv2.line(img, (int(rbbox[idx*2]), int(rbbox[idx*2+1])), (int(rbbox[(idx+1)*2]), int(rbbox[(idx+1)*2+1])), current_color, thickness=thickness)
+
+        if show_label:
+            cv2.putText(img, label, (cx, cy), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
+        if show_score:
+            cv2.putText(img, "{:.2f}".format(score), (cx, cy), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
 
     if show:
         cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)

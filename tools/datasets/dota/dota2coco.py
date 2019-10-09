@@ -86,7 +86,7 @@ class DOTA2COCO(Convert2COCO):
         else:
             obj_struct = {}
             obj_struct['segmentation'] = [0, 0, 0, 0, 0, 0, 0, 0]
-            obj_struct['keypoint'] = [0, 0, 0, 0, 0, 0, 0, 0]
+            obj_struct['keypoints'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['pointobb'] = [0, 0, 0, 0, 0, 0, 0, 0]
             obj_struct['thetaobb'] = [0, 0, 0, 0, 0]
             obj_struct['hobb'] = [0, 0, 0, 0, 0]
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'
-    groundtruth = True
+    groundtruth = False
     single_category = None
     keypoint = True
 

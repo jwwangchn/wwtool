@@ -88,8 +88,7 @@ class PseudomaskGenerate():
         anchor_image = self.anchor_image[self.encode]
 
         for ann in anns:
-            pointobb = ann['rbbox']
-            pointobb = wwtool.thetaobb2pointobb(pointobb)
+            pointobb = ann['pointobb']
             label_mask = self.coco.annToMask(ann) == 1
             area = np.sum(label_mask)
 

@@ -10,6 +10,7 @@ import sys
 import concurrent.futures
 
 import mmcv
+import wwtool
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
 from wwtool.transforms import pointobb_rescale, thetaobb_rescale, hobb_rescale, pointobb2pseudomask
 from wwtool.visualization import show_grayscale_as_heatmap
@@ -87,7 +88,8 @@ class PseudomaskGenerate():
         anchor_image = self.anchor_image[self.encode]
 
         for ann in anns:
-            pointobb = ann['pointobb']
+            pointobb = ann['rbbox']
+            pointobb = wwtool.thetaobb2pointobb(pointobb)
             label_mask = self.coco.annToMask(ann) == 1
             area = np.sum(label_mask)
 

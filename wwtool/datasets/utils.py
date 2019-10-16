@@ -32,6 +32,7 @@ def shuffle_dataset(origin_dataset_dir, trainval_dir, test_dir, trainval_rate=0.
     wwtool.mkdir_or_exist(test_dst_image_path)
 
     file_names = [label_file.split('.txt')[0] for label_file in os.listdir(src_label_path)]
+    file_names = sorted(file_names)
     np.random.shuffle(file_names)
 
     trainval_file_names = file_names[0 : int(len(file_names) * trainval_rate)]

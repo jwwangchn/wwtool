@@ -183,9 +183,9 @@ if __name__ == "__main__":
 
     for imageset in imagesets:
         
-        imgpath = './data/dota/{}/{}/images'.format(release_version, imageset)
-        annopath = './data/dota/{}/{}/labelTxt-{}'.format(release_version, imageset, dota_version)
-        save_path = './data/dota/{}/coco/annotations'.format(release_version)
+        imgpath = '/data/gaofen/dota/{}/{}/images'.format(release_version, imageset)
+        annopath = '/data/gaofen/dota/{}/{}/labels'.format(release_version, imageset)
+        save_path = '/data/gaofen/dota/{}/coco/annotations'.format(release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 

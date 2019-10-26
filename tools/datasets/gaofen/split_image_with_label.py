@@ -11,12 +11,12 @@ Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 if __name__ == '__main__':
     image_sets = ['trainval']
     for image_set in image_sets:
-        image_path = '/data/gaofen/v0/{}/images'.format(image_set)
-        label_path = '/data/gaofen/v0/{}/labels'.format(image_set)
+        image_path = '/data/gaofen/gaofen3/v0/{}/images'.format(image_set)
+        label_path = '/data/gaofen/gaofen3/v0/{}/labels'.format(image_set)
 
-        image_save_path = '/data/gaofen/v1/{}/images'.format(image_set)
+        image_save_path = '/data/gaofen/gaofen3/v1/{}/images'.format(image_set)
         wwtool.mkdir_or_exist(image_save_path)
-        label_save_path = '/data/gaofen/v1/{}/labels'.format(image_set)
+        label_save_path = '/data/gaofen/gaofen3/v1/{}/labels'.format(image_set)
         wwtool.mkdir_or_exist(label_save_path)
 
         # print(os.listdir(label_path))
@@ -24,7 +24,7 @@ if __name__ == '__main__':
             print(idx, label_file)
             file_name = label_file.split('.xml')[0]
             label_file = os.path.join(label_path, file_name + '.xml')
-            image_file = os.path.join(image_path, file_name + '.png')
+            image_file = os.path.join(image_path, file_name + '.tif')
             
             img = imread(image_file)
 

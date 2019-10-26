@@ -131,8 +131,8 @@ if __name__ == "__main__":
 
     original_class = {'ship': 1}
     converted_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship', "keypoints": ['top', 'right', 'bottom', 'left'], "skeleton": [[1,2], [2,3], [3,4], [4,1]]}]
-    imagesets = ['trainval', 'test']
-    release_version = 'v1'
+    imagesets = ['trainval','test']
+    release_version = 'v2'
     rate = '1.0'
 
     # pointobb sort method
@@ -141,9 +141,9 @@ if __name__ == "__main__":
                             "extreme": pointobb_extreme_sort}
 
     for imageset in imagesets:
-        imgpath = './data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
-        annopath = './data/{}/{}/{}/labels'.format(core_dataset, release_version, imageset)
-        save_path = './data/{}/{}/coco/annotations'.format(core_dataset, release_version)
+        imgpath = '/data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
+        annopath = '/data/{}/{}/{}/labels'.format(core_dataset, release_version, imageset)
+        save_path = '/data/{}/{}/coco/annotations'.format(core_dataset, release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 

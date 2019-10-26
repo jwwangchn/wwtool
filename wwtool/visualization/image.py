@@ -66,6 +66,8 @@ def imshow_bboxes(img_or_path,
         colors[colors] = color_val(colors)
     else:
         max_label = max(labels)
+        if max_label > 20:
+            max_label = max_label % 20
         colors = [color_val(_) for _ in range(max_label + 1)]
 
     for bbox, label, score in zip(bboxes, labels_vis, scores_vis):
@@ -74,7 +76,7 @@ def imshow_bboxes(img_or_path,
         bbox = bbox.astype(np.int32)
         xmin, ymin, xmax, ymax = bbox
 
-        current_color = colors[label]
+        current_color = colors[label % 20]
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=current_color, thickness=thickness)
 
         if show_label:

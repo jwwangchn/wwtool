@@ -147,10 +147,10 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    imagesets = ['trainval', 'test']
+    imagesets = ['test']
     dota_version = 'v1.0'
-    release_version = 'v1'
-    rate = '1.0'
+    release_version = 'v4'
+    rate = '1.0_0.5'
     groundtruth = False
     single_category = None
     keypoint = True

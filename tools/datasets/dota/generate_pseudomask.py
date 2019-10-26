@@ -132,7 +132,7 @@ class PseudomaskGenerate():
 
 if __name__ == '__main__':
     core_dataset = 'hrsc'
-    release_version = 'v2'
+    release_version = 'v1'
     imageset = 'trainval'
     rate = '1.0'
     pointobb_sort_method = 'best'

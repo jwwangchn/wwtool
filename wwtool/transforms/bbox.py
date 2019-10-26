@@ -33,7 +33,7 @@ def segm2rbbox(segms, dilate=False):
     else:
         thetaobb = [0, 0, 0, 0, 0]
         pointobb = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-    return thetaobb, pointobb
+    return thetaobb, pointobb, contours
 
 def segm2ellipse(segms):
     mask = maskUtils.decode(segms).astype(np.bool)

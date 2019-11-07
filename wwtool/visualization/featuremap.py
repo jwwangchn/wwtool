@@ -15,4 +15,4 @@ def show_featuremap(featuremap, win_name='feature_map'):
     elif featuremap.type() == 'torch.ByteTensor':
         featuremap = featuremap.detach()
         featuremap = featuremap.numpy()[0, 0]
-    wwtool.show_grayscale_as_heatmap(featuremap, win_name=win_name, wait_time=10)
+    wwtool.show_grayscale_as_heatmap(featuremap, win_name=win_name, wait_time=10000)

@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from mmcv.utils import is_str, mkdir_or_exist
 from .color import color_val
-from wwtool.transforms import thetaobb2pointobb, impad
+from wwtool.transforms import thetaobb2pointobb, impad, hobb2pointobb
 
 def imshow_bboxes(img_or_path,
                   bboxes,
@@ -136,6 +136,10 @@ def imshow_rbboxes(img_or_path,
         rbboxes_ = []
         for rbbox in rbboxes:
             rbboxes_.append(thetaobb2pointobb(rbbox))
+            # if abs(rbbox[-1]) <= 3.15:
+            #     rbboxes_.append(thetaobb2pointobb(rbbox))
+            # else:
+            #     rbboxes_.append(hobb2pointobb(rbbox))
         rbboxes = np.array(rbboxes_)
     if rbboxes.ndim == 1:
         rbboxes = np.array([rbboxes])

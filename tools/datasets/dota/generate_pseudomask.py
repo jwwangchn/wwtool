@@ -131,7 +131,7 @@ class PseudomaskGenerate():
                 self.progress_bar.update()
 
 if __name__ == '__main__':
-    core_dataset = 'hrsc'
+    core_dataset = 'dota'
     release_version = 'v1'
     imageset = 'trainval'
     rate = '1.0'

@@ -137,7 +137,7 @@ if __name__ == "__main__":
     converted_hrsc_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship',                },]
 
     imagesets = ['trainval', 'test']
-    release_version = 'v2'
+    release_version = 'v1'
     rate = '1.0'
     groundtruth = True
     keypoint = True

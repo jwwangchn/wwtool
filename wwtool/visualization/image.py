@@ -38,7 +38,7 @@ def imshow_bboxes(img_or_path,
         img = img_or_path
         img_origin = img.copy()
 
-    if len(bboxes) == []:
+    if len(bboxes) == 0:
         return
 
     if isinstance(bboxes, list):
@@ -85,6 +85,8 @@ def imshow_bboxes(img_or_path,
             cv2.putText(img, "{:.2f}".format(score), (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
 
     if show:
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, 360, 360)
         cv2.imshow(win_name, img)
         cv2.waitKey(wait_time)
     if out_file is not None:
@@ -135,11 +137,11 @@ def imshow_rbboxes(img_or_path,
     if rbboxes.shape[1] == 5:
         rbboxes_ = []
         for rbbox in rbboxes:
-            rbboxes_.append(thetaobb2pointobb(rbbox))
-            # if abs(rbbox[-1]) <= 3.15:
-            #     rbboxes_.append(thetaobb2pointobb(rbbox))
-            # else:
-            #     rbboxes_.append(hobb2pointobb(rbbox))
+            # rbboxes_.append(thetaobb2pointobb(rbbox))
+            if abs(rbbox[-1]) <= 3.15:
+                rbboxes_.append(thetaobb2pointobb(rbbox))
+            else:
+                rbboxes_.append(hobb2pointobb(rbbox))
         rbboxes = np.array(rbboxes_)
     if rbboxes.ndim == 1:
         rbboxes = np.array([rbboxes])
@@ -168,8 +170,8 @@ def imshow_rbboxes(img_or_path,
     for rbbox, label, score in zip(rbboxes, labels_vis, scores_vis):
         if score < score_threshold:
             continue
-        if len(rbbox) == 5:
-            rbbox = np.array(thetaobb2pointobb(rbbox))
+        # if len(rbbox) == 5:
+        #     rbbox = np.array(thetaobb2pointobb(rbbox))
         rbbox = rbbox.astype(np.int32)
 
         cx = np.mean(rbbox[::2])
@@ -187,6 +189,7 @@ def imshow_rbboxes(img_or_path,
 
     if show:
         cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, 360, 360)
         cv2.imshow(win_name, img)
         cv2.waitKey(wait_time)
     if out_file is not None:
@@ -301,9 +304,11 @@ def show_grayscale_as_heatmap(grayscale_image,
 
 def show_image(img, 
                win_name='',
+               win_size=600,
                wait_time=0,
                save_name=None):
     cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(win_name, win_size, win_size)
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
     if save_name != None:

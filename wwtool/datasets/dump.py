@@ -5,7 +5,7 @@ import lxml.etree as ET
 from wwtool.utils import mkdir_or_exist
 
 
-def simpletxt_dump(objects, file):
+def simpletxt_dump(objects, anno_file):
     """dump object information to simple txt label files
     
     Arguments:
@@ -15,7 +15,7 @@ def simpletxt_dump(objects, file):
     Returns:
         None
     """
-    with open(file, 'w') as f:
+    with open(anno_file, 'w') as f:
         for obj in objects:
             bbox = obj['bbox']
             label = obj['label']

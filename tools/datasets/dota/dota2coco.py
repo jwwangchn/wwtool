@@ -5,6 +5,7 @@ import cv2
 import json
 import numpy as np
 
+import wwtool
 from wwtool.datasets import Convert2COCO
 from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb2sampleobb, pointobb_extreme_sort, pointobb_best_point_sort
 
@@ -19,6 +20,18 @@ class DOTA2COCO(Convert2COCO):
         objects = self.__dota_parse__(annotpath, imgpath)
         
         coco_annotations = []
+
+        if generate_small_dataset and len(objects) > 0:
+            wwtool.generate_same_dataset(imgpath, 
+                                         annotpath, 
+                                         dst_image_path, 
+                                         dst_label_path,
+                                         src_img_format='.png',
+                                         src_anno_format='.txt',
+                                         dst_img_format='.png',
+                                         dst_anno_format='.txt',
+                                         parse_fun=wwtool.dota_parse, 
+                                         dump_fun=wwtool.simpletxt_dump)
         
         for object_struct in objects:
             bbox = object_struct['bbox']
@@ -56,6 +69,10 @@ class DOTA2COCO(Convert2COCO):
         objects = []
         if self.groundtruth:
             dota_labels = open(dota_label_file, 'r').readlines()
+            total_object_num = len(dota_labels)
+            small_object_num = 0
+            large_object_num = 0
+            total_object_num = 0
             for dota_label in dota_labels:
                 # only save single category
                 if single_category is not None:
@@ -79,6 +96,13 @@ class DOTA2COCO(Convert2COCO):
                 ymax = max(pointobb[1::2])
                 bbox_w = xmax - xmin
                 bbox_h = ymax - ymin
+
+                total_object_num += 1
+                if bbox_h * bbox_w <= small_size:
+                    small_object_num += 1
+                if bbox_h * bbox_w >= large_object_size:
+                    large_object_num += 1
+
                 obj_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
                 obj_struct['label'] = original_dota_class[dota_label.split(' ')[8]]
 
@@ -94,7 +118,17 @@ class DOTA2COCO(Convert2COCO):
             obj_struct['label'] = 0
 
             objects.append(obj_struct)
-        return objects
+
+        if total_object_num > self.max_object_num_per_image:
+            self.max_object_num_per_image = total_object_num
+
+        if just_keep_small or generate_small_dataset:
+            if small_object_num >= total_object_num * small_object_rate and large_object_num < 1:
+                return objects
+            else:
+                return []
+        else:
+            return objects
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
@@ -147,20 +181,37 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    imagesets = ['test']
-    dota_version = 'v1.0'
-    release_version = 'v4'
-    rate = '1.0_0.5'
-    groundtruth = False
+    core_dataset_name = 'dota-v1.5'
+    imagesets = ['trainval']
+    dota_version = 'v1.5'
+    release_version = 'v1'
+    rate = '1.0'
+    groundtruth = True
     single_category = None
-    keypoint = True
+    keypoint = False
+
+    just_keep_small = False
+    generate_small_dataset = False
+    small_size = 16 * 16
+    small_object_rate = 0.5
+    large_object_size = 128 * 128
 
     extra_info = ''
+
+    if just_keep_small:
+        extra_info += '_small_object'
+
+    if generate_small_dataset:
+        dst_image_path = '/data/small/{}/images'.format(core_dataset_name)
+        dst_label_path = '/data/small/{}/labels'.format(core_dataset_name)
+        wwtool.mkdir_or_exist(dst_image_path)
+        wwtool.mkdir_or_exist(dst_label_path)
+
     if keypoint:
         for idx in range(len(converted_dota_class)):
             converted_dota_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
             converted_dota_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
-        extra_info += 'keypoint'
+        extra_info += '_keypoint'
     
     if groundtruth == False:
         extra_info += '_no_ground_truth'
@@ -182,10 +233,9 @@ if __name__ == "__main__":
         original_dota_class['container-crane'] = 16
 
     for imageset in imagesets:
-        
-        imgpath = '/data/dota/{}/{}/images'.format(release_version, imageset)
-        annopath = '/data/dota/{}/{}/labels'.format(release_version, imageset)
-        save_path = '/data/dota/{}/coco/annotations'.format(release_version)
+        imgpath = '/data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
+        annopath = '/data/{}/{}/{}/labelTxt-{}'.format(core_dataset_name, release_version, imageset, dota_version)
+        save_path = '/data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -209,5 +259,5 @@ if __name__ == "__main__":
                     "annotations" : annotations,
                     "categories" : dota.categories}
 
-        with open(os.path.join(save_path, "dota_" + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + "_" + extra_info + ".json"), "w") as jsonfile:
+        with open(os.path.join(save_path, "{}_".format(core_dataset_name) + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + extra_info + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

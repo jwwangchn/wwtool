@@ -280,19 +280,19 @@ class splitbase():
 
 
 if __name__ == '__main__':
-    dota_version = 'v1.0'
+    dota_version = 'v1.5'
     rate = 1.0
 
-    trainval_base_path = "./data/dota1.0/v0/val"
+    trainval_base_path = "./data/dota-v1.5/v0/trainval"
     # test_base_path = "./data/dota1.0/v0/test"
 
-    trainval_out_path = "./data/dota1.0/v1/val"
+    trainval_out_path = "./data/dota-v1.5/v1/trainval"
     # test_out_path = "./data/dota1.0/v1/test"
 
     # print(trainval_out_path, test_out_path)
 
     print("Begin to split trainval set")
-    split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=1024, num_process=4, dota_version=dota_version)
+    split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=800, num_process=8, dota_version=dota_version)
     split.splitdata(rate)
 
     print("Begin to split test set")

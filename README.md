@@ -1,4 +1,5 @@
 ## WWTOOL
+<<<<<<< HEAD
 wwtool is a python library for Computer Vision Research.
 
 It will provide the following functionalities.
@@ -6,6 +7,20 @@ It will provide the following functionalities.
 - Detection annotation visualization
 - Dataset convert
 - Toolkit for object detection dataset ([DOTA](https://captain-whu.github.io/DOTA/index.html), [VisDrone](http://aiskyeye.com/), [UAV-BD](https://jwwangchn.cn/UAV-BD), ...)
+=======
+wwtool is a Python library for Computer Vision Research.
+
+It will provide the following functionalities.
+
+- Basic parse and dump functions for object detection datasets
+- Detection annotation visualization
+- Dataset convert
+- Toolkit for object detection dataset
+    - [DOTA](https://captain-whu.github.io/DOTA/index.html)
+    - [VisDrone](http://aiskyeye.com/)
+    - [UAV-BD](https://jwwangchn.cn/UAV-BD)
+    - ...
+>>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
 ### Requirements
 
@@ -22,9 +37,17 @@ python setup.py develop
 ```
 
 ### Future works
+<<<<<<< HEAD
 - [ ] Dataset statistic
 - [ ] Results generation tools for dota and visdrone dataset
 - [ ] Data augmentation
+=======
+- [x] Statistic function for object detetion datasets
+- [x] Split large image to sub-images
+- [ ] Results generation tools for dota and visdrone dataset
+- [ ] Offline data augmentation
+- [ ] Online data augmentation
+>>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
 ### Structure
 - scripts

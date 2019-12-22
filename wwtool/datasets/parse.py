@@ -1,9 +1,13 @@
 import os
+<<<<<<< HEAD
 import json
 import csv
 import numpy as np
 import wwtool
 from tqdm import tqdm
+=======
+import numpy as np
+>>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 import xml.etree.ElementTree as ET
 
 
@@ -76,16 +80,25 @@ def simpletxt_parse(label_file):
         lines = f.readlines()
     
     objects = []
+<<<<<<< HEAD
     basic_label_str = " "
     for line in lines:
         object_struct = dict()
         line = line.rstrip().split(' ')
         label = basic_label_str.join(line[4:])
         bbox = [float(_) for _ in line[0:4]]
+=======
+    for line in lines:
+        object_struct = dict()
+        line = line.rstrip().split(' ')
+        label = line[-1]
+        bbox = [float(_) for _ in line[:-1]]
+>>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
         object_struct['bbox'] = bbox
         object_struct['label'] = label
         objects.append(object_struct)
     
+<<<<<<< HEAD
     return objects
 
 def dota_parse(label_file):
@@ -180,4 +193,6 @@ def visdrone_parse(label_file):
             continue
         objects.append(object_struct)
     
+=======
+>>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
     return objects

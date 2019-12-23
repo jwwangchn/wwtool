@@ -27,10 +27,7 @@ class Convert2COCO():
         self.small_object_area = small_object_area
         self.small_object_idx = 0
         self.groundtruth = groundtruth
-<<<<<<< HEAD
         self.max_object_num_per_image = 0
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
         self.imlist = []
         for img_name in os.listdir(self.imgpath):
@@ -66,11 +63,7 @@ class Convert2COCO():
                     annotation["id"] = index
                     annotations.append(annotation)
 
-<<<<<<< HEAD
                     print("Image ID: {}, Instance ID: {}, Small Object Counter: {}, Max Object Number: {}".format(imId, index, self.small_object_idx, self.max_object_num_per_image))
-=======
-                    print("Image ID: {}, Instance ID: {}, Small Object Counter: {}".format(imId, index, self.small_object_idx))
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
         return images, annotations
 

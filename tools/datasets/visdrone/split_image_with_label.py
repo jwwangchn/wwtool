@@ -9,7 +9,7 @@ import wwtool
 Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 
 if __name__ == '__main__':
-    image_sets = ['train', 'val']
+    image_sets = ['trainval']
     subimage_size = 800
     gap = 200
 
@@ -32,13 +32,16 @@ if __name__ == '__main__':
             img = imread(image_file)
 
             objects = wwtool.visdrone_parse(label_file)
-            bboxes = np.array([obj['bbox'] for obj in objects])
+            bboxes = np.array([wwtool.xyxy2cxcywh(obj['bbox']) for obj in objects])
             labels = np.array([obj['label'] for obj in objects])
 
             subimages = wwtool.split_image(img, subsize=subimage_size, gap=gap)
             subimage_coordinates = list(subimages.keys())
             bboxes_ = bboxes.copy()
             labels_ = labels.copy()
+
+            if bboxes_.shape[0] == 0:
+                continue
             
             for subimage_coordinate in subimage_coordinates:
                 objects = []
@@ -62,7 +65,7 @@ if __name__ == '__main__':
                 
                 for subimage_bbox, subimage_label in zip(subimage_bboxes, subimage_labels):
                     subimage_objects = dict()
-                    subimage_objects['bbox'] = subimage_bbox.tolist()
+                    subimage_objects['bbox'] = wwtool.cxcywh2xyxy(subimage_bbox.tolist())
                     subimage_objects['label'] = subimage_label
                     objects.append(subimage_objects)
                 wwtool.simpletxt_dump(objects, label_save_file)

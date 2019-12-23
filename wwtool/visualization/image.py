@@ -13,7 +13,7 @@ def imshow_bboxes(img_or_path,
                   labels=None,
                   scores=None,
                   score_threshold=0.0,
-                  colors='red',
+                  colors_name='red',
                   show_label=False,
                   show_score=False,
                   thickness=3,
@@ -63,7 +63,7 @@ def imshow_bboxes(img_or_path,
 
     if labels is None:
         colors = dict()
-        colors[colors] = color_val(colors)
+        colors[colors_name] = color_val(colors_name)
     else:
         max_label = max(labels)
         if max_label > 20:
@@ -76,7 +76,10 @@ def imshow_bboxes(img_or_path,
         bbox = bbox.astype(np.int32)
         xmin, ymin, xmax, ymax = bbox
 
-        current_color = colors[label % 20]
+        if labels is None:
+            current_color = colors[colors_name]
+        else:
+            current_color = colors[label % 20]
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=current_color, thickness=thickness)
 
         if show_label:

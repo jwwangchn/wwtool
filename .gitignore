@@ -107,3 +107,4 @@ venv.bak/
 # wwtool
 data/
 *.xlsx
+tools/utils/base64_passwd.passwd

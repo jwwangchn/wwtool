@@ -5,10 +5,7 @@ import cv2
 import json
 import numpy as np
 
-<<<<<<< HEAD
 import wwtool
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 from wwtool.datasets import Convert2COCO
 from wwtool.transforms import thetaobb2hobb, pointobb2thetaobb, pointobb2sampleobb, pointobb_extreme_sort, pointobb_best_point_sort
 
@@ -23,7 +20,6 @@ class DOTA2COCO(Convert2COCO):
         objects = self.__dota_parse__(annotpath, imgpath)
         
         coco_annotations = []
-<<<<<<< HEAD
 
         if generate_small_dataset and len(objects) > 0:
             wwtool.generate_same_dataset(imgpath, 
@@ -36,8 +32,6 @@ class DOTA2COCO(Convert2COCO):
                                          dst_anno_format='.txt',
                                          parse_fun=wwtool.dota_parse, 
                                          dump_fun=wwtool.simpletxt_dump)
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
         
         for object_struct in objects:
             bbox = object_struct['bbox']
@@ -75,13 +69,10 @@ class DOTA2COCO(Convert2COCO):
         objects = []
         if self.groundtruth:
             dota_labels = open(dota_label_file, 'r').readlines()
-<<<<<<< HEAD
             total_object_num = len(dota_labels)
             small_object_num = 0
             large_object_num = 0
             total_object_num = 0
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
             for dota_label in dota_labels:
                 # only save single category
                 if single_category is not None:
@@ -105,7 +96,6 @@ class DOTA2COCO(Convert2COCO):
                 ymax = max(pointobb[1::2])
                 bbox_w = xmax - xmin
                 bbox_h = ymax - ymin
-<<<<<<< HEAD
 
                 total_object_num += 1
                 if bbox_h * bbox_w <= small_size:
@@ -113,8 +103,6 @@ class DOTA2COCO(Convert2COCO):
                 if bbox_h * bbox_w >= large_object_size:
                     large_object_num += 1
 
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
                 obj_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
                 obj_struct['label'] = original_dota_class[dota_label.split(' ')[8]]
 
@@ -130,7 +118,6 @@ class DOTA2COCO(Convert2COCO):
             obj_struct['label'] = 0
 
             objects.append(obj_struct)
-<<<<<<< HEAD
 
         if total_object_num > self.max_object_num_per_image:
             self.max_object_num_per_image = total_object_num
@@ -142,9 +129,6 @@ class DOTA2COCO(Convert2COCO):
                 return []
         else:
             return objects
-=======
-        return objects
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
@@ -197,7 +181,6 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-<<<<<<< HEAD
     core_dataset_name = 'dota-v1.5'
     imagesets = ['trainval']
     dota_version = 'v1.5'
@@ -224,26 +207,11 @@ if __name__ == "__main__":
         wwtool.mkdir_or_exist(dst_image_path)
         wwtool.mkdir_or_exist(dst_label_path)
 
-=======
-    imagesets = ['test']
-    dota_version = 'v1.0'
-    release_version = 'v4'
-    rate = '1.0_0.5'
-    groundtruth = False
-    single_category = None
-    keypoint = True
-
-    extra_info = ''
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
     if keypoint:
         for idx in range(len(converted_dota_class)):
             converted_dota_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
             converted_dota_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
-<<<<<<< HEAD
         extra_info += '_keypoint'
-=======
-        extra_info += 'keypoint'
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
     
     if groundtruth == False:
         extra_info += '_no_ground_truth'
@@ -265,16 +233,9 @@ if __name__ == "__main__":
         original_dota_class['container-crane'] = 16
 
     for imageset in imagesets:
-<<<<<<< HEAD
         imgpath = '/data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
         annopath = '/data/{}/{}/{}/labelTxt-{}'.format(core_dataset_name, release_version, imageset, dota_version)
         save_path = '/data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
-=======
-        
-        imgpath = '/data/dota/{}/{}/images'.format(release_version, imageset)
-        annopath = '/data/dota/{}/{}/labels'.format(release_version, imageset)
-        save_path = '/data/dota/{}/coco/annotations'.format(release_version)
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -298,9 +259,5 @@ if __name__ == "__main__":
                     "annotations" : annotations,
                     "categories" : dota.categories}
 
-<<<<<<< HEAD
         with open(os.path.join(save_path, "{}_".format(core_dataset_name) + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + extra_info + ".json"), "w") as jsonfile:
-=======
-        with open(os.path.join(save_path, "dota_" + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + "_" + extra_info + ".json"), "w") as jsonfile:
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

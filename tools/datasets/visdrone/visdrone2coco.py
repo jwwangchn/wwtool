@@ -127,16 +127,9 @@ if __name__ == "__main__":
     groundtruth = True
 
     for imageset in imagesets:
-<<<<<<< HEAD
         imgpath = './data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
         annopath = './data/{}/{}/{}/annotations'.format(core_dataset, release_version, imageset)
         save_path = './data/{}/{}/coco/annotations'.format(core_dataset, release_version)
-=======
-        
-        imgpath = '/media/jwwangchn/data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
-        annopath = '/media/jwwangchn/data/{}/{}/{}/annotations'.format(core_dataset, release_version, imageset)
-        save_path = '/media/jwwangchn/data/{}/{}/coco/annotations'.format(core_dataset, release_version)
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 
         if not os.path.exists(save_path):
             os.makedirs(save_path)

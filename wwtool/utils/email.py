@@ -2,7 +2,7 @@ import smtplib
 from email.mime.text import MIMEText
 
 class Email():
-    def __init__(self, host="smtp.163.com", user="jwwangchn", passwd="APTX4869", sender="jwwangchn@163.com"):
+    def __init__(self, host="smtp.163.com", user="jwwangchn", passwd="passwd", sender="jwwangchn@163.com"):
         self.host = host
         self.user = user
         self.passwd = passwd

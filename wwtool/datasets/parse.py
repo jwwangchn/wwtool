@@ -1,13 +1,9 @@
 import os
-<<<<<<< HEAD
 import json
 import csv
 import numpy as np
 import wwtool
 from tqdm import tqdm
-=======
-import numpy as np
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
 import xml.etree.ElementTree as ET
 
 
@@ -80,25 +76,16 @@ def simpletxt_parse(label_file):
         lines = f.readlines()
     
     objects = []
-<<<<<<< HEAD
     basic_label_str = " "
     for line in lines:
         object_struct = dict()
         line = line.rstrip().split(' ')
         label = basic_label_str.join(line[4:])
         bbox = [float(_) for _ in line[0:4]]
-=======
-    for line in lines:
-        object_struct = dict()
-        line = line.rstrip().split(' ')
-        label = line[-1]
-        bbox = [float(_) for _ in line[:-1]]
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
         object_struct['bbox'] = bbox
         object_struct['label'] = label
         objects.append(object_struct)
     
-<<<<<<< HEAD
     return objects
 
 def dota_parse(label_file):
@@ -157,6 +144,14 @@ class XVIEW_PARSE():
         print("Finish to load xView json file!")
     
     def xview_parse(self, image_name):
+        """bbox -> [xmin, ymin, xmax, ymax]
+        
+        Arguments:
+            image_name {str} -- image file name
+        
+        Returns:
+            objects {bboxes, labels} -- object dict
+        """
         bboxes = self.coords[self.image_names == image_name]
         labels = self.classes[self.image_names == image_name].astype(np.int64)
 
@@ -173,10 +168,11 @@ def visdrone_parse(label_file):
     """parse visdrone style dataset label file
     
     Arguments:
-        label_file {str} -- label file path
+        label_file {str} -- label file path 
+        (<bbox_left>, <bbox_top>, <bbox_width>, <bbox_height>, <score>, <object_category>, <truncation>, <occlusion>)
     
     Returns:
-        dict, {'bbox': [...], 'label': class_name} -- objects' location and class
+        dict, {'bbox': [xmin, ymin, xmax, ymax], 'label': class_name} -- objects' location and class
     """
     with open(label_file, 'r') as f:
         lines = f.readlines()
@@ -187,12 +183,51 @@ def visdrone_parse(label_file):
         line = line.rstrip().split(',')
         label = line[5]
         bbox = [float(_) for _ in line[0:4]]
-        object_struct['bbox'] = bbox
+        object_struct['bbox'] = wwtool.xywh2xyxy(bbox)
         object_struct['label'] = label
-        if object_struct['label'] == 0 or object_struct['label'] == 11:
+        if object_struct['label'] == '0' or object_struct['label'] == '11':
             continue
         objects.append(object_struct)
     
-=======
->>>>>>> a33a6838d4ee4f9ecc380212d10a8d7cbd0fa518
     return objects
+
+class UAVDT_PARSE():
+    """
+    <frame_index>,<target_id>,<bbox_left>,<bbox_top>,<bbox_width>,<bbox_height>,<out-of-view>,<occlusion>,<object_category>
+    """
+    def __init__(self, label_fold):
+        self.uavdt_objects = dict()
+        for label_file in os.listdir(label_fold):
+            seq_name = label_file.split('_')[0]
+            with open(os.path.join(label_fold, label_file), 'r') as f:
+                lines = f.readlines()
+
+            single_seq_objects = dict()
+            for line in lines:
+                image_idx, object_id, xmin, ymin, w, h, oov, occlusion, category = [int(_) for _ in line.rstrip().split(',')]
+                xmax = xmin + w
+                ymax = ymin + h
+                if "img{:0>6d}".format(image_idx) not in single_seq_objects:
+                    single_seq_objects["img{:0>6d}".format(image_idx)] = []
+                else:
+                    single_seq_objects["img{:0>6d}".format(image_idx)].append([xmin, ymin, xmax, ymax, category])
+            self.uavdt_objects[seq_name] = single_seq_objects
+
+        print("Finish to load UAVDT txt file!")
+    
+    def uavdt_parse(self, seq_name, image_name):
+        try:
+            seq_objects = self.uavdt_objects[seq_name]
+            image_index_objects = seq_objects[image_name]
+        except KeyError:
+            print("Skip this image.")
+            return []
+
+        objects = []
+        for image_index_object in image_index_objects:
+            object_struct = dict()
+            object_struct['bbox'] = image_index_object[0:4]
+            object_struct['label'] = str(image_index_object[4])
+            objects.append(object_struct)
+        
+        return objects

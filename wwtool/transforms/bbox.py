@@ -8,6 +8,31 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 import pycocotools.mask as maskUtils
 
+def xyxy2cxcywh(bbox):
+    xmin, ymin, xmax, ymax = bbox
+    cx = (xmin + xmax) // 2
+    cy = (ymin + ymax) // 2
+    w = xmax - xmin
+    h = ymax - ymin
+    
+    return [cx, cy, w, h]
+
+def cxcywh2xyxy(bbox):
+    cx, cy, w, h = bbox
+    xmin = cx - w // 2
+    ymin = cy - h // 2
+    xmax = cx + w // 2
+    ymax = cy + h // 2
+    
+    return [xmin, ymin, xmax, ymax]
+
+def xywh2xyxy(bbox):
+    xmin, ymin, w, h = bbox
+    xmax = xmin + w
+    ymax = ymin + h
+    
+    return [xmin, ymin, xmax, ymax]
+    
 
 def segm2rbbox(segms, dilate=False):
     mask = maskUtils.decode(segms).astype(np.bool)

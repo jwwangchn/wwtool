@@ -1,6 +1,6 @@
 import wwtool
 
-ann_file_name = ['visdrone', 'trainval', 'v1', '1.0']
+ann_file_name = ['uavdt', 'trainval_test', 'v1', '1.0']
 ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 

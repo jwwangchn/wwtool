@@ -1,3 +1,4 @@
+from .structures import *
 from .cnn import *
 from .models import *
 from .ops import *

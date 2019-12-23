@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 import wwtool
 from wwtool.datasets import Convert2COCO
 
-class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
+class Simpletxt_UAVDT2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
         """
         docstring here
@@ -19,7 +19,7 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__simpletxt_visdrone_parse__(annotpath, imgpath)
+        objects = self.__simpletxt_uavdt_parse__(annotpath, imgpath)
         
         coco_annotations = []
 
@@ -58,7 +58,7 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
             
         return coco_annotations
     
-    def __simpletxt_visdrone_parse__(self, label_file, image_file):
+    def __simpletxt_uavdt_parse__(self, label_file, image_file):
         """
         (xmin, ymin, xmax, ymax)
         """
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     # basic dataset information
     info = {"year" : 2019,
                 "version" : "1.0",
-                "description" : "SIMPLETXT-VISDRONE-COCO",
+                "description" : "SIMPLETXT-UAVDT-COCO",
                 "contributor" : "Jinwang Wang",
                 "url" : "jwwangchn.cn",
                 "date_created" : "2019"
@@ -135,18 +135,21 @@ if __name__ == "__main__":
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    original_simpletxt_visdrone_class = {'pedestrian': 1, 'people': 2, 'bicycle': 3, 'car': 4, 'van': 5, 'truck': 6, 'tricycle': 7, 'awning-tricycle': 8, 'bus': 9, 'motor': 10}
+    original_simpletxt_uavdt_class = {'ped': 1, 'person_on_vhcl': 2, 'car': 3, 'bicycle': 4, 'mbike': 5, 'non_mot_vhcl': 6, 'static_person': 7, 'distractor': 8, 'occluder': 9, 'occluder_on_grnd': 10,                                 'occluder_full': 11, 'occluder_full': 12, 'reflection': 13}
 
-    converted_simpletxt_visdrone_class = [{'supercategory': 'none', 'id': 1,  'name': 'pedestrian',                   },
-                {'supercategory': 'none', 'id': 2,  'name': 'people',                       }, 
-                {'supercategory': 'none', 'id': 3,  'name': 'bicycle',                      },
-                {'supercategory': 'none', 'id': 4,  'name': 'car',                          },
-                {'supercategory': 'none', 'id': 5,  'name': 'van',                          },
-                {'supercategory': 'none', 'id': 6,  'name': 'truck',                        },
-                {'supercategory': 'none', 'id': 7,  'name': 'tricycle',                     },
-                {'supercategory': 'none', 'id': 8,  'name': 'awning-tricycle',              },
-                {'supercategory': 'none', 'id': 9,  'name': 'bus',                          },
-                {'supercategory': 'none', 'id': 10, 'name': 'motor',                        }]
+    converted_simpletxt_uavdt_class = [{'supercategory': 'none', 'id': 1,  'name': 'ped',                   },
+                                    {'supercategory': 'none', 'id': 2,  'name': 'person_on_vhcl',           }, 
+                                    {'supercategory': 'none', 'id': 3,  'name': 'car',                      },
+                                    {'supercategory': 'none', 'id': 4,  'name': 'bicycle',                  },
+                                    {'supercategory': 'none', 'id': 5,  'name': 'mbike',                    },
+                                    {'supercategory': 'none', 'id': 6,  'name': 'non_mot_vhcl',             },
+                                    {'supercategory': 'none', 'id': 7,  'name': 'static_person',            },
+                                    {'supercategory': 'none', 'id': 8,  'name': 'distractor',               },
+                                    {'supercategory': 'none', 'id': 9,  'name': 'occluder',                 },
+                                    {'supercategory': 'none', 'id': 10, 'name': 'occluder_on_grnd',         },
+                                    {'supercategory': 'none', 'id': 11, 'name': 'occluder_full',            },
+                                    {'supercategory': 'none', 'id': 12, 'name': 'reflection',               },
+                                    {'supercategory': 'none', 'id': 13, 'name': 'crowd',                    }]
 
     # dataset's information
     image_format='.png'
@@ -155,8 +158,8 @@ if __name__ == "__main__":
     original_simpletxt_class = {}
     converted_simpletxt_class = []
 
-    core_dataset_name = 'visdrone'
-    imagesets = ['trainval']
+    core_dataset_name = 'uavdt'
+    imagesets = ['trainval_test']
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
@@ -179,9 +182,9 @@ if __name__ == "__main__":
         wwtool.mkdir_or_exist(dst_label_path)
 
     if keypoint:
-        for idx in range(len(converted_simpletxt_visdrone_class)):
-            converted_simpletxt_visdrone_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
-            converted_simpletxt_visdrone_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
+        for idx in range(len(converted_simpletxt_uavdt_class)):
+            converted_simpletxt_uavdt_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
+            converted_simpletxt_uavdt_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
         anno_name.append('keypoint')
     
     if groundtruth == False:
@@ -194,25 +197,25 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        simpletxt_visdrone2coco = SIMPLETXT_VISDRONE2COCO(imgpath=imgpath,
+        simpletxt_uavdt2coco = Simpletxt_UAVDT2COCO(imgpath=imgpath,
                         annopath=annopath,
                         image_format=image_format,
                         anno_format=anno_format,
-                        data_categories=converted_simpletxt_visdrone_class,
+                        data_categories=converted_simpletxt_uavdt_class,
                         data_info=info,
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
                         small_object_area=0)
 
-        images, annotations = simpletxt_visdrone2coco.get_image_annotation_pairs()
+        images, annotations = simpletxt_uavdt2coco.get_image_annotation_pairs()
 
-        json_data = {"info" : simpletxt_visdrone2coco.info,
+        json_data = {"info" : simpletxt_uavdt2coco.info,
                     "images" : images,
-                    "licenses" : simpletxt_visdrone2coco.licenses,
-                    "type" : simpletxt_visdrone2coco.type,
+                    "licenses" : simpletxt_uavdt2coco.licenses,
+                    "type" : simpletxt_uavdt2coco.type,
                     "annotations" : annotations,
-                    "categories" : simpletxt_visdrone2coco.categories}
+                    "categories" : simpletxt_uavdt2coco.categories}
 
         anno_name.insert(1, imageset)
         with open(os.path.join(save_path, "_".join(anno_name) + ".json"), "w") as jsonfile:

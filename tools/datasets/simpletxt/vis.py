@@ -1,10 +1,10 @@
 import os
 import wwtool
 
-label_fold = './data/uavdt/v1/trainval_test/labels'
-image_fold = './data/uavdt/v1/trainval_test/images'
+label_fold = './data/stanford_campus/v1/trainval_test/labels'
+image_fold = './data/stanford_campus/v1/trainval_test/images'
 
-for label_name in os.listdir(label_fold):
+for label_name in sorted(os.listdir(label_fold)):
     print(label_name)
     label_file = os.path.join(label_fold, label_name)
     image_file = os.path.join(image_fold, label_name.split('.')[0] + '.png')

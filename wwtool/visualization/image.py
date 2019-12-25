@@ -88,8 +88,8 @@ def imshow_bboxes(img_or_path,
             cv2.putText(img, "{:.2f}".format(score), (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
 
     if show:
-        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(win_name, 360, 360)
+        # cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        # cv2.resizeWindow(win_name, 360, 360)
         cv2.imshow(win_name, img)
         cv2.waitKey(wait_time)
     if out_file is not None:

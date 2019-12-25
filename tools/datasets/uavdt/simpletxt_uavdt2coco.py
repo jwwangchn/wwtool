@@ -91,7 +91,7 @@ class Simpletxt_UAVDT2COCO(Convert2COCO):
 
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
             object_struct['segmentation'] = wwtool.bbox2pointobb([xmin, ymin, xmax, ymax])
-            object_struct['label'] = label
+            object_struct['label'] = int(label)
             
             objects.append(object_struct)
         
@@ -135,7 +135,7 @@ if __name__ == "__main__":
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    original_simpletxt_uavdt_class = {'ped': 1, 'person_on_vhcl': 2, 'car': 3, 'bicycle': 4, 'mbike': 5, 'non_mot_vhcl': 6, 'static_person': 7, 'distractor': 8, 'occluder': 9, 'occluder_on_grnd': 10,                                 'occluder_full': 11, 'occluder_full': 12, 'reflection': 13}
+    original_simpletxt_uavdt_class = {'ped': 1, 'person_on_vhcl': 2, 'car': 3, 'bicycle': 4, 'mbike': 5, 'non_mot_vhcl': 6, 'static_person': 7, 'distractor': 8, 'occluder': 9, 'occluder_on_grnd': 10, 'occluder_full': 11, 'occluder_full': 12, 'reflection': 13}
 
     converted_simpletxt_uavdt_class = [{'supercategory': 'none', 'id': 1,  'name': 'ped',                   },
                                     {'supercategory': 'none', 'id': 2,  'name': 'person_on_vhcl',           }, 

@@ -3,7 +3,6 @@ import argparse
 import os
 import cv2
 import json
-import csv
 import shutil
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -11,7 +10,7 @@ import xml.etree.ElementTree as ET
 import wwtool
 from wwtool.datasets import Convert2COCO
 
-class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
+class AirbusShip2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
         """
         docstring here
@@ -19,7 +18,7 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__simpletxt_visdrone_parse__(annotpath, imgpath)
+        objects = self.__airbus_ship_parse__(annotpath, imgpath)
         
         coco_annotations = []
 
@@ -32,7 +31,7 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
                                         src_anno_format='.txt',
                                         dst_img_format='.png',
                                         dst_anno_format='.txt',
-                                        parse_fun=wwtool.simpletxt_parse,
+                                        parse_fun=wwtool.voc_parse,
                                         dump_fun=wwtool.simpletxt_dump)
 
         for object_struct in objects:
@@ -58,28 +57,19 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
             
         return coco_annotations
     
-    def __simpletxt_visdrone_parse__(self, label_file, image_file):
+    def __airbus_ship_parse__(self, label_file, image_file):
         """
         (xmin, ymin, xmax, ymax)
         """
-        with open(label_file, 'r') as f:
-            lines = f.readlines()
-    
+        image_objects = airbus_ship_parse.airbus_ship_parse(os.path.basename(image_file))
         objects = []
-        
-        total_object_num = len(lines)
+        total_object_num = len(image_objects)
         small_object_num = 0
         large_object_num = 0
         total_object_num = 0
-
-        basic_label_str = " "
-        for line in lines:
+        for image_object in image_objects:
             object_struct = {}
-            line = line.rstrip().split(' ')
-            label = basic_label_str.join(line[4:])
-            bbox = [float(_) for _ in line[0:4]]
-
-            xmin, ymin, xmax, ymax = bbox
+            xmin, ymin, xmax, ymax = image_object['bbox']
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin
 
@@ -91,7 +81,7 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
 
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
             object_struct['segmentation'] = wwtool.bbox2pointobb([xmin, ymin, xmax, ymax])
-            object_struct['label'] = int(label)
+            object_struct['label'] = 1
             
             objects.append(object_struct)
         
@@ -105,26 +95,13 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
                 return []
         else:
             return objects
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='MMDet test detector')
-    parser.add_argument(
-        '--imagesets',
-        type=str,
-        nargs='+',
-        choices=['trainval', 'test'])
-    parser.add_argument(
-        '--release_version', default='v1', type=str)
-    args = parser.parse_args()
-    return args
+            
 
 if __name__ == "__main__":
-    args = parse_args()
-
     # basic dataset information
     info = {"year" : 2019,
                 "version" : "1.0",
-                "description" : "SIMPLETXT-VISDRONE-COCO",
+                "description" : "Airbus-Ship-COCO",
                 "contributor" : "Jinwang Wang",
                 "url" : "jwwangchn.cn",
                 "date_created" : "2019"
@@ -135,34 +112,22 @@ if __name__ == "__main__":
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    original_simpletxt_visdrone_class = {'pedestrian': 1, 'people': 2, 'bicycle': 3, 'car': 4, 'van': 5, 'truck': 6, 'tricycle': 7, 'awning-tricycle': 8, 'bus': 9, 'motor': 10}
-
-    converted_simpletxt_visdrone_class = [{'supercategory': 'none', 'id': 1,  'name': 'pedestrian',                   },
-                                        {'supercategory': 'none', 'id': 2,  'name': 'people',                       }, 
-                                        {'supercategory': 'none', 'id': 3,  'name': 'bicycle',                      },
-                                        {'supercategory': 'none', 'id': 4,  'name': 'car',                          },
-                                        {'supercategory': 'none', 'id': 5,  'name': 'van',                          },
-                                        {'supercategory': 'none', 'id': 6,  'name': 'truck',                        },
-                                        {'supercategory': 'none', 'id': 7,  'name': 'tricycle',                     },
-                                        {'supercategory': 'none', 'id': 8,  'name': 'awning-tricycle',              },
-                                        {'supercategory': 'none', 'id': 9,  'name': 'bus',                          },
-                                        {'supercategory': 'none', 'id': 10, 'name': 'motor',                        }]
-
     # dataset's information
-    image_format='.png'
-    anno_format='.txt'
+    image_format='.jpg'
+    anno_format='.csv'
 
-    original_simpletxt_class = {}
-    converted_simpletxt_class = []
+    original_airbus_ship_class = {'ship' : 1}
 
-    core_dataset_name = 'visdrone'
-    imagesets = ['trainval']
+    converted_airbus_ship_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship'}]
+
+    core_dataset_name = 'airbus-ship'
+    imagesets = ['train']
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
     keypoint = False
     
-    just_keep_small = False
+    just_keep_small = True
     generate_small_dataset = False
     small_size = 16 * 16
     small_object_rate = 0.5
@@ -179,9 +144,9 @@ if __name__ == "__main__":
         wwtool.mkdir_or_exist(dst_label_path)
 
     if keypoint:
-        for idx in range(len(converted_simpletxt_visdrone_class)):
-            converted_simpletxt_visdrone_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
-            converted_simpletxt_visdrone_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
+        for idx in range(len(converted_airbus_ship_class)):
+            converted_airbus_ship_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
+            converted_airbus_ship_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
         anno_name.append('keypoint')
     
     if groundtruth == False:
@@ -194,25 +159,28 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        simpletxt_visdrone2coco = SIMPLETXT_VISDRONE2COCO(imgpath=imgpath,
+        anno_file = os.path.join(annopath, 'train_ship_segmentations_v2.csv')
+        airbus_ship_parse = wwtool.AirbusShipParse(anno_file)
+
+        airbus_ship = AirbusShip2COCO(imgpath=imgpath,
                         annopath=annopath,
                         image_format=image_format,
                         anno_format=anno_format,
-                        data_categories=converted_simpletxt_visdrone_class,
+                        data_categories=converted_airbus_ship_class,
                         data_info=info,
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
                         small_object_area=0)
 
-        images, annotations = simpletxt_visdrone2coco.get_image_annotation_pairs()
+        images, annotations = airbus_ship.get_image_annotation_pairs()
 
-        json_data = {"info" : simpletxt_visdrone2coco.info,
+        json_data = {"info" : airbus_ship.info,
                     "images" : images,
-                    "licenses" : simpletxt_visdrone2coco.licenses,
-                    "type" : simpletxt_visdrone2coco.type,
+                    "licenses" : airbus_ship.licenses,
+                    "type" : airbus_ship.type,
                     "annotations" : annotations,
-                    "categories" : simpletxt_visdrone2coco.categories}
+                    "categories" : airbus_ship.categories}
 
         anno_name.insert(1, imageset)
         with open(os.path.join(save_path, "_".join(anno_name) + ".json"), "w") as jsonfile:

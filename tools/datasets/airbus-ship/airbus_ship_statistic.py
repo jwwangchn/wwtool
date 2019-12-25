@@ -1,12 +1,8 @@
-import csv
 import wwtool
 
-coco_xview_class = {}
-with open('tools/datasets/xview/xview_class_labels.txt') as f:
-    for row in csv.reader(f):
-        coco_xview_class[int(row[0].split(":")[0])] =  row[0].split(":")[1]
-        
-ann_file_name = ['xview', 'train', 'v1', '1.0']
+coco_dior_class = {1: 'ship'}
+
+ann_file_name = ['airbus-ship', 'train', 'v1', '1.0']
 ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 
@@ -20,7 +16,7 @@ else:
 
 dior_statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio)
 
-# for pie_flag in [False, True]:
-#     dior_statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
+for pie_flag in [False, True]:
+    dior_statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
 
-dior_statistic.class_size_distribution(coco_class=coco_xview_class, save_file_name=ann_file_name[:])
+# dior_statistic.class_size_distribution(coco_class=coco_dior_class, save_file_name=ann_file_name[:])

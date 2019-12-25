@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from matplotlib import cm
 
 
-class COCO_STATISTIC():
+class COCO_Statistic():
     def __init__(self, 
                 ann_file, 
                 size_set=[16*16, 32*32, 96*96], 
@@ -67,8 +67,32 @@ class COCO_STATISTIC():
         plt.savefig('{}.png'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
         plt.show()
 
-    def class_size_distribution(self):
-        pass
+    def class_size_distribution(self, coco_class, save_file_name=[]):
+        class_nums = {}
+        for idx, _ in enumerate(self.imgIds):
+            img = self.coco.loadImgs(self.imgIds[idx])[0]
+
+            annIds = self.coco.getAnnIds(imgIds = img['id'], catIds = self.catIds, iscrowd = None)
+            anns = self.coco.loadAnns(annIds)       # per image
+            # print("idx: {}, image file name: {}".format(idx, img['file_name']))
+            for ann in anns:
+                class_name = coco_class[ann['category_id']]
+                if class_name not in class_nums.keys():
+                    class_nums[class_name] = 1
+                else:
+                    class_nums[class_name] += 1
+        bar_name = list(class_nums.keys())
+        bar_value = class_nums.values()
+        plt.bar(bar_name, bar_value, color='dodgerblue', alpha=0.75)
+        plt.xticks(range(len(bar_name)), bar_name, rotation=90)
+        plt.yscale('log')
+        
+        print("Classes: {}".format(class_nums))
+        plt.title('Class Numbers Distribution of {}'.format(save_file_name[0]))
+        save_file_name.append('bar')
+        
+        plt.savefig('{}.png'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.show()
 
     def total_ratio_distribution(self):
         pass

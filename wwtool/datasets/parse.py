@@ -4,7 +4,10 @@ import csv
 import numpy as np
 import wwtool
 from tqdm import tqdm
+import pandas as pd
+from collections import defaultdict
 import xml.etree.ElementTree as ET
+from pycocotools import mask
 
 
 def voc_parse(label_file):
@@ -228,6 +231,101 @@ class UAVDT_PARSE():
             object_struct = dict()
             object_struct['bbox'] = image_index_object[0:4]
             object_struct['label'] = str(image_index_object[4])
+            objects.append(object_struct)
+        
+        return objects
+
+class StanfordCompusParse():
+    """
+    <target_id>, <xmin>, <ymin>, <xmax>, <ymax>, <frame_id>, <lost>, <occluded>, <generated>, <label>
+    """
+    def __init__(self, label_fold):
+        self.scenes = ('bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad')
+        self.stanford_compus_objects = dict()
+        
+        for scene_name in self.scenes:
+            for video_name in os.listdir(os.path.join(label_fold, scene_name)):
+                label_file = os.path.join(label_fold, scene_name, video_name, 'annotations.txt')
+
+                with open(label_file, 'r') as f:
+                    lines = f.readlines()
+
+                for line in lines:
+                    target_id, xmin, ymin, xmax, ymax, frame_id, lost, occluded, generated = [int(_) for _ in line.rstrip().split(' ')[0:-1]]
+                    label = line.rstrip().split(' ')[-1].split('"')[1]
+
+                    if lost == 1 or occluded == 1:
+                        continue
+                    
+                    if (scene_name, video_name, frame_id) not in self.stanford_compus_objects:
+                        self.stanford_compus_objects[(scene_name, video_name, frame_id)] = []
+                    else:
+                        self.stanford_compus_objects[(scene_name, video_name, frame_id)].append([xmin, ymin, xmax, ymax, label])
+        
+        print("Finish to load Stanford Compus txt file!")
+    
+    def stanford_compus_parse(self, scene_name, video_name, frame_id):
+        # print(self.stanford_compus_objects.keys())
+        try:
+            frame_index_objects = self.stanford_compus_objects[(scene_name, video_name, frame_id)]
+        except KeyError:
+            print("Skip this image.")
+            return []
+
+        objects = []
+        for frame_index_object in frame_index_objects:
+            object_struct = dict()
+            object_struct['bbox'] = frame_index_object[0:4]
+            object_struct['label'] = str(frame_index_object[4])
+            objects.append(object_struct)
+        
+        return objects
+
+class AirbusShipParse():
+    """
+    <target_id>, <xmin>, <ymin>, <xmax>, <ymax>, <frame_id>, <lost>, <occluded>, <generated>, <label>
+    """
+    def __init__(self, label_file):
+        self.airbus_ship_objects = defaultdict(list)
+
+        self.anno_data = pd.read_csv(label_file)
+        self.anno_data = self.anno_data.dropna(axis=0)
+
+        for idx in range(self.anno_data.shape[0]):
+            image_name = self.anno_data.iloc[idx, 0]
+            image_objects = self.anno_data.iloc[idx, 1]
+
+            binary_mask = self.rle_decode(image_objects)
+            binary_mask_encoded = mask.encode(np.asfortranarray(binary_mask.astype(np.uint8)))
+            bounding_box = mask.toBbox(binary_mask_encoded)
+            xmin, ymin, xmax, ymax = wwtool.xywh2xyxy(bounding_box)
+
+            self.airbus_ship_objects[image_name].append([xmin, ymin, xmax, ymax])
+
+    def rle_decode(self, mask_rle, shape=(768, 768)):
+        s = mask_rle.split()
+        starts =  np.asarray(s[0::2], dtype=int)
+        lengths = np.asarray(s[1::2], dtype=int)
+
+        starts -= 1
+        ends = starts + lengths
+        img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+        for lo, hi in zip(starts, ends):
+            img[lo:hi] = 1
+        return img.reshape(shape).T
+
+    def airbus_ship_parse(self, image_name):
+        try:
+            image_objects = self.airbus_ship_objects[image_name]
+        except KeyError:
+            print("Skip this image.")
+            return []
+
+        objects = []
+        for image_object in image_objects:
+            object_struct = dict()
+            object_struct['bbox'] = image_object[0:4]
+            object_struct['label'] = "1"
             objects.append(object_struct)
         
         return objects

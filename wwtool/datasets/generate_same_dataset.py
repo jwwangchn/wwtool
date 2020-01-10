@@ -10,13 +10,15 @@ def generate_same_dataset(src_img_file,
                           dst_img_format='.png', 
                           dst_anno_format='.txt', 
                           parse_fun=None, 
-                          dump_fun=None):
+                          dump_fun=None, 
+                          save_image=True):
     # process image
-    src_img_name = src_img_file.split('/')[-1]
-    img = cv2.imread(src_img_file)
-    dst_img_name = src_img_name.split(src_img_format)[0] + dst_img_format
-    dst_img_file = os.path.join(dst_img_path, dst_img_name)
-    cv2.imwrite(dst_img_file, img)
+    if save_image:
+        src_img_name = src_img_file.split('/')[-1]
+        img = cv2.imread(src_img_file)
+        dst_img_name = src_img_name.split(src_img_format)[0] + dst_img_format
+        dst_img_file = os.path.join(dst_img_path, dst_img_name)
+        cv2.imwrite(dst_img_file, img)
 
     # process label
     src_anno_name = src_anno_file.split('/')[-1]

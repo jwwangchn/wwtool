@@ -1,0 +1,9 @@
+storage-tank
+ship
+airplane
+helicopter
+bridge
+swimming-pool
+tennis-court
+vehicle
+pedestrian

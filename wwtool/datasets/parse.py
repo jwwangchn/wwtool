@@ -1,6 +1,7 @@
 import os
 import json
 import csv
+import re
 import numpy as np
 import wwtool
 from tqdm import tqdm
@@ -186,6 +187,35 @@ def visdrone_parse(label_file):
         line = line.rstrip().split(',')
         label = line[5]
         bbox = [float(_) for _ in line[0:4]]
+        object_struct['bbox'] = wwtool.xywh2xyxy(bbox)
+        object_struct['label'] = label
+        if object_struct['label'] == '0' or object_struct['label'] == '11':
+            continue
+        objects.append(object_struct)
+    
+    return objects
+
+def nwpu_parse(label_file):
+    """parse nwpu style dataset label file
+    
+    Arguments:
+        label_file {str} -- label file path 
+        (<bbox_left>, <bbox_top>, <bbox_width>, <bbox_height>, <score>, <object_category>, <truncation>, <occlusion>)
+    
+    Returns:
+        dict, {'bbox': [xmin, ymin, xmax, ymax], 'label': class_name} -- objects' location and class
+    """
+    with open(label_file, 'r') as f:
+        lines = f.readlines()
+    
+    objects = []
+    for line in lines:
+        object_struct = dict()
+        line = line.rstrip().split(',')
+        if line[0] == '':
+            break
+        label = re.sub("\D", "", line[4])
+        bbox = [float(re.sub("\D", "", _)) for _ in line[0:4]]
         object_struct['bbox'] = wwtool.xywh2xyxy(bbox)
         object_struct['label'] = label
         if object_struct['label'] == '0' or object_struct['label'] == '11':

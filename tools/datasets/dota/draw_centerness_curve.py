@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import mmcv
 import wwtool
 
-from wwtool.image import generate_centerness_image, generate_image, generate_gaussian_image, generate_ellipse_image
+from wwtool import generate_centerness_image, generate_image, generate_gaussian_image, generate_ellipse_image
 from wwtool.visualization import show_grayscale_as_heatmap, show_image, show_image_surface_curve
 from wwtool.transforms import pointobb_image_transform, thetaobb2pointobb, pointobb2bbox, pointobb2pseudomask
 

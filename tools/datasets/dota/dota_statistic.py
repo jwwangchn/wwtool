@@ -1,24 +1,20 @@
 import wwtool
 
-coco_dota_class = {1: 'harbor', 
-                       2: 'ship', 
-                       3: 'small-vehicle', 
-                       4: 'large-vehicle', 
-                       5: 'storage-tank', 
-                       6: 'plane', 
-                       7: 'soccer-ball-field', 
-                       8: 'bridge', 
-                       9: 'baseball-diamond', 
-                      10: 'tennis-court', 
-                      11: 'helicopter', 
-                      12: 'roundabout', 
-                      13: 'swimming-pool', 
-                      14: 'ground-track-field', 
-                      15: 'basketball-court', 
-                      16: 'container-crane'}
+coco_small_class = {    1: 'airplane', 
+                       2: 'bridge', 
+                       3: 'storage-tank', 
+                       4: 'ship', 
+                       5: 'swimming-pool', 
+                       6: 'tennis-court', 
+                       7: 'vehicle', 
+                       8: 'person', 
+                       9: 'harbor', 
+                       10: 'wind-mill'}
 
-ann_file_name = ['dota-v1.5', 'trainval', 'v1', '1.0', 'best']
-ann_file_name.append('small_object')
+coco_dota_class = {}
+
+ann_file_name = ['dota-v1.5', 'trainval', 'v1', '1.0']
+# ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 
 size_measure_by_ratio = False
@@ -29,9 +25,12 @@ else:
     size_set = [0.12/100, 1.08/100, 9.72/100]
     label_set = ["0.12/100", "1.08/100", "9.72/100"]
 
-dior_statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio)
+class_instance = wwtool.Small()
 
-# for pie_flag in [False, True]:
-#     dior_statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
+statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=None)
 
-dior_statistic.class_size_distribution(coco_class=coco_dota_class, save_file_name=ann_file_name[:])
+for pie_flag in [False, True]:
+    statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
+
+for number_flag in [False, True]:
+    statistic.class_size_distribution(coco_class=None, save_file_name=ann_file_name[:], number=number_flag)

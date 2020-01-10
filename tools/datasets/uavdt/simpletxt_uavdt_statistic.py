@@ -11,8 +11,8 @@ coco_uavdt_class = {1: 'ped',
                        9: 'occluder', 
                        10: 'occluder_on_grnd', 
                        11: 'occluder_full', 
-                       12: 'occluder_full', 
-                       13: 'reflection'}
+                       12: 'reflection', 
+                       13: 'crowd'}
 
 ann_file_name = ['uavdt', 'trainval_test', 'v1', '1.0']
 ann_file_name.append('small_object')

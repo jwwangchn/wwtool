@@ -1,0 +1,144 @@
+- 1 : airplane
+- 2 : baseball-field
+- 3 : basketball-court
+- 4 : bridge
+- 5 : storage-tank
+- 6 : ship
+- 7 : swimming-pool
+- 8 : tennis-court
+- 9 : vehicle
+- 10: person
+- 11: harbor
+- 12: wind-mill
+
+#### DIOR
+- [x] airplane, 895
+- airport, 5
+- [x] baseball field (棒球场), 232
+- [x] basketball court, 62
+- [x] bridge, 237
+- chimney (烟囱), 30
+- dam (水坝), 3
+- expressway service area (高速公路服务区), 22
+- expressway toll station (高速公路收费站), 148
+- golf course (高尔夫球场), 1
+- ground track field, 88
+- [x] harbor, 146
+- overpass (高架桥), 140
+- [x] ship, 561
+- stadium (体育场), 18
+- [x] storage tank, 7064
+- [x] tennis court, 889
+- train station, 20
+- [x] vehicle, 9536
+- [x] wind mill (风机), 534
+
+#### DOTA
+- [x] harbor, 230
+- [x] ship, 3407
+- [x] small-vehicle, 119307
+- [x] large-vehicle, 5931
+- [x] storage-tank 储油罐, 5697
+- [x] plane, 1300
+- soccer-ball-field, 52
+- [x] bridge, 888
+- [x] baseball-diamond (棒球场内场), 57
+- [x] tennis-court, 431
+- helicopter, 10
+- roundabout (环岛)
+- [x] swimming-pool, 577
+- ground-track-field, 53
+- [x] basketball-court 篮球场, 57
+- container-crane (集装箱起重机), 8
+
+#### VisDrone
+- [x] pedestrian, 39883
+- [x] people, 15702
+- [x] bicycle, 3041
+- [x] car, 63584
+- [x] van, 厢式货车, 9184
+- [x] truck, 5706
+- [x] tricycle, 三轮车, 2355
+- [x] awning-tricycle, 天篷三轮车, 1744
+- [x] bus, 2888
+- [x] motor, 14101
+
+#### xView
+- 11:Fixed-wing Aircraft (固定翼飞机), 1
+- 12:Small Aircraft (小型飞行器), 13
+- [x] 13:Cargo Plane (运输飞机), 54
+- 15:Helicopter, 12
+- [x] 17:Passenger Vehicle (客车), 1036
+- [x] 18:Small Car, 32511
+- [x] 19:Bus, 880
+- [x] 20:Pickup Truck (敞蓬小型载货卡车), 267
+- [x] 21:Utility Truck (公用载重汽车), 462
+- [x] 23:Truck (卡车), 1571
+- [x] 24:Cargo Truck (运货卡车), 608
+- [x] 25:Truck w/Box, 205
+- [x] 26:Truck Tractor (牵引车), 50
+- [x] 27:Trailer (拖车), 513
+- [x] 28:Truck w/Flatbed (平板车), 58
+- [x] 29:Truck w/Liquid, 11
+- [x] 32:Crane Truck (起重车), 28
+- 33:Railway Vehicle (铁路车辆)
+- 34:Passenger Car (小客车), 15
+- 35:Cargo Car (装卸设备), 46
+- 36:Flat Car (平板车), 7
+- 37:Tank car
+- 38:Locomotive (火车头)
+- [x] 40:Maritime Vessel (巡逻船)，114
+- [x] 41:Motorboat, 368
+- 42:Sailboat, 131
+- 44:Tugboat, 8
+- 45:Barge  (驳船), 12
+- 47:Fishing Vessel (渔船), 34
+- 49:Ferry (渡船), 5
+- 50:Yacht (游艇), 21
+- 51:Container Ship (货柜船)
+- 52:Oil Tanker (油轮)
+- [x] 53:Engineering Vehicle (工程车), 23
+- 54:Tower crane (塔式起重机), 3
+- 55:Container Crane (集装箱起重机), 4
+- 56:Reach Stacker (正面吊运机)
+- 57:Straddle Carrier 跨车（铁路与公路间装卸集装箱用）
+- [x] 59:Mobile Crane 移动吊车, 13
+- [x] 60:Dump Truck 自动倾卸卡车, 125
+- 61:Haul Truck 拖运卡车, 10
+- 62:Scraper/Tractor 铲土机, 9
+- [x] 63:Front loader/Bulldozer 单斗装载机, 24
+- [x] 64:Excavator 挖掘机, 70
+- 65:Cement Mixer 水泥浆搅拌机, 4
+- [x] 66:Ground Grader 地面平地机, 17
+- 71:Hut/Tent 帐篷, 126
+- [x] 72:Shed 小屋, 117
+- [x] 73:Building, 10460
+- 74:Aircraft Hangar 飞机库, 8
+- [x] 76:Damaged Building 独立建筑物, 49
+- 77:Facility  设施, 47
+- 79:Construction Site 建筑工地, 6
+- [x] 83:Vehicle Lot 访客车辆停车场, 506
+- 84:Helipad 直升机升降坪, 10
+- [x] 86:Storage Tank 储油罐, 98
+- 89:Shipping container lot 船运集装箱, 17
+- 91:Shipping Container 船运集装箱, 29
+- 93:Pylon 桥塔, 25
+- 94:Tower
+- 75:other
+- 82:other
+
+
+#### UAV-DT
+- ped
+- person_on_vhcl
+- car
+- bicycle
+- mbike
+- non_mot_vhcl
+- static_person
+- distractor
+- occluder (遮光板)
+- occluder_on_grnd
+- occluder_full
+- reflection
+- crowd

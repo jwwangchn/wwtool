@@ -83,6 +83,9 @@ class SIMPLETXT_VISDRONE2COCO(Convert2COCO):
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin
 
+            if bbox_w * bbox_h <= self.small_object_area:
+                continue
+
             total_object_num += 1
             if bbox_h * bbox_w <= small_size:
                 small_object_num += 1

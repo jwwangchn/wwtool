@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 import wwtool
 from wwtool.datasets import Convert2COCO
 
-class AirbusShip2COCO(Convert2COCO):
+class NWPU2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
         """
         docstring here
@@ -18,22 +18,22 @@ class AirbusShip2COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__airbus_ship_parse__(annotpath, imgpath)
+        objects = self.__nwpu_parse__(annotpath, imgpath)
         
         coco_annotations = []
 
         if generate_small_dataset and len(objects) > 0:
-            pass
-            # wwtool.generate_same_dataset(imgpath, 
-            #                             annotpath,
-            #                             dst_image_path,
-            #                             dst_label_path,
-            #                             src_img_format='.png',
-            #                             src_anno_format='.txt',
-            #                             dst_img_format='.png',
-            #                             dst_anno_format='.txt',
-            #                             parse_fun=wwtool.voc_parse,
-            #                             dump_fun=wwtool.simpletxt_dump)
+            wwtool.generate_same_dataset(imgpath, 
+                                        annotpath,
+                                        dst_image_path,
+                                        dst_label_path,
+                                        src_img_format='.png',
+                                        src_anno_format='.txt',
+                                        dst_img_format='.png',
+                                        dst_anno_format='.txt',
+                                        parse_fun=wwtool.simpletxt_parse,
+                                        dump_fun=wwtool.simpletxt_dump,
+                                        save_image=True)
 
         for object_struct in objects:
             bbox = object_struct['bbox']
@@ -58,31 +58,30 @@ class AirbusShip2COCO(Convert2COCO):
             
         return coco_annotations
     
-    def __airbus_ship_parse__(self, label_file, image_file):
+    def __nwpu_parse__(self, label_file, image_file):
         """
         (xmin, ymin, xmax, ymax)
         """
-        image_file_name = os.path.splitext(os.path.basename(image_file))[0]
-        save_image = wwtool.generate_image(800, 800, color=(0, 0, 0))
-        img = cv2.imread(image_file)
-        img_height, img_width, _ = img.shape
-
-        image_objects = airbus_ship_parse.airbus_ship_parse(os.path.basename(image_file))
+        with open(label_file, 'r') as f:
+            lines = f.readlines()
+    
         objects = []
-        objects_small_save = []
-        total_object_num = len(image_objects)
+        
+        total_object_num = len(lines)
         small_object_num = 0
         large_object_num = 0
         total_object_num = 0
-        for image_object in image_objects:
+
+        basic_label_str = " "
+        for line in lines:
             object_struct = {}
-            object_struct_small = {}
-            xmin, ymin, xmax, ymax = image_object['bbox']
+            line = line.rstrip().split(' ')
+            label = basic_label_str.join(line[4:])
+            bbox = [float(_) for _ in line[0:4]]
+
+            xmin, ymin, xmax, ymax = bbox
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin
-
-            if bbox_w * bbox_h <= self.small_object_area:
-                continue
 
             total_object_num += 1
             if bbox_h * bbox_w <= small_size:
@@ -92,37 +91,40 @@ class AirbusShip2COCO(Convert2COCO):
 
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
             object_struct['segmentation'] = wwtool.bbox2pointobb([xmin, ymin, xmax, ymax])
-            object_struct['label'] = 1
-
-            object_struct_small = object_struct.copy()
-            object_struct_small['bbox'] = [xmin, ymin, xmax, ymax]
-            object_struct_small['label'] = 'ship'
+            object_struct['label'] = original_class[label]
             
-            objects_small_save.append(object_struct_small)
             objects.append(object_struct)
         
         if total_object_num > self.max_object_num_per_image:
             self.max_object_num_per_image = total_object_num
 
         if just_keep_small or generate_small_dataset:
-            if small_object_num >= total_object_num * small_object_rate and large_object_num < 1 and len(objects_small_save) > 0:
-                # print(os.path.join(dst_image_path, image_file_name + '.png'))
-                save_image[0:img_height, 0:img_width, :] = img
-                cv2.imwrite(os.path.join(dst_image_path, image_file_name + '.png'), save_image)
-                anno_file = os.path.join(dst_label_path, image_file_name + '.txt')
-                wwtool.simpletxt_dump(objects_small_save, anno_file)
+            if small_object_num >= total_object_num * small_object_rate and large_object_num < 1:
                 return objects
             else:
                 return []
         else:
             return objects
-            
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='MMDet test detector')
+    parser.add_argument(
+        '--imagesets',
+        type=str,
+        nargs='+',
+        choices=['trainval', 'test'])
+    parser.add_argument(
+        '--release_version', default='v1', type=str)
+    args = parser.parse_args()
+    return args
 
 if __name__ == "__main__":
+    args = parse_args()
+
     # basic dataset information
     info = {"year" : 2019,
                 "version" : "1.0",
-                "description" : "Airbus-Ship-COCO",
+                "description" : "NWPU-COCO",
                 "contributor" : "Jinwang Wang",
                 "url" : "jwwangchn.cn",
                 "date_created" : "2019"
@@ -134,15 +136,33 @@ if __name__ == "__main__":
                 }]
 
     # dataset's information
-    image_format='.jpg'
-    anno_format='.csv'
+    image_format='.png'
+    anno_format='.txt'
 
-    original_airbus_ship_class = {'ship' : 1}
+    original_class = {  'airplane':                     1, 
+                        'bridge':                       2,
+                        'storage-tank':                 3, 
+                        'ship':                         4, 
+                        'swimming-pool':                5, 
+                        'tennis-court':                 6, 
+                        'vehicle':                      7, 
+                        'person':                       8, 
+                        'harbor':                       9, 
+                        'wind-mill':                    10}
 
-    converted_airbus_ship_class = [{'supercategory': 'none', 'id': 1,  'name': 'ship'}]
+    converted_class = [{'supercategory': 'none', 'id': 1,  'name': 'airplane',                 },
+                        {'supercategory': 'none', 'id': 2,  'name': 'bridge',                   },
+                        {'supercategory': 'none', 'id': 3,  'name': 'storage-tank',             },
+                        {'supercategory': 'none', 'id': 4,  'name': 'ship',                     },
+                        {'supercategory': 'none', 'id': 5,  'name': 'swimming-pool',            },
+                        {'supercategory': 'none', 'id': 6,  'name': 'tennis-court',             },
+                        {'supercategory': 'none', 'id': 7,  'name': 'vehicle',                  },
+                        {'supercategory': 'none', 'id': 8,  'name': 'person',                  },
+                        {'supercategory': 'none', 'id': 9,  'name': 'harbor',                  },
+                        {'supercategory': 'none', 'id': 10,  'name': 'wind-mill',               }]
 
-    core_dataset_name = 'airbus-ship'
-    imagesets = ['train']
+    core_dataset_name = 'nwpu'
+    imagesets = ['trainval_test_filtered']
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True
@@ -159,15 +179,15 @@ if __name__ == "__main__":
         anno_name.append('small_object')
 
     if generate_small_dataset:
-        dst_image_path = '/data/small/{}/images'.format(core_dataset_name)
-        dst_label_path = '/data/small/{}/labels'.format(core_dataset_name)
+        dst_image_path = './data/small/{}/images'.format(core_dataset_name)
+        dst_label_path = './data/small/{}/labels'.format(core_dataset_name)
         wwtool.mkdir_or_exist(dst_image_path)
         wwtool.mkdir_or_exist(dst_label_path)
 
     if keypoint:
-        for idx in range(len(converted_airbus_ship_class)):
-            converted_airbus_ship_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
-            converted_airbus_ship_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
+        for idx in range(len(converted_class)):
+            converted_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
+            converted_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
         anno_name.append('keypoint')
     
     if groundtruth == False:
@@ -175,33 +195,31 @@ if __name__ == "__main__":
 
     for imageset in imagesets:
         imgpath = './data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
+        print(imgpath)
         annopath = './data/{}/{}/{}/labels'.format(core_dataset_name, release_version, imageset)
         save_path = './data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        anno_file = os.path.join(annopath, 'train_ship_segmentations_v2.csv')
-        airbus_ship_parse = wwtool.AirbusShipParse(anno_file)
-
-        airbus_ship = AirbusShip2COCO(imgpath=imgpath,
+        nwpu = NWPU2COCO(imgpath=imgpath,
                         annopath=annopath,
                         image_format=image_format,
                         anno_format=anno_format,
-                        data_categories=converted_airbus_ship_class,
+                        data_categories=converted_class,
                         data_info=info,
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
                         small_object_area=0)
 
-        images, annotations = airbus_ship.get_image_annotation_pairs()
+        images, annotations = nwpu.get_image_annotation_pairs()
 
-        json_data = {"info" : airbus_ship.info,
+        json_data = {"info" : nwpu.info,
                     "images" : images,
-                    "licenses" : airbus_ship.licenses,
-                    "type" : airbus_ship.type,
+                    "licenses" : nwpu.licenses,
+                    "type" : nwpu.type,
                     "annotations" : annotations,
-                    "categories" : airbus_ship.categories}
+                    "categories" : nwpu.categories}
 
         anno_name.insert(1, imageset)
         with open(os.path.join(save_path, "_".join(anno_name) + ".json"), "w") as jsonfile:

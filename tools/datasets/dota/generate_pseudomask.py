@@ -141,7 +141,7 @@ if __name__ == '__main__':
     heatmap_rate = 0.5
     factor = 4
     save_vis = False
-    show_pseudomask = False
+    show_pseudomask = True
     method = 'min_area'     # min_area, min_score
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version,

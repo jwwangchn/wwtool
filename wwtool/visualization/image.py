@@ -16,7 +16,7 @@ def imshow_bboxes(img_or_path,
                   show_label=False,
                   show_score=False,
                   thickness=2,
-                  show=True,
+                  show=False,
                   win_name='',
                   wait_time=0,
                   out_file=None,
@@ -74,12 +74,11 @@ def imshow_bboxes(img_or_path,
         else:
             current_color = color_dict[label]
         cv2.rectangle(img, (xmin, ymin), (xmax, ymax), color=current_color, thickness=thickness)
-
+        
         if show_label:
             cv2.putText(img, label, (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
         if show_score:
             cv2.putText(img, "{:.2f}".format(score), (xmin, ymin-5), cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale = 1.0, color = current_color, thickness = 2, lineType = 8)
-
     if show:
         # cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
         # cv2.resizeWindow(win_name, 360, 360)

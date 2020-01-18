@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     coco=COCO(annFile)
 
-    catIds = coco.getCatIds(catNms=' ')
+    catIds = coco.getCatIds(catNms=" ")
     imgIds = coco.getImgIds(catIds=catIds)
 
     line_start_x_point = np.arange(0, 800, 80)
@@ -65,8 +65,8 @@ if __name__ == '__main__':
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
-        print("idx: {}, image file name: {}".format(idx, img['file_name']))
-        
+        # print("idx: {}, image file name: {}".format(idx, img['file_name']))
+
         if show_maskobb:
             pass
         else:
@@ -82,8 +82,10 @@ if __name__ == '__main__':
                 labels.append({label:ann['category_id']})
                 labels_set.add(ann['category_id'])
 
-            if 1 not in labels_set:
+            if 8 not in labels_set:
                 continue
+            else:
+                print("idx: {}, image file name: {}".format(idx, img['file_name']))
 
             # draw_grid(im, pxstep=160)
             out_file = os.path.join('/data/small/v1/vis', img['file_name'])

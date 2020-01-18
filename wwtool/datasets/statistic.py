@@ -5,7 +5,8 @@ from matplotlib import cm
 from collections import defaultdict
 import wwtool
 
-plt.rcParams.update({'font.size': 16})
+plt.rcParams.update({'font.size': 14})
+# plt.rcParams["font.family"] = "Times New Roman"
 
 class COCO_Statistic():
     def __init__(self, 
@@ -35,6 +36,7 @@ class COCO_Statistic():
         plt.clf()
         plt.figure(figsize=(6, 4.5),)
         object_sizes = []
+        image_sizes = []
         size_nums = []
         for idx, _ in enumerate(self.imgIds):
             img = self.coco.loadImgs(self.imgIds[idx])[0]
@@ -49,14 +51,18 @@ class COCO_Statistic():
                     object_sizes.append(object_size/img_size)
                 else:
                     object_sizes.append(object_size)
+                image_sizes.append(img_size)
         object_sizes = np.array(object_sizes)
+        image_sizes = np.array(image_sizes)
         
         if plot_pie:
             for idx, size_value in enumerate(self.size_set):
                 if idx == 0:
                     size_nums.append(np.where(object_sizes <= size_value)[0].shape[0])
-                else:
+                elif idx != len(self.size_set) - 1:
                     size_nums.append(np.where(object_sizes <= size_value)[0].shape[0] - sum(size_nums[:]))
+                else:
+                    size_nums.append(len(object_sizes) - sum(size_nums[:]))
 
             print("size_nums: {}".format(size_nums))
 
@@ -65,18 +71,26 @@ class COCO_Statistic():
                 self.label_set = [str(_) for _ in self.size_set]
             
             fracs = size_nums[:]
-            explode = [0] * len(self.size_set)
-            explode[0] = 0.1
-            plt.axes(aspect=1)
-            colors = cm.Set1(np.arange(len(self.size_set)) / float(len(self.size_set)))
-            plt.pie(x=fracs, labels=self.label_set, explode=explode, colors=colors, autopct='%3.1f %%', startangle = 0, pctdistance = 0.6)
+            if False:
+                explode = [0] * len(self.size_set)
+                explode[0] = 0.1
+                plt.axes(aspect=1)
+                colors = cm.Set1(np.arange(len(self.size_set)) / float(len(self.size_set)))
+                plt.pie(x = fracs, labels = self.label_set, explode = explode, colors = colors, autopct = '%3.1f %%', startangle = 0, pctdistance = 0.6)
+            else:
+                print("size set: ", self.label_set, "size number: ", fracs)
+                print("size set: ", self.label_set, "size ratio: ", np.array(fracs)/sum(fracs))
+                plt.bar(self.label_set, fracs, color='dodgerblue', alpha=0.75)
+                plt.xticks(range(len(self.label_set)), self.label_set, rotation=0)
             if self.show_title:
                 plt.title('Size ratio of {} in {} Dataset\n{}'.format(save_file_name[0], save_file_name[1], size_nums))
             save_file_name.append('pie')
         else:
             object_sizes = np.sqrt(np.array(object_sizes))
-            print("Mean size: {}, Var size: {}".format(np.mean(object_sizes), np.std(object_sizes, ddof=1)))
-            print("Mean size: {}, Var size: {}".format(np.mean(object_sizes)/800.0, np.std(object_sizes)/800.0))
+            image_sizes = np.sqrt(np.array(image_sizes))
+            print("Max size: {}, Min size: {}".format(np.max(object_sizes), np.min(object_sizes)))
+            print("Absolute Mean size: {}, Var size: {}".format(np.mean(object_sizes), np.std(object_sizes, ddof=1)))
+            print("Relative Mean size: {}, Var size: {}".format(np.mean(object_sizes/image_sizes), np.std(object_sizes/image_sizes)))
             # sns_plot = sns.distplot(object_sizes, color="b", bins=30, kde_kws={"lw": 2})
             plt.hist(object_sizes, bins=np.arange(0, 64, 64//30), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.95)
             print("Total objects: {}".format(object_sizes.shape[0]))
@@ -125,10 +139,16 @@ class COCO_Statistic():
             box_name = list(class_size.keys()) if self.class_instance == None else self.class_instance.full2abbr(list(class_size.keys()))
             box_value = class_size.values()
         
-            plt.boxplot(box_value, vert=False, whis=1.5, widths=0.6, patch_artist=False, showfliers=False, showmeans=True, labels=box_name)
+            bplot = plt.boxplot(box_value, vert=False, whis=1.5, widths=0.6, patch_artist=True, showfliers=False, showmeans=False, labels=box_name, notch=True)
             # plt.xticks(range(1, len(box_name) + 1), box_name, rotation=0)
             plt.xlabel("Instances' sizes")
             plt.ylabel('Class')
+
+            # fill with colors
+            colors = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8']
+            for patch, color in zip(bplot['boxes'], colors):
+                patch.set_facecolor(color)
+                patch.set_alpha(0.8)
             save_file_name.append('box')
         
         print("Classes: {}".format(class_nums))
@@ -177,6 +197,8 @@ class COCO_Statistic():
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
             for ann in anns:
                 bbox = ann['bbox']
+                if bbox[3] == 0:
+                    continue
                 object_aspect_ratio = bbox[2] / float(bbox[3])
                 object_aspect_ratios.append(object_aspect_ratio)
         object_aspect_ratios = np.array(object_aspect_ratios)

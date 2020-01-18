@@ -19,8 +19,8 @@ ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.
 
 size_measure_by_ratio = False
 if size_measure_by_ratio == False:
-    size_set = [4*4, 8*8, 16*16, 32*32, 64*64, 128*128, 256*256]
-    label_set = ["4*4", "8*8", "16*16", "32*32", "64*64", "128*128", "256*256"]
+    size_set = [4*4, 8*8, 16*16, 32*32, 64*64, 64*64]
+    label_set = ["4*4", "8*8", "16*16", "32*32", "64*64", "64*64-inf"]
 else:
     size_set = [0.12/100, 1.08/100, 9.72/100]
     label_set = ["0.12/100", "1.08/100", "9.72/100"]

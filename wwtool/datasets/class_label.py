@@ -5,10 +5,8 @@ class Small():
                     'storage-tank':                 'ST', 
                     'ship':                         'SH', 
                     'swimming-pool':                'SP', 
-                    'tennis-court':                 'TC', 
                     'vehicle':                      'VE', 
                     'person':                       'PE', 
-                    'harbor':                       'HA', 
                     'wind-mill':                    'WM'}
 
     def full2abbr(self, names):

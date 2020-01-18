@@ -19,10 +19,10 @@ def xyxy2cxcywh(bbox):
 
 def cxcywh2xyxy(bbox):
     cx, cy, w, h = bbox
-    xmin = cx - w // 2
-    ymin = cy - h // 2
-    xmax = cx + w // 2
-    ymax = cy + h // 2
+    xmin = int(cx - w / 2.0)
+    ymin = int(cy - h / 2.0)
+    xmax = int(cx + w / 2.0)
+    ymax = int(cy + h / 2.0)
     
     return [xmin, ymin, xmax, ymax]
 
@@ -32,6 +32,13 @@ def xywh2xyxy(bbox):
     ymax = ymin + h
     
     return [xmin, ymin, xmax, ymax]
+
+def xyxy2xywh(bbox):
+    xmin, ymin, xmax, ymax = bbox
+    w = xmax - xmin
+    h = ymax - ymin
+    
+    return [xmin, ymin, w, h]
     
 
 def segm2rbbox(segms, dilate=False):
@@ -44,7 +51,7 @@ def segm2rbbox(segms, dilate=False):
         print(niter)
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1 + niter, 1 + niter))
         gray = cv2.dilate(gray, kernel)
-    images, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if contours != []:
         imax_cnt_area = -1
@@ -63,7 +70,7 @@ def segm2rbbox(segms, dilate=False):
 def segm2ellipse(segms):
     mask = maskUtils.decode(segms).astype(np.bool)
     gray = np.array(mask*255, dtype=np.uint8)
-    images, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if contours != []:
         imax_cnt_area = -1

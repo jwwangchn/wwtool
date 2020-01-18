@@ -9,7 +9,7 @@ coco_small_class = {   1: 'airplane',
                        7: 'person', 
                        8: 'wind-mill'}
 
-ann_file_name = ['small', 'test', 'v1', '1.0']
+ann_file_name = ['coco', 'instances', 'trainval2017']
 # ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 
@@ -23,13 +23,13 @@ else:
 
 class_instance = wwtool.Small()
 
-statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=class_instance, show_title=False)
+statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=None, show_title=False)
 
 for pie_flag in [False, True]:
     statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
 
 for number_flag in [False, True]:
-    statistic.class_size_distribution(coco_class=coco_small_class, save_file_name=ann_file_name[:], number=number_flag)
+    statistic.class_size_distribution(coco_class=None, save_file_name=ann_file_name[:], number=number_flag)
 
 statistic.image_object_num_distribution(save_file_name=ann_file_name[:])
 

@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
-        # print("idx: {}, image file name: {}".format(idx, img['file_name']))
+        print("idx: {}, image file name: {}".format(idx, img['file_name']))
 
         if show_maskobb:
             pass
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                 labels.append({label:ann['category_id']})
                 labels_set.add(ann['category_id'])
 
-            if 8 not in labels_set:
+            if len(labels_set) < 3:
                 continue
             else:
                 print("idx: {}, image file name: {}".format(idx, img['file_name']))

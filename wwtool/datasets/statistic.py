@@ -1,6 +1,7 @@
 import numpy as np
 from pycocotools.coco import COCO
 from matplotlib import pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 from matplotlib import cm
 from collections import defaultdict
 import wwtool
@@ -96,6 +97,10 @@ class COCO_Statistic():
             print("Total objects: {}".format(object_sizes.shape[0]))
             if self.show_title:
                 plt.title('Size Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
+            ax = plt.gca()
+            xfmt = ScalarFormatter(useMathText=True)
+            xfmt.set_powerlimits((0, 0))
+            ax.yaxis.set_major_formatter(xfmt)
             plt.xlabel("Instances' sizes")
             plt.ylabel("Instance Count")
             save_file_name.append('hist')
@@ -106,7 +111,7 @@ class COCO_Statistic():
     def class_size_distribution(self, coco_class=None, save_file_name=[], number=True):
         plt.clf()
         plt.figure(figsize=(6, 4.5))
-        class_nums = defaultdict(lambda: 1)
+        class_nums = defaultdict(lambda: 0)
         class_size = defaultdict(list)
         for idx, _ in enumerate(self.imgIds):
             img = self.coco.loadImgs(self.imgIds[idx])[0]
@@ -139,10 +144,11 @@ class COCO_Statistic():
             box_name = list(class_size.keys()) if self.class_instance == None else self.class_instance.full2abbr(list(class_size.keys()))
             box_value = class_size.values()
         
-            bplot = plt.boxplot(box_value, vert=False, whis=1.5, widths=0.6, patch_artist=True, showfliers=False, showmeans=False, labels=box_name, notch=True)
+            bplot = plt.boxplot(box_value, vert=True, whis=1.5, widths=0.6, patch_artist=True, showfliers=False, showmeans=True, labels=box_name, notch=True)
             # plt.xticks(range(1, len(box_name) + 1), box_name, rotation=0)
-            plt.xlabel("Instances' sizes")
-            plt.ylabel('Class')
+            plt.ylabel("Instances' sizes")
+            plt.xlabel('Class')
+            plt.grid(axis='y')
 
             # fill with colors
             colors = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8']

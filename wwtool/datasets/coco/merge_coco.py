@@ -1,4 +1,3 @@
-import cvxpy as cp
 import numpy as np
 import json
 from pycocotools.coco import COCO

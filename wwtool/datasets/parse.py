@@ -2,6 +2,8 @@ import os
 import json
 import csv
 import re
+import geojson
+import shapely.wkt
 import numpy as np
 import wwtool
 from tqdm import tqdm
@@ -355,6 +357,56 @@ class AirbusShipParse():
         for image_object in image_objects:
             object_struct = dict()
             object_struct['bbox'] = image_object[0:4]
+            object_struct['label'] = "1"
+            objects.append(object_struct)
+        
+        return objects
+
+
+class SN6Parse():
+    """
+    <target_id>, <xmin>, <ymin>, <xmax>, <ymax>, <frame_id>, <lost>, <occluded>, <generated>, <label>
+    """
+    def __init__(self, label_file):
+        self.sn6_objects = defaultdict(list)
+
+        self.anno_data = pd.read_csv(label_file)
+        self.anno_data = self.anno_data.dropna(axis=0)
+
+        for idx in range(self.anno_data.shape[0]):
+            image_name = self.anno_data.iloc[idx, 0]
+            wkt = self.anno_data.iloc[idx, 2]
+            if wkt == 'POLYGON EMPTY':
+                continue
+            mask = self.wkt2coord(wkt)
+
+            self.sn6_objects[image_name].append(mask)
+
+    def wkt2coord(self, wkt):
+        wkt = shapely.wkt.loads(wkt)
+        geo = geojson.Feature(geometry=wkt, properties={})
+        coordinate = geo.geometry["coordinates"][0]     # drop the polygon of hole
+        mask = []
+        for idx, point in enumerate(coordinate):
+            if idx == len(coordinate) - 1:
+                break
+            x, y = point
+            mask.append(int(x))
+            mask.append(int(y))
+        return mask
+
+    def sn6_parse(self, image_name):
+        try:
+            masks = self.sn6_objects[image_name]
+        except KeyError:
+            print("Skip this image.")
+            return []
+
+        objects = []
+        print(masks)
+        for mask in masks:
+            object_struct = dict()
+            object_struct['segmentation'] = mask
             object_struct['label'] = "1"
             objects.append(object_struct)
         

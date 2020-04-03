@@ -67,7 +67,7 @@ class SN62COCO(Convert2COCO):
         img = cv2.imread(image_file)
         img_height, img_width, _ = img.shape
 
-        image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_PS-RGB_')[1].split('.tif')[0]
+        image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_{}_'.format(data_source))[1].split('.tif')[0]
         print(image_name)
         masks = sn6_parse.sn6_parse(image_name)
         objects = []
@@ -140,6 +140,8 @@ if __name__ == "__main__":
     image_format='.tif'
     anno_format='.csv'
 
+    data_source = 'SAR-Intensity'  # SAR-Intensity or PS-RGB
+
     original_sn6_class = {'building' : 1}
 
     converted_sn6_class = [{'supercategory': 'none', 'id': 1,  'name': 'building'}]
@@ -157,7 +159,7 @@ if __name__ == "__main__":
     small_object_rate = 0.5
     large_object_size = 64 * 64
 
-    anno_name = [core_dataset_name, release_version, rate]
+    anno_name = [core_dataset_name, release_version, data_source]
     if just_keep_small:
         anno_name.append('small_object')
 

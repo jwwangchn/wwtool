@@ -403,7 +403,6 @@ class SN6Parse():
             return []
 
         objects = []
-        print(masks)
         for mask in masks:
             object_struct = dict()
             object_struct['segmentation'] = mask

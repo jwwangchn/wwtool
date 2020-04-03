@@ -144,6 +144,10 @@ if __name__ == "__main__":
     anno_format='.csv'
 
     data_source = 'SAR-Intensity'  # SAR-Intensity or PS-RGB
+    if data_source == 'SAR-Intensity':
+        image_fold = 'SAR'
+    else:
+        image_fold = 'RGB'
 
     original_sn6_class = {'building' : 1}
 
@@ -167,7 +171,7 @@ if __name__ == "__main__":
         anno_name.append('small_object')
 
     if generate_small_dataset:
-        dst_image_path = '/data/small/{}/images'.format(core_dataset_name)
+        dst_image_path = '/data/small/{}/{}'.format(core_dataset_name, image_fold)
         dst_label_path = '/data/small/{}/labels'.format(core_dataset_name)
         wwtool.mkdir_or_exist(dst_image_path)
         wwtool.mkdir_or_exist(dst_label_path)
@@ -182,7 +186,7 @@ if __name__ == "__main__":
         anno_name.append('no_ground_truth')
 
     for imageset in imagesets:
-        imgpath = './data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
+        imgpath = './data/{}/{}/{}/{}'.format(core_dataset_name, release_version, imageset, image_fold)
         annopath = './data/{}/{}/{}/labels'.format(core_dataset_name, release_version, imageset)
         save_path = './data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
         if not os.path.exists(save_path):

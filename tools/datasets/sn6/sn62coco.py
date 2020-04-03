@@ -67,12 +67,7 @@ class SN62COCO(Convert2COCO):
         img = cv2.imread(image_file)
         img_height, img_width, _ = img.shape
 
-<<<<<<< HEAD
-        image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_PS-RGB_')[1].split('.tif')[0]
-=======
         image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_{}_'.format(data_source))[1].split('.tif')[0]
-        print(image_name)
->>>>>>> 34e0a63d7bd652c5754faf8f41f71298c480e675
         masks = sn6_parse.sn6_parse(image_name)
         objects = []
         objects_small_save = []

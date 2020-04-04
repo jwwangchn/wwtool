@@ -8,7 +8,7 @@ class Email():
         self.passwd = passwd
         self.sender = sender
         
-    def send(self, receivers=['877150341@qq.com'], title="Hello, Jwwangchn", message="This is the default email message!"):
+    def send(self, receivers=['877150341@qq.com'], title="Finish to train the model!!!", message="This is the default email message!"):
         message = MIMEText(message, 'plain', 'utf-8')
         message['From'] = "{}".format(self.sender)
         message['To'] = ",".join(receivers)

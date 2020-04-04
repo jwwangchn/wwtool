@@ -68,7 +68,6 @@ class SN62COCO(Convert2COCO):
         img_height, img_width, _ = img.shape
 
         image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_{}_'.format(data_source))[1].split('.tif')[0]
-        print(image_name)
         masks = sn6_parse.sn6_parse(image_name)
         objects = []
         objects_small_save = []
@@ -79,7 +78,6 @@ class SN62COCO(Convert2COCO):
         for mask in masks:
             object_struct = {}
             object_struct_small = {}
-            print(mask['segmentation'])
             xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask['segmentation'])
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin

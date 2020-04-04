@@ -1,4 +1,5 @@
 import mmcv
+import numpy as np
 import pandas as pd
 
 from pycocotools.coco import COCO
@@ -53,3 +54,27 @@ def dump_detection_results(dump_dir, det_results, dataset='visdrone'):
 def dict2excel(data, save_file='./dict_excel.xlsx'):
     df = pd.DataFrame(data=data, index=[0])
     df.to_excel(save_file)
+
+
+def load_coco_pkl_results(result_file):
+    """load results of MMDetection (.pkl)
+    
+    Arguments:
+        result_file {str} -- path for pkl result file
+    """
+    bboxes = []
+    segms = []
+    results = mmcv.load(result_file)
+    for result in results:
+        if len(result) == 1:
+            bbox_result, segm_result = result, None
+        else:
+            bbox_result, segm_result = result
+        bbox = np.vstack(bbox_result)
+        if segm_result is not None:
+            segm = mmcv.concat_list(segm_result)
+        
+        bboxes.append(bbox)
+        segms.append(segm)
+            
+    return bboxes, segms

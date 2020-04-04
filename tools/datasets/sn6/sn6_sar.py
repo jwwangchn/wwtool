@@ -5,8 +5,8 @@ import os
 import tqdm
 
 
-src_folder = "./data/sn6/v0/train/AOI_11_Rotterdam/SAR-Intensity"
-dst_folder = "./data/sn6/v0/train/AOI_11_Rotterdam/Processed-SAR-Intensity"
+src_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/SAR-Intensity"
+dst_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/Processed-SAR-Intensity"
 sar_img_list = os.listdir(src_folder)
 sar_img_list.sort()
 

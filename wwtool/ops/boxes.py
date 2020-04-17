@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def nms(boxes, scores, iou_threshold):
+def nms(boxes, scores, iou_threshold=0.5):
     """non-maximum suppression (NMS) on the boxes according to their intersection-over-union (IoU)
     
     Arguments:
@@ -87,6 +87,23 @@ def soft_nms(boxes, scores, iou_threshold=0.5, score_threshold=0.001):
         order = order[inds + 1]
 
     return keep
+
+def iou(bbox1, bbox2):
+    """IoU of bbox1 and bbox2
+    
+    Arguments:
+        bbox1 {np.array} -- [N, 4]
+        bbox2 {np.array} -- [N, 4]
+    """
+    x1 = np.maximum(bbox1[:, 0], bbox2[:, 0])
+    y1 = np.maximum(bbox1[:, 1], bbox2[:, 1])
+    x2 = np.minimum(bbox1[:, 2], bbox2[:, 2])
+    y2 = np.minimum(bbox1[:, 3], bbox2[:, 3])
+
+    inter_w = np.maximum(x2 - x1 + 1, 0)
+    inter_h = mp.maximum(y2 - y1 + 1, 0)
+
+    return inter_h * inter_w
 
 
 if __name__ == '__main__':

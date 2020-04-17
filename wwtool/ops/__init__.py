@@ -1,3 +1,3 @@
-from .boxes import nms, soft_nms
+from .boxes import nms, soft_nms, iou
 
-__all__ = ['nms', 'soft_nms']
+__all__ = ['nms', 'soft_nms', 'iou']

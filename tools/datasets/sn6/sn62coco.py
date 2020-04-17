@@ -62,62 +62,71 @@ class SN62COCO(Convert2COCO):
         """
         (xmin, ymin, xmax, ymax)
         """
-        image_file_name = os.path.splitext(os.path.basename(image_file))[0]
-        save_image = wwtool.generate_image(800, 800, color=(0, 0, 0))
-        img = cv2.imread(image_file)
-        img_height, img_width, _ = img.shape
-
-        image_name = os.path.basename(image_file).split('SN6_Train_AOI_11_Rotterdam_{}_'.format(data_source))[1].split('.tif')[0]
-        masks = sn6_parse.sn6_parse(image_name)
         objects = []
-        objects_small_save = []
-        total_object_num = len(masks)
-        small_object_num = 0
-        large_object_num = 0
-        total_object_num = 0
-        for mask in masks:
-            object_struct = {}
-            object_struct_small = {}
-            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask['segmentation'])
-            bbox_w = xmax - xmin
-            bbox_h = ymax - ymin
+        if self.groundtruth:
+            image_file_name = os.path.splitext(os.path.basename(image_file))[0]
+            save_image = wwtool.generate_image(800, 800, color=(0, 0, 0))
+            img = cv2.imread(image_file)
+            img_height, img_width, _ = img.shape
 
-            if bbox_w * bbox_h <= self.small_object_area:
-                continue
+            image_name = os.path.basename(image_file).split('SN6_{}_AOI_11_Rotterdam_{}_'.format(imageset_file_name, data_source))[1].split('.tif')[0]
+            masks = sn6_parse.sn6_parse(image_name)
+            objects_small_save = []
+            total_object_num = len(masks)
+            small_object_num = 0
+            large_object_num = 0
+            total_object_num = 0
+            for mask in masks:
+                object_struct = {}
+                object_struct_small = {}
+                xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask['segmentation'])
+                bbox_w = xmax - xmin
+                bbox_h = ymax - ymin
 
-            total_object_num += 1
-            if bbox_h * bbox_w <= small_size:
-                small_object_num += 1
-            if bbox_h * bbox_w >= large_object_size:
-                large_object_num += 1
+                if bbox_w * bbox_h <= self.small_object_area:
+                    continue
 
-            object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
-            object_struct['segmentation'] = mask['segmentation']
-            object_struct['label'] = 1
+                total_object_num += 1
+                if bbox_h * bbox_w <= small_size:
+                    small_object_num += 1
+                if bbox_h * bbox_w >= large_object_size:
+                    large_object_num += 1
 
-            object_struct_small = object_struct.copy()
-            object_struct_small['bbox'] = [xmin, ymin, xmax, ymax]
-            object_struct_small['label'] = 'building'
-            
-            objects_small_save.append(object_struct_small)
-            objects.append(object_struct)
-        
-        if total_object_num > self.max_object_num_per_image:
-            self.max_object_num_per_image = total_object_num
+                object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
+                object_struct['segmentation'] = mask['segmentation']
+                object_struct['label'] = 1
 
-        if just_keep_small or generate_small_dataset:
-            if small_object_num >= total_object_num * small_object_rate and large_object_num < 1 and len(objects_small_save) > 0:
-                # print(os.path.join(dst_image_path, image_file_name + '.png'))
-                save_image[0:img_height, 0:img_width, :] = img
-                cv2.imwrite(os.path.join(dst_image_path, image_file_name + '.png'), save_image)
-                anno_file = os.path.join(dst_label_path, image_file_name + '.txt')
-                wwtool.simpletxt_dump(objects_small_save, anno_file)
-                return objects
+                object_struct_small = object_struct.copy()
+                object_struct_small['bbox'] = [xmin, ymin, xmax, ymax]
+                object_struct_small['label'] = 'building'
+                
+                objects_small_save.append(object_struct_small)
+                objects.append(object_struct)
+
+            if total_object_num > self.max_object_num_per_image:
+                    self.max_object_num_per_image = total_object_num
+
+            if just_keep_small or generate_small_dataset:
+                if small_object_num >= total_object_num * small_object_rate and large_object_num < 1 and len(objects_small_save) > 0:
+                    # print(os.path.join(dst_image_path, image_file_name + '.png'))
+                    save_image[0:img_height, 0:img_width, :] = img
+                    cv2.imwrite(os.path.join(dst_image_path, image_file_name + '.png'), save_image)
+                    anno_file = os.path.join(dst_label_path, image_file_name + '.txt')
+                    wwtool.simpletxt_dump(objects_small_save, anno_file)
+                    return objects
+                else:
+                    return []
             else:
-                return []
+                return objects
         else:
+            obj_struct = {}
+            obj_struct['segmentation'] = [0, 0, 0, 0, 0, 0, 0, 0]
+            obj_struct['bbox'] = [0, 0, 0, 0]
+            obj_struct['label'] = 0
+
+            objects.append(obj_struct)
+
             return objects
-            
 
 if __name__ == "__main__":
     # basic dataset information
@@ -149,10 +158,15 @@ if __name__ == "__main__":
     converted_sn6_class = [{'supercategory': 'none', 'id': 1,  'name': 'building'}]
 
     core_dataset_name = 'sn6'
-    imagesets = ['train']
+    imagesets = ['test']
+    if imagesets[0] == 'train':
+        imageset_file_name = 'Train'
+    else:
+        imageset_file_name = 'Test_Public'
+
     release_version = 'v1'
     rate = '1.0'
-    groundtruth = True
+    groundtruth = False
     keypoint = False
     
     just_keep_small = False
@@ -187,8 +201,9 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        anno_file = os.path.join(annopath, 'SN6_Train_AOI_11_Rotterdam_Buildings.csv')
-        sn6_parse = wwtool.SN6Parse(anno_file)
+        if imageset == 'train':
+            anno_file = os.path.join(annopath, 'SN6_Train_AOI_11_Rotterdam_Buildings.csv')
+            sn6_parse = wwtool.SN6Parse(anno_file)
 
         sn6 = SN62COCO(imgpath=imgpath,
                         annopath=annopath,

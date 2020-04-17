@@ -1,4 +1,8 @@
 import wwtool
+import matplotlib
+
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
 
 coco_small_class = {   1: 'airplane', 
                        2: 'bridge', 
@@ -9,7 +13,7 @@ coco_small_class = {   1: 'airplane',
                        7: 'person', 
                        8: 'wind-mill'}
 
-ann_file_name = ['small', 'val', 'v1', '1.0']
+ann_file_name = ['small', 'trainval_test', 'v1', '1.0']
 # ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 

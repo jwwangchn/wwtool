@@ -111,7 +111,7 @@ if __name__ == '__main__':
         keywords='computer vision, object detection',
         url='https://github.com/jwwangchn/wwtool',
         packages=find_packages(),
-        package_data={'wwtool.ops': ['*/*.so']},
+        package_data={'wwtool.csrc': ['*/*.so']},
         classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: Apache Software License',
@@ -134,7 +134,7 @@ if __name__ == '__main__':
         ext_modules=[
             make_cython_ext(
                 name='bbox_overlaps_cpu',
-                module='wwtool.ops.bbox',
+                module='wwtool.csrc.bbox',
                 sources=['src/bbox_overlaps_cpu.pyx']),
         ],
         cmdclass={'build_ext': BuildExtension},

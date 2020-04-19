@@ -101,7 +101,7 @@ def imshow_rbboxes(img_or_path,
                   labels=None,
                   scores=None,
                   score_threshold=0.0,
-                  colors='red',
+                  color_name='red',
                   show_label=False,
                   show_score=False,
                   thickness=3,
@@ -157,7 +157,7 @@ def imshow_rbboxes(img_or_path,
 
     if labels is None:
         colors = dict()
-        colors[colors] = color_val(colors)
+        colors[color_name] = color_val(color_name)
     else:
         max_label = max(labels)
         colors = [color_val(_) for _ in range(max_label + 1)]
@@ -172,7 +172,10 @@ def imshow_rbboxes(img_or_path,
         cx = np.mean(rbbox[::2])
         cy = np.mean(rbbox[1::2])
 
-        current_color = colors[label]
+        if labels is None:
+            current_color = color_val()
+        else:
+            current_color = color_dict[label]
 
         for idx in range(-1, 3, 1):
             cv2.line(img, (int(rbbox[idx*2]), int(rbbox[idx*2+1])), (int(rbbox[(idx+1)*2]), int(rbbox[(idx+1)*2+1])), current_color, thickness=thickness)

@@ -158,7 +158,7 @@ if __name__ == "__main__":
     converted_sn6_class = [{'supercategory': 'none', 'id': 1,  'name': 'building'}]
 
     core_dataset_name = 'sn6'
-    imagesets = ['test']
+    imagesets = ['train']
     if imagesets[0] == 'train':
         imageset_file_name = 'Train'
     else:
@@ -166,7 +166,7 @@ if __name__ == "__main__":
 
     release_version = 'v1'
     rate = '1.0'
-    groundtruth = False
+    groundtruth = True
     keypoint = False
     
     just_keep_small = False
@@ -214,7 +214,7 @@ if __name__ == "__main__":
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
-                        small_object_area=0)
+                        small_object_area=9)
 
         images, annotations = sn6.get_image_annotation_pairs()
 

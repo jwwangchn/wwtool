@@ -3,7 +3,6 @@ import wwtool
 import mmcv
 
 
-
 if __name__ == '__main__':
     thetaobbs = [[400, 400, 300, 150, 45*np.pi/180], 
                 [600, 600, 300, 200, 135*np.pi/180]]

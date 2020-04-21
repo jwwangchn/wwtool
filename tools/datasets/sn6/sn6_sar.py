@@ -4,67 +4,72 @@ import os
 import tqdm
 import wwtool
 from matplotlib import pyplot as plt
-import gdal
+import rasterio
 
-src_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/SAR-Intensity"
-dst_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/Processed-SAR-Intensity"
-sar_img_list = os.listdir(src_folder)
-img_number = len(sar_img_list)
-sar_img_list.sort()
+def convert2rgb(sar):
+    HH = sar[0]
+    HV_VH = 0.5 * (sar[1] + sar[2])
+    VV = sar[1]
+    ret = np.dstack((HH, HV_VH, VV))
 
-if not os.path.exists(dst_folder):
-    os.mkdir(dst_folder)
+    return ret.astype("uint8")
 
-plt.figure()
 
-r = np.zeros((900, 900))
-g = np.zeros((900, 900))
-b = np.zeros((900, 900))
+if __name__ == '__main__':
+    src_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/SAR-Intensity"
+    dst_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/Processed-SAR-Intensity"
 
-for ii in tqdm.trange(len(sar_img_list)):
-    sar_img = sar_img_list[ii]
-    img_array = gdal.Open(os.path.join(os.getcwd(), src_folder, sar_img)).ReadAsArray()
-    # img_array = scipy.misc.imread(os.path.join(os.getcwd(), src_folder, sar_img))
-    for band in range(4):
-        # print(img_array[band].min(), img_array[band].max())
-        img_array[band] = img_array[band] / img_array[band].max() * 255
-        # wwtool.show_image(img_array[band].astype("uint8"))
+    sar_img_list = os.listdir(src_folder)
+    img_number = len(sar_img_list)
+    sar_img_list.sort()
 
-        img = img_array[band].astype("uint8")
+    if not os.path.exists(dst_folder):
+        os.mkdir(dst_folder)
 
-        img = cv2.equalizeHist(img)
-        img_array[band] = img
+    to_rgb = False
+    equalize_flag = False
+    calculate_mean_std = True
 
-        hist = cv2.calcHist([img], [0], None , [256], [1, 256])
+    plt.figure()
 
-        plt.plot(hist)
-    
-    plt.show()
+    band1 = np.zeros((900, 900), dtype=np.float32)
+    band2 = np.zeros((900, 900), dtype=np.float32)
+    band3 = np.zeros((900, 900), dtype=np.float32)
+    band4 = np.zeros((900, 900), dtype=np.float32)
 
-    HH = img_array[0]
-    HV_VH = 0.5 * (img_array[1] + img_array[2])
-    VV = img_array[1]
-    out_img = np.dstack((HH, HV_VH, VV))
-    
+    for idx in tqdm.trange(len(sar_img_list)):
+        sar_img = sar_img_list[idx]
+        sar_img_file = os.path.join(os.getcwd(), src_folder, sar_img)
 
-    r = r + HH
-    g = g + HV_VH
-    b = b + VV
+        # input sar image
+        with rasterio.open(sar_img_file) as src:
+            img_array = src.read()
 
-    out_img = out_img.astype("uint8")
+            for band in range(4):
+                img_array[band] = img_array[band] / img_array[band].max() * 255
 
-    
+                if equalize_flag:
+                    img = img_array[band].astype("uint8")
+                    cv2.equalizeHist(img)
+                    img_array[band] = img
 
-    # for idx, test_img in enumerate([HH, HV_VH, VV]):
-    #     hist = cv2.calcHist([test_img], [0], None , [256], [1, 256])
-    #     print(idx, np.mean(test_img), np.std(test_img))
-    #     # plt.plot(hist)
-    
-    # plt.show()
+                # hist = cv2.calcHist([img], [0], None , [256], [1, 256])
+                # plt.plot(hist)
 
-    # cv2.imwrite(os.path.join(os.getcwd(), dst_folder, sar_img), out_img)
-    # wwtool.show_image(out_img)
+            # plt.show()
 
-print(np.mean(r) / img_number, np.std(r) / (img_number))
-print(np.mean(g) / img_number, np.std(g) / (img_number))
-print(np.mean(b) / img_number, np.std(b) / (img_number))
+        if calculate_mean_std:
+            band1 += img_array[0]
+            band2 += img_array[1]
+            band3 += img_array[2]
+            band4 += img_array[3]
+
+        if to_rgb:
+            out_img = convert2rgb(img_array)
+            cv2.imwrite(os.path.join(os.getcwd(), dst_folder, sar_img), out_img)
+            wwtool.show_image(out_img)
+
+    print(np.mean(band1) / img_number, np.std(band1) / (img_number))
+    print(np.mean(band2) / img_number, np.std(band2) / (img_number))
+    print(np.mean(band3) / img_number, np.std(band3) / (img_number))
+    print(np.mean(band4) / img_number, np.std(band4) / (img_number))

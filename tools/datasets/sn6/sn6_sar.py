@@ -6,18 +6,34 @@ import wwtool
 from matplotlib import pyplot as plt
 import rasterio
 
-def convert2rgb(sar):
-    HH = sar[0]
-    HV_VH = 0.5 * (sar[1] + sar[2])
-    VV = sar[1]
-    ret = np.dstack((HH, HV_VH, VV))
+def convert2rgb(sar, model=1):
+    if model == 1:
+        HH = sar[0]
+        HV_VH = 0.5 * (sar[1] + sar[2])
+        VV = sar[1]
+
+        ret = np.dstack((HH, HV_VH, VV))
+
+    if model == 2:
+        R = sar[0]
+        G = sar[3]
+        B = sar[1]
+
+        ret = np.dstack((B, G, R))
 
     return ret.astype("uint8")
 
 
+def rescale(band, minval, maxval):
+    band = 255 * (band - minval) / (maxval - minval)
+    band = band.astype("int")
+    band[band < 0] = 0
+    band[band > 255] = 255
+    return band
+
 if __name__ == '__main__':
-    src_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/SAR-Intensity"
-    dst_folder = "./data/sn6/v0/test_public/AOI_11_Rotterdam/Processed-SAR-Intensity"
+    src_folder = "./data/sn6/v0/MultiSensorSample/SAR-Intensity"
+    dst_folder = "./data/sn6/v0/MultiSensorSample//Processed-SAR-Intensity"
 
     sar_img_list = os.listdir(src_folder)
     img_number = len(sar_img_list)
@@ -26,9 +42,10 @@ if __name__ == '__main__':
     if not os.path.exists(dst_folder):
         os.mkdir(dst_folder)
 
-    to_rgb = False
+    to_rgb = True
     equalize_flag = False
-    calculate_mean_std = True
+    calculate_mean_std = False
+    show_flag = False
 
     plt.figure()
 
@@ -46,30 +63,43 @@ if __name__ == '__main__':
             img_array = src.read()
 
             for band in range(4):
-                img_array[band] = img_array[band] / img_array[band].max() * 255
+                img_ = img_array[band].copy()
+                h, w = img_.shape
+                img_ = img_.reshape((1, -1))
+                img_ = np.sort(img_) 
+
+                zero_count = np.where(img_ == 0)[0].shape[0]
+                low_005 = int((h * w - zero_count) * 0.05)
+                min_num, max_num = img_[0, zero_count + low_005], img_[0, h * w - low_005]
+
+                img_array[band] = rescale(img_array[band], min_num, max_num)
 
                 if equalize_flag:
                     img = img_array[band].astype("uint8")
                     cv2.equalizeHist(img)
                     img_array[band] = img
 
+                if show_flag:
+                    img = img_array[band].astype("uint8")
+                    wwtool.show_image(img)
+
                 # hist = cv2.calcHist([img], [0], None , [256], [1, 256])
                 # plt.plot(hist)
 
             # plt.show()
 
-        if calculate_mean_std:
-            band1 += img_array[0]
-            band2 += img_array[1]
-            band3 += img_array[2]
-            band4 += img_array[3]
-
         if to_rgb:
-            out_img = convert2rgb(img_array)
+            out_img = convert2rgb(img_array, 2)
             cv2.imwrite(os.path.join(os.getcwd(), dst_folder, sar_img), out_img)
-            wwtool.show_image(out_img)
+            # wwtool.show_image(out_img)
+
+        if calculate_mean_std:
+            band1 += out_img[0]
+            band2 += out_img[1]
+            band3 += out_img[2]
+            # band4 += img_array[3]
 
     print(np.mean(band1) / img_number, np.std(band1) / (img_number))
     print(np.mean(band2) / img_number, np.std(band2) / (img_number))
     print(np.mean(band3) / img_number, np.std(band3) / (img_number))
-    print(np.mean(band4) / img_number, np.std(band4) / (img_number))
+    # print(np.mean(band4) / img_number, np.std(band4) / (img_number))

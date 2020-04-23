@@ -14,11 +14,10 @@ if __name__ == '__main__':
     # pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
     release_version = 'v1'
-    imageset = 'samples'
+    imageset = 'train'
 
     imgpath = '/data/sn6/{}/coco/{}/'.format(release_version, imageset)
-    annopath = '/data/sn6/{}/coco/annotations/sn6_{}_{}_1.0.json'.format(release_version, imageset, release_version)
-
+    annopath = '/data/sn6/{}/coco/annotations/sn6_{}_{}_SAR-Intensity.json'.format(release_version, imageset, release_version)
     coco=COCO(annopath)
 
     catIds = coco.getCatIds(catNms=[''])
@@ -32,9 +31,16 @@ if __name__ == '__main__':
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
-        print("idx: {}, image file name: {}".format(idx, img['file_name']))
+        #print("idx: {}, image file name: {}".format(idx, img['file_name']))
 
-        I = io.imread(imgpath + img['file_name'])
-        plt.imshow(I); 
-        coco.showAnns(anns)
-        plt.show()
+        for ann in anns:
+            bbox = ann['bbox']
+            xmin, ymin, w, h = bbox
+            xmax = xmin + w
+            ymax = ymin + h
+            if xmax - xmin < 1:
+                print("##################################################")
+        #I = io.imread(imgpath + img['file_name'])
+        #plt.imshow(I); 
+        #coco.showAnns(anns)
+        #plt.show()

@@ -33,7 +33,7 @@ def rescale(band, minval, maxval):
 
 if __name__ == '__main__':
     src_folder = "./data/sn6/v0/MultiSensorSample/SAR-Intensity"
-    dst_folder = "./data/sn6/v0/MultiSensorSample//Processed-SAR-Intensity"
+    dst_folder = "./data/sn6/v0/MultiSensorSample/Processed-SAR-Intensity"
 
     sar_img_list = os.listdir(src_folder)
     img_number = len(sar_img_list)
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     to_rgb = True
     equalize_flag = False
-    calculate_mean_std = False
+    calculate_mean_std = True
     show_flag = False
 
     plt.figure()
@@ -63,14 +63,8 @@ if __name__ == '__main__':
             img_array = src.read()
 
             for band in range(4):
-                img_ = img_array[band].copy()
-                h, w = img_.shape
-                img_ = img_.reshape((1, -1))
-                img_ = np.sort(img_) 
-
-                zero_count = np.where(img_ == 0)[0].shape[0]
-                low_005 = int((h * w - zero_count) * 0.05)
-                min_num, max_num = img_[0, zero_count + low_005], img_[0, h * w - low_005]
+                min_num = np.percentile(img_array[band][img_array[band]>0], 5)
+                max_num = np.percentile(img_array[band][img_array[band]>0], 95)
 
                 img_array[band] = rescale(img_array[band], min_num, max_num)
 
@@ -94,9 +88,9 @@ if __name__ == '__main__':
             # wwtool.show_image(out_img)
 
         if calculate_mean_std:
-            band1 += out_img[0]
-            band2 += out_img[1]
-            band3 += out_img[2]
+            band1 += out_img[:, :, 0]
+            band2 += out_img[:, :, 1]
+            band3 += out_img[:, :, 2]
             # band4 += img_array[3]
 
     print(np.mean(band1) / img_number, np.std(band1) / (img_number))

@@ -463,7 +463,7 @@ def pointobb_image_transform(img, pts):
                    [img.shape[1] - 1, img.shape[0] - 1],
                    [0, img.shape[0] - 1]], dtype=np.float32)
     M = cv2.getPerspectiveTransform(dst, pts)
-    wraped = cv2.warpPerspective(img, M, (max_x, max_y))
+    wraped = cv2.warpPerspective(img, M, (max_x, max_y), borderValue=0, borderMode=cv2.BORDER_CONSTANT)
     return wraped
 
 def pointobb2pseudomask(pointobb, anchor_image, host_height, host_width, method='anchor_image_transform'):

@@ -278,9 +278,9 @@ def main():
     # classnames = ['plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',
     #             'basketball-court', 'storage-tank',  'soccer-ball-field', 'roundabout', 'harbor', 'swimming-pool', 'helicopter']
 
-    detpath = r'./results/dota_v207/merge_dota_rbbox/Task1_{:s}.txt'
-    annopath = r'./data/dota/v0/test/labelTxt-v1.0/{:s}.txt' # change the directory to the path of val/labelTxt, if you want to do evaluation on the valset
-    imagesetfile = r'./data/dota/v0/test/testset.txt'
+    detpath = r'/home/jwwangchn/Documents/100-Work/170-Codes/aidet/results/dota/mask_rcnn_r50_fpn_1x_dota/merge_dota_hbb/Task1_{:s}.txt'
+    annopath = r'/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/test/labelTxt-v1.0/{:s}.txt' # change the directory to the path of val/labelTxt, if you want to do evaluation on the valset
+    imagesetfile = r'/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/test/testset.txt'
 
     # For DOTA-v1.5
     # classnames = ['plane', 'baseball-diamond', 'bridge', 'ground-track-field', 'small-vehicle', 'large-vehicle', 'ship', 'tennis-court',

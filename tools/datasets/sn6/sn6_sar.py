@@ -32,8 +32,8 @@ def rescale(band, minval, maxval):
     return band
 
 if __name__ == '__main__':
-    src_folder = "./data/sn6/v0/MultiSensorSample/SAR-Intensity"
-    dst_folder = "./data/sn6/v0/MultiSensorSample/Processed-SAR-Intensity"
+    src_folder = "/data/sn6/v0/test_public/AOI_11_Rotterdam/SAR-Intensity"
+    dst_folder = "/data/sn6/v0/test_public/AOI_11_Rotterdam/Processed-SAR-Intensity"
 
     sar_img_list = os.listdir(src_folder)
     img_number = len(sar_img_list)

@@ -181,9 +181,9 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    core_dataset_name = 'dota-v1.5'
-    imagesets = ['trainval']
-    dota_version = 'v1.5'
+    core_dataset_name = 'dota-v1.0'
+    imagesets = ['evaluation_sample']
+    dota_version = 'v1.0'
     release_version = 'v1'
     rate = '1.0'
     groundtruth = True

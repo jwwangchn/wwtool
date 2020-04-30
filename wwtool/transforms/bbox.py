@@ -51,7 +51,7 @@ def segm2rbbox(segms, dilate=False):
         print(niter)
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1 + niter, 1 + niter))
         gray = cv2.dilate(gray, kernel)
-    contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    image, contours, hierarchy = cv2.findContours(gray.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
     if contours != []:
         imax_cnt_area = -1

@@ -5,6 +5,7 @@ import cv2
 import json
 import shutil
 import numpy as np
+import pandas as pd
 import xml.etree.ElementTree as ET
 
 import wwtool
@@ -18,8 +19,7 @@ class SN62COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__sn6_parse__(annotpath, imgpath)
-        
+        objects = self.__sn6_parse__(annotpath, imgpath) 
         coco_annotations = []
 
         if generate_small_dataset and len(objects) > 0:
@@ -66,6 +66,20 @@ class SN62COCO(Convert2COCO):
         objects = []
         if self.groundtruth:
             image_file_name = os.path.splitext(os.path.basename(image_file))[0]
+
+            image_name_postfix = image_file_name + '.tif'
+            if imageset == 'val':
+                if image_name_postfix in valset_image_names:
+                    pass
+                else:
+                    return []
+
+            if imageset == 'train':
+                if image_name_postfix in valset_image_names:
+                    return []
+                else:
+                    pass
+
             save_image = wwtool.generate_image(800, 800, color=(0, 0, 0))
             img = cv2.imread(image_file)
             img_height, img_width, _ = img.shape
@@ -156,11 +170,13 @@ if __name__ == "__main__":
     converted_sn6_class = [{'supercategory': 'none', 'id': 1,  'name': 'building'}]
 
     core_dataset_name = 'sn6'
-    imagesets = ['train']
-    if imagesets[0] == 'train':
-        imageset_file_name = 'Train'
-    else:
+    imagesets = ['train', 'val', 'trainval']
+    if imagesets[0] == 'test':
         imageset_file_name = 'Test_Public'
+    else:
+        imageset_file_name = 'Train'
+
+    valset_image_names = []
 
     release_version = 'v1'
     rate = '1.0'
@@ -199,9 +215,15 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        if imageset == 'train':
+        if imageset in ['train', 'val', 'trainval']:
             anno_file = os.path.join(annopath, 'SN6_Train_AOI_11_Rotterdam_Buildings.csv')
             sn6_parse = wwtool.SN6Parse(anno_file)
+
+            valset_file = './tools/datasets/sn6/val.csv'
+            valset_data = pd.read_csv(valset_file)
+            valset_data = valset_data.dropna(axis=0)
+            for idx in range(valset_data.shape[0]):
+                valset_image_names.append(valset_data.iloc[idx, 0])
 
         sn6 = SN62COCO(imgpath=imgpath,
                         annopath=annopath,

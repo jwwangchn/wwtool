@@ -16,8 +16,8 @@ if __name__ == '__main__':
     release_version = 'v1'
     imageset = 'train'
 
-    imgpath = '/data/sn6/{}/coco/{}/'.format(release_version, imageset)
-    annopath = '/data/sn6/{}/coco/annotations/sn6_{}_{}_SAR-Intensity.json'.format(release_version, imageset, release_version)
+    imgpath = '/data/sn6/{}/coco/train_RGB/'.format(release_version)
+    annopath = '/data/sn6/{}/coco/annotations/sn6_{}_{}_PS-RGB.json'.format(release_version, imageset, release_version)
     coco=COCO(annopath)
 
     catIds = coco.getCatIds(catNms=[''])
@@ -33,14 +33,11 @@ if __name__ == '__main__':
         anns = coco.loadAnns(annIds)
         #print("idx: {}, image file name: {}".format(idx, img['file_name']))
 
-        for ann in anns:
-            bbox = ann['bbox']
-            xmin, ymin, w, h = bbox
-            xmax = xmin + w
-            ymax = ymin + h
-            if xmax - xmin < 1:
-                print("##################################################")
-        #I = io.imread(imgpath + img['file_name'])
-        #plt.imshow(I); 
-        #coco.showAnns(anns)
-        #plt.show()
+        # SN6_Train_AOI_11_Rotterdam_PS-RGB_20190804144353_20190804144627_tile_9935
+        # SN6_Train_AOI_11_Rotterdam_SAR-Intensity_20190804144353_20190804144627_tile_9935.tif
+        if img['file_name'] != 'SN6_Train_AOI_11_Rotterdam_PS-RGB_20190804144353_20190804144627_tile_9935.tif':
+            continue
+        I = io.imread(imgpath + img['file_name'])
+        plt.imshow(I); 
+        coco.showAnns(anns)
+        plt.show()

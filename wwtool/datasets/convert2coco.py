@@ -13,7 +13,8 @@ class Convert2COCO():
                 data_licenses=None,
                 data_type="instances",
                 groundtruth=True,
-                small_object_area=0):
+                small_object_area=0,
+                sub_anno_fold=False):
         super(Convert2COCO, self).__init__()
 
         self.imgpath = imgpath
@@ -29,6 +30,7 @@ class Convert2COCO():
         self.small_object_idx = 0
         self.groundtruth = groundtruth
         self.max_object_num_per_image = 0
+        self.sub_anno_fold = sub_anno_fold
 
         self.imlist = []
         for img_name in os.listdir(self.imgpath):
@@ -42,7 +44,10 @@ class Convert2COCO():
         progress_bar = mmcv.ProgressBar(len(self.imlist))
         for imId, name in enumerate(self.imlist):
             imgpath = os.path.join(self.imgpath, name + self.image_format)
-            annotpath = os.path.join(self.annopath, name + self.anno_format)
+            if self.sub_anno_fold:
+                annotpath = os.path.join(self.annopath, name, name + self.anno_format)
+            else:
+                annotpath = os.path.join(self.annopath, name + self.anno_format)
 
             annotations_coco = self.__generate_coco_annotation__(annotpath, imgpath)
 

@@ -1,4 +1,5 @@
 import wwtool
+import rasterio as rio
 import pycocotools.mask as maskUtils
 import cv2
 
@@ -18,19 +19,20 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 
-img_fn = '/data/buildchange/v0/samples/images/google/L18_104392_210368.jpg'
-shp_fn = '/data/buildchange/v0/samples/pixel_shp/L18_104392_210368.shp'
+png_img_fn = '/data/buildchange/v0/samples/images/L18_106968_219320.png'
+jpg_img_fn = '/data/buildchange/v0/samples/images/L18_106968_219320.jpg'
+shp_fn = '/data/buildchange/v0/samples/labels/L18_106968_219320.shp'
 
-ori_img = cv2.imread(img_fn)
+ori_img = rio.open(png_img_fn)
+rgb_img = cv2.imread(jpg_img_fn)
 
 shp_parser = wwtool.ShpParse()
 
-objects = shp_parser(shp_fn)
+objects = shp_parser(shp_fn, ori_img)
 
 gt_masks = []
 for obj in objects:
     mask = obj['segmentation']
-    print(mask)
     gt_masks.append([mask])
 
 img = wwtool.generate_image(2048, 2048, 0)
@@ -40,8 +42,8 @@ for gt_mask in gt_masks:
     img += mask
 
 heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)
-alpha = 0.5
+alpha = 0.3
 beta = (1.0 - alpha)
-fusion = cv2.addWeighted(heatmap, alpha, ori_img, beta, 0.0)
+fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
 
 wwtool.show_image(fusion)

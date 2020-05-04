@@ -415,7 +415,7 @@ class SN6Parse():
 
 
 class ShpParse():
-    def wkt2coord(self, wkt):
+    def _wkt2coord(self, wkt):
         wkt = shapely.wkt.loads(wkt)
         geo = geojson.Feature(geometry=wkt, properties={})
         coordinate = geo.geometry["coordinates"][0]     # drop the polygon of hole
@@ -428,17 +428,32 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
-    def __call__(self, shp_fn):
+    def __call__(self, shp_fn, geom_img):
         shp = gpd.read_file(shp_fn, encoding='utf-8')
         masks = []
+        geom_list = []
 
         for idx, row_data in shp.iterrows():
-            wkt = row_data.geometry
-            if wkt == None:
+            polygon = row_data.geometry
+            if polygon == None:
                 continue
+            if polygon.geom_type == 'Polygon':
+                polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
+                polygon_pixel = Polygon(polygon_pixel)
+                geom_list.append(polygon_pixel)
+            elif polygon.geom_type == 'MultiPolygon':
+                polygon_pixel = []
+                for sub_polygon in polygon:
+                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
+                    polygon_pixel = Polygon(polygon_pixel)
+                    geom_list.append(polygon_pixel)
+            else:
+                raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
+            
+        for polygon_pixel in geom_list:
+            wkt = polygon_pixel
             wkt  = str(wkt)
-            print(wkt)
-            mask = self.wkt2coord(wkt)
+            mask = self._wkt2coord(wkt)
             masks.append(mask)
 
         objects = []

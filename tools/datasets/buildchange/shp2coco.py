@@ -115,7 +115,7 @@ if __name__ == "__main__":
     shp_class = [{'supercategory': 'none', 'id': 1,  'name': 'footprint',                 }]
 
     core_dataset_name = 'buildchange'
-    imagesets = ['val']
+    imagesets = ['val_xian']
     release_version = 'v1'
     keypoint = False
 

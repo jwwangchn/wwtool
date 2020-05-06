@@ -39,7 +39,7 @@ if __name__ == '__main__':
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
     release_version = 'v1'
-    imageset = 'train_shanghai'
+    imageset = 'val_xian'
     core_dataset_name = 'buildchange'
 
     save_flag = True

@@ -7,6 +7,7 @@ import cv2
 
 from pycocotools.coco import COCO
 import wwtool
+import mmcv
 
 def show_bbox(imgDir, img, anns):
     im = cv2.imread(imgDir + img['file_name'])
@@ -16,11 +17,12 @@ def show_bbox(imgDir, img, anns):
 
     wwtool.show_image(im)
 
-def show_maskobb(imgDir, img, anns):
+def show_maskobb(imgDir, img, anns, save_name):
     I = cv2.imread(imgDir + img['file_name'])
     plt.imshow(I); 
     coco.showAnns(anns)
-    plt.show()
+    # plt.show()
+    plt.savefig(save_name)
 
 
 if __name__ == '__main__':
@@ -34,9 +36,13 @@ if __name__ == '__main__':
     imageset = 'val'
     core_dataset_name = 'buildchange'
 
+    save_flag = True
+
     imgDir = './data/{}/{}/coco/{}/'.format(core_dataset_name, release_version, imageset)
-    annFile='./data/{}/{}/coco/annotations/{}_{}_{}.json'.format(core_dataset_name, release_version, core_dataset_name, imageset, release_version)
-    print(annFile)
+    annFile = './data/{}/{}/coco/annotations/{}_{}_{}.json'.format(core_dataset_name, release_version, core_dataset_name, imageset, release_version)
+    save_dir = './data/{}/{}/coco/vis_annotation/{}'.format(core_dataset_name, release_version, imageset)
+    mmcv.mkdir_or_exist(save_dir)
+    print(annFile, save_dir)
     coco=COCO(annFile)
 
     catIds = coco.getCatIds(catNms=[''])
@@ -51,4 +57,5 @@ if __name__ == '__main__':
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
         print("idx: {}, image file name: {}".format(idx, img['file_name']))
-        show_items[show_flag](imgDir, img, anns)
+        save_name = os.path.join(save_dir, img['file_name'])
+        show_items[show_flag](imgDir, img, anns, save_name)

@@ -55,11 +55,13 @@ class SHP2COCO(Convert2COCO):
         if 'train' in imageset:
             geo_info_file = os.path.join(geopath, img_fn + '.png')
             geo_info = rio.open(geo_info_file)
+            coord_flag = '4326'
         else:
             geo_info = rio.open(image_file)
+            coord_flag = 'pixel'
 
         objects = []
-        masks = shp_parser(label_file, geo_info)
+        masks = shp_parser(label_file, geo_info, coord=coord_flag)
         total_object_num = len(masks)
         for mask in masks:
             object_struct = {}
@@ -115,7 +117,7 @@ if __name__ == "__main__":
     shp_class = [{'supercategory': 'none', 'id': 1,  'name': 'footprint',                 }]
 
     core_dataset_name = 'buildchange'
-    imagesets = ['train_shanghai']
+    imagesets = ['val_xian']
     release_version = 'v1'
     keypoint = False
 

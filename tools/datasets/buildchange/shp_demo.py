@@ -32,12 +32,12 @@ def show_maskobb(imgDir, img, anns, save_name):
 if __name__ == '__main__':
     show_items = {'maskobb': show_maskobb, 
                   'bbox': show_bbox}
-    show_flag = 'bbox'
+    show_flag = 'maskobb'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
     release_version = 'v1'
-    imageset = 'val_xian'
+    imageset = 'train_shanghai'
     core_dataset_name = 'buildchange'
 
     save_flag = True
@@ -46,7 +46,6 @@ if __name__ == '__main__':
     annFile = './data/{}/{}/coco/annotations/{}_{}_{}.json'.format(core_dataset_name, release_version, core_dataset_name, imageset, release_version)
     save_dir = './data/{}/{}/coco/vis_annotation/{}'.format(core_dataset_name, release_version, imageset)
     mmcv.mkdir_or_exist(save_dir)
-    print(annFile, save_dir)
     coco=COCO(annFile)
 
     catIds = coco.getCatIds(catNms=[''])

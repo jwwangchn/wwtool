@@ -52,7 +52,7 @@ class SHP2COCO(Convert2COCO):
         """
         img_fn = os.path.splitext(os.path.basename(image_file))[0]
 
-        if imageset == 'train':
+        if 'train' in imageset:
             geo_info_file = os.path.join(geopath, img_fn + '.png')
             geo_info = rio.open(geo_info_file)
         else:
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     shp_class = [{'supercategory': 'none', 'id': 1,  'name': 'footprint',                 }]
 
     core_dataset_name = 'buildchange'
-    imagesets = ['val']
+    imagesets = ['train_shanghai']
     release_version = 'v1'
     keypoint = False
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        if imageset == 'val':
+        if 'val' in imageset:
             sub_anno_fold = True
         else:
             sub_anno_fold = False

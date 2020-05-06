@@ -429,7 +429,12 @@ class ShpParse():
         return mask
 
     def __call__(self, shp_fn, geom_img):
-        shp = gpd.read_file(shp_fn, encoding='utf-8')
+        try:
+            
+            shp = gpd.read_file(shp_fn, encoding='utf-8')
+        except:
+            print("\nCan't open this shp file: {}".format(shp_fn))
+            return []
         masks = []
         geom_list = []
 

@@ -1,6 +1,7 @@
 import math
 import os
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 import pylab
 import cv2
@@ -8,6 +9,8 @@ import cv2
 from pycocotools.coco import COCO
 import wwtool
 import mmcv
+
+matplotlib.use('Agg')
 
 def show_bbox(imgDir, img, anns):
     im = cv2.imread(imgDir + img['file_name'])
@@ -21,7 +24,7 @@ def show_maskobb(imgDir, img, anns, save_name):
     I = cv2.imread(imgDir + img['file_name'])
     plt.imshow(I); 
     coco.showAnns(anns)
-    # plt.show()
+    plt.show()
     plt.savefig(save_name)
 
 

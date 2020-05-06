@@ -428,7 +428,7 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
-    def __call__(self, shp_fn, geom_img):
+    def __call__(self, shp_fn, geom_img, coord='4326'):
         try:
             
             shp = gpd.read_file(shp_fn, encoding='utf-8')
@@ -443,15 +443,21 @@ class ShpParse():
             if polygon == None:
                 continue
             if polygon.geom_type == 'Polygon':
-                polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
-                polygon_pixel = Polygon(polygon_pixel)
-                geom_list.append(polygon_pixel)
+                if coord == '4326':
+                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
+                    polygon_pixel = Polygon(polygon_pixel)
+                    geom_list.append(polygon_pixel)
+                else:
+                    geom_list.append(polygon)
             elif polygon.geom_type == 'MultiPolygon':
                 polygon_pixel = []
                 for sub_polygon in polygon:
-                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
-                    polygon_pixel = Polygon(polygon_pixel)
-                    geom_list.append(polygon_pixel)
+                    if coord == '4326':
+                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
+                        polygon_pixel = Polygon(polygon_pixel)
+                        geom_list.append(polygon_pixel)
+                    else:
+                        geom_list.append(sub_polygon)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
             

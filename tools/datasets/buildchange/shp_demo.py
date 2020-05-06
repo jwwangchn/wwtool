@@ -12,13 +12,14 @@ import mmcv
 
 matplotlib.use('Agg')
 
-def show_bbox(imgDir, img, anns):
+def show_bbox(imgDir, img, anns, save_name):
     im = cv2.imread(imgDir + img['file_name'])
     for ann in anns:
         bbox = ann['bbox']
         cv2.rectangle(im, (int(bbox[0]), int(bbox[1])), (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3])), (0, 0, 255), 3)
 
-    wwtool.show_image(im)
+    cv2.imwrite(save_name, im)
+    # wwtool.show_image(im)
 
 def show_maskobb(imgDir, img, anns, save_name):
     I = cv2.imread(imgDir + img['file_name'])
@@ -31,7 +32,7 @@ def show_maskobb(imgDir, img, anns, save_name):
 if __name__ == '__main__':
     show_items = {'maskobb': show_maskobb, 
                   'bbox': show_bbox}
-    show_flag = 'maskobb'
+    show_flag = 'bbox'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 

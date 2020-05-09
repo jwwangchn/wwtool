@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import shutil
+import cv2
+import tqdm
 
 import wwtool
 
@@ -47,3 +49,17 @@ def shuffle_dataset(origin_dataset_dir, trainval_dir, test_dir, trainval_rate=0.
         print("From {} to {}.".format(os.path.join(src_label_path, test_file_name), os.path.join(test_dst_label_path, test_file_name)))
         shutil.copy(os.path.join(src_label_path, test_file_name + label_format), os.path.join(test_dst_label_path, test_file_name + label_format))
         shutil.copy(os.path.join(src_image_path, test_file_name + image_format), os.path.join(test_dst_image_path, test_file_name + image_format))
+
+
+def img_norm_parameter(img_list):
+    img_num = len(img_list)
+    img_means = np.array([0, 0, 0], dtype=np.float64)
+    img_stds = np.array([0, 0, 0], dtype=np.float64)
+    for idx in tqdm.trange(img_num):
+        img = cv2.imread(img_list[idx])
+        # BGR
+        img_mean, img_std = cv2.meanStdDev(img)
+        img_means += img_mean.reshape((-1, 3)).squeeze()
+        img_stds += img_std.reshape((-1, 3)).squeeze()
+
+    return img_means/img_num, img_stds/img_num

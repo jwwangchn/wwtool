@@ -11,7 +11,9 @@ import pandas as pd
 from collections import defaultdict
 import xml.etree.ElementTree as ET
 from pycocotools import mask
-
+import rasterio as rio
+from shapely.geometry import Polygon, MultiPolygon
+import geopandas as gpd
 
 def voc_parse(label_file):
     """parse VOC style dataset label file
@@ -405,6 +407,70 @@ class SN6Parse():
         objects = []
         for mask in masks:
             object_struct = dict()
+            object_struct['segmentation'] = mask
+            object_struct['label'] = "1"
+            objects.append(object_struct)
+        
+        return objects
+
+
+class ShpParse():
+    def _wkt2coord(self, wkt):
+        wkt = shapely.wkt.loads(wkt)
+        geo = geojson.Feature(geometry=wkt, properties={})
+        coordinate = geo.geometry["coordinates"][0]     # drop the polygon of hole
+        mask = []
+        for idx, point in enumerate(coordinate):
+            if idx == len(coordinate) - 1:
+                break
+            x, y = point
+            mask.append(int(x))
+            mask.append(int(y))
+        return mask
+
+    def __call__(self, shp_fn, geom_img, coord='4326'):
+        try:
+            
+            shp = gpd.read_file(shp_fn, encoding='utf-8')
+        except:
+            print("\nCan't open this shp file: {}".format(shp_fn))
+            return []
+        masks = []
+        geom_list = []
+
+        for idx, row_data in shp.iterrows():
+            polygon = row_data.geometry
+            if polygon == None:
+                continue
+            if polygon.geom_type == 'Polygon':
+                if coord == '4326':
+                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
+                    polygon_pixel = Polygon(polygon_pixel)
+                    geom_list.append(polygon_pixel)
+                else:
+                    geom_list.append(polygon)
+            elif polygon.geom_type == 'MultiPolygon':
+                polygon_pixel = []
+                for sub_polygon in polygon:
+                    if coord == '4326':
+                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
+                        polygon_pixel = Polygon(polygon_pixel)
+                        geom_list.append(polygon_pixel)
+                    else:
+                        geom_list.append(sub_polygon)
+            else:
+                raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
+            
+        for polygon_pixel in geom_list:
+            wkt = polygon_pixel
+            wkt  = str(wkt)
+            mask = self._wkt2coord(wkt)
+            masks.append(mask)
+
+        objects = []
+        for mask in masks:
+            object_struct = dict()
+            mask = [abs(_) for _ in mask]
             object_struct['segmentation'] = mask
             object_struct['label'] = "1"
             objects.append(object_struct)

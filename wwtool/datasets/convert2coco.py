@@ -6,6 +6,7 @@ class Convert2COCO():
     def __init__(self, 
                 imgpath=None,
                 annopath=None,
+                imageset_file=None,
                 image_format='.jpg',
                 anno_format='.txt',
                 data_categories=None,
@@ -13,7 +14,8 @@ class Convert2COCO():
                 data_licenses=None,
                 data_type="instances",
                 groundtruth=True,
-                small_object_area=0):
+                small_object_area=0,
+                sub_anno_fold=False):
         super(Convert2COCO, self).__init__()
 
         self.imgpath = imgpath
@@ -29,11 +31,21 @@ class Convert2COCO():
         self.small_object_idx = 0
         self.groundtruth = groundtruth
         self.max_object_num_per_image = 0
+        self.sub_anno_fold = sub_anno_fold
+        self.imageset_file = imageset_file
 
         self.imlist = []
-        for img_name in os.listdir(self.imgpath):
-            img_name = img_name.split(self.image_format)[0]
-            self.imlist.append(img_name)
+        if self.imageset_file:
+            with open(self.imageset_file, 'r') as f:
+                lines = f.readlines()
+            for img_name in lines:
+                img_name = img_name.strip('\n')
+                self.imlist.append(img_name)
+            print("Loading image names from imageset file, image number: {}".format(len(self.imlist)))
+        else:
+            for img_name in os.listdir(self.imgpath):
+                img_name = img_name.split(self.image_format)[0]
+                self.imlist.append(img_name)
         
     def get_image_annotation_pairs(self):
         images = []
@@ -42,7 +54,10 @@ class Convert2COCO():
         progress_bar = mmcv.ProgressBar(len(self.imlist))
         for imId, name in enumerate(self.imlist):
             imgpath = os.path.join(self.imgpath, name + self.image_format)
-            annotpath = os.path.join(self.annopath, name + self.anno_format)
+            if self.sub_anno_fold:
+                annotpath = os.path.join(self.annopath, name, name + self.anno_format)
+            else:
+                annotpath = os.path.join(self.annopath, name + self.anno_format)
 
             annotations_coco = self.__generate_coco_annotation__(annotpath, imgpath)
 

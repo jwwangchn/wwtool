@@ -129,7 +129,7 @@ if __name__ == '__main__':
         # tests_require=['pytest'],
         install_requires=[
             'mmcv>=0.2.6', 'numpy', 'matplotlib', 'six', 'terminaltables',
-            'pycocotools', 'pySerial', 'shapely', 'geojson'
+            'pycocotools', 'pySerial', 'shapely', 'geojson', 'scikit-image==0.14.2'
         ],
         ext_modules=[
             make_cython_ext(

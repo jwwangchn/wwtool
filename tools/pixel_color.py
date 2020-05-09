@@ -23,7 +23,8 @@ def onMouse(event, x, y, flag, param):
     cv2.putText(img, hsv_str, (10, 90), font, 0.7, (0, 255, 0), 2)
     cv2.imshow("color", img)
 
-img_ori = cv2.imread("/data/dota/v1/trainval/centerness_seg/P0128__1.0__633___994.png")
+img_ori = cv2.imread("/data/dota-v1.0/v1/coco/pseudo_segmentation/P1672__1.0__1648___1648.png")
+print(img_ori.max())
 cv2.namedWindow("color")
 cv2.imshow("color", img_ori)
 cv2.setMouseCallback("color", onMouse, 0)

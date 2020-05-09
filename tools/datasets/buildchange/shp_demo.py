@@ -25,8 +25,10 @@ def show_maskobb(imgDir, img, anns, save_name):
     I = cv2.imread(imgDir + img['file_name'])
     plt.imshow(I); 
     coco.showAnns(anns)
-    
-    plt.savefig(save_name)
+    plt.xticks([])
+    plt.yticks([])
+    plt.axis('off')
+    plt.savefig(save_name, bbox_inches='tight', dpi=600, pad_inches=0.0)
     plt.clf()
     # plt.show()
 
@@ -62,5 +64,7 @@ if __name__ == '__main__':
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
         print("idx: {}, image file name: {}".format(idx, img['file_name']))
-        save_name = os.path.join(save_dir, img['file_name'])
+        img_fn = img['file_name'].split('.')[0]
+        img_format = img['file_name'].split('.')[1]
+        save_name = os.path.join(save_dir, img_fn + '_gt.' + img_format)
         show_items[show_flag](imgDir, img, anns, save_name)

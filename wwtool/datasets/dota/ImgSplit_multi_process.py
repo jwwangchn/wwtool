@@ -6,14 +6,14 @@ import os
 import codecs
 import numpy as np
 import math
-from dota_utils import GetFileFromThisRootDir
 import cv2
 import shapely.geometry as shgeo
-import dota_utils as util
 import copy
 from multiprocessing import Pool
 from functools import partial
 import time
+
+from wwtool.datasets.dota import GetFileFromThisRootDir, parse_dota_poly2, custombasename
 
 def choose_best_pointorder_fit_another(poly1, poly2):
     """
@@ -221,7 +221,7 @@ class splitbase():
         if np.shape(img) == ():
             return
         fullname = os.path.join(self.labelpath, name + '.txt')
-        objects = util.parse_dota_poly2(fullname)
+        objects = parse_dota_poly2(fullname)
         for obj in objects:
             obj['poly'] = list(map(lambda x:rate*x, obj['poly']))
             #obj['poly'] = list(map(lambda x: ([2 * y for y in x]), obj['poly']))
@@ -262,7 +262,7 @@ class splitbase():
         """
         
         imagelist = GetFileFromThisRootDir(self.labelpath)
-        imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
+        imagenames = [custombasename(x) for x in imagelist if (custombasename(x) != 'Thumbs')]
 
         worker = partial(self.SplitSingle, rate=rate, extent=self.ext)
         #

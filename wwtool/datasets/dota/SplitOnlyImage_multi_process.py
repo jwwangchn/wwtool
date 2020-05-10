@@ -2,9 +2,10 @@ import os
 import numpy as np
 import cv2
 import copy
-import dota_utils as util
 from multiprocessing import Pool
 from functools import partial
+
+from wwtool.datasets.dota import GetFileFromThisRootDir, custombasename
 
 class splitbase():
     def __init__(self,
@@ -74,8 +75,8 @@ class splitbase():
 
     def splitdata(self, rate):
 
-        imagelist = util.GetFileFromThisRootDir(self.srcpath)
-        imagenames = [util.custombasename(x) for x in imagelist if (util.custombasename(x) != 'Thumbs')]
+        imagelist = GetFileFromThisRootDir(self.srcpath)
+        imagenames = [custombasename(x) for x in imagelist if (custombasename(x) != 'Thumbs')]
 
         worker = partial(self.SplitSingle, rate=rate, extent=self.ext)
 

@@ -6,7 +6,9 @@ from matplotlib import cm
 from collections import defaultdict
 import wwtool
 
-plt.rcParams.update({'font.size': 14})
+# plt.rcParams.update({'font.size': 14})    # ICPR paper
+plt.rcParams.update({'font.size': 12})
+
 # plt.rcParams["font.family"] = "Times New Roman"
 
 class COCO_Statistic():
@@ -16,7 +18,9 @@ class COCO_Statistic():
                 label_set=[], 
                 size_measure_by_ratio=False,
                 class_instance=None,
-                show_title=False):
+                show_title=False,
+                out_file_format='pdf',
+                max_object_num=2700):
         self.ann_file = ann_file
         self.coco = COCO(self.ann_file)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -27,6 +31,8 @@ class COCO_Statistic():
         self.size_measure_by_ratio = size_measure_by_ratio
         self.class_instance = class_instance
         self.show_title = show_title
+        self.out_file_format = out_file_format
+        self.max_object_num = max_object_num
 
         categories = self.coco.dataset['categories']
         self.coco_class = dict()
@@ -96,7 +102,7 @@ class COCO_Statistic():
             plt.hist(object_sizes, bins=np.arange(0, 64, 64//30), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.95)
             print("Total objects: {}".format(object_sizes.shape[0]))
             if self.show_title:
-                plt.title('Size Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
+                plt.title('Size Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
             ax = plt.gca()
             xfmt = ScalarFormatter(useMathText=True)
             xfmt.set_powerlimits((0, 0))
@@ -105,7 +111,7 @@ class COCO_Statistic():
             plt.ylabel("Instance Count")
             save_file_name.append('hist')
         
-        plt.savefig('{}.pdf'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()
 
     def class_size_distribution(self, coco_class=None, save_file_name=[], number=True):
@@ -159,9 +165,9 @@ class COCO_Statistic():
         
         print("Classes: {}".format(class_nums))
         if self.show_title:
-            plt.title('Class Numbers Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
+            plt.title('Class Size Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         
-        plt.savefig('{}.pdf'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()
 
     def image_object_num_distribution(self, save_file_name=[]):
@@ -179,17 +185,17 @@ class COCO_Statistic():
         object_nums = np.array(object_nums)
         
         # object_sizes = np.sqrt(np.array(object_sizes))
-        plt.hist(object_nums, bins=np.arange(0, 2700, 2700//80), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.9)
+        plt.hist(object_nums, bins=np.arange(0, self.max_object_num, self.max_object_num//80), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.9)
         print("Max objects: {}, Image num: {}".format(np.max(object_nums), self.image_num))
         if self.show_title:
-            plt.title('Object num Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
-        plt.xlim([-20, 2700])
+            plt.title('Object num Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
+        plt.xlim([-20, self.max_object_num])
         plt.xlabel('Instances')
         plt.ylabel('Image Count')
         plt.yscale('log')
         save_file_name.append('object_num')
         
-        plt.savefig('{}.pdf'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()
 
     def object_aspect_ratio_distribution(self, save_file_name=[]):
@@ -212,11 +218,11 @@ class COCO_Statistic():
         # sns_plot = sns.distplot(object_sizes, color="b", bins=30, kde_kws={"lw": 2})
         plt.hist(object_aspect_ratios, bins=np.arange(0, 3, 3/10), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.9)
         if self.show_title:
-            plt.title('Aspect Ratio Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
+            plt.title('Aspect Ratio Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         plt.xlabel('size')
         save_file_name.append('aspect_ratio')
         
-        plt.savefig('{}.pdf'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()
 
     def class_num_per_image(self, coco_class=None, save_file_name=[]):
@@ -246,7 +252,7 @@ class COCO_Statistic():
         save_file_name.append('class_num_per_image')
                 
         if self.show_title:
-            plt.title('Class Numbers Distribution of {} in {} Dataset'.format(save_file_name[0], save_file_name[1]))
+            plt.title('Class Numbers Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         
-        plt.savefig('{}.pdf'.format("_".join(save_file_name)), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()

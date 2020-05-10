@@ -70,8 +70,8 @@ class Core():
                 self.progress_bar.update()
 
 if __name__ == '__main__':
-    core_dataset = 'hrsc'
-    release_version = 'v2'
+    core_dataset = 'dota'
+    release_version = 'v1'
     imageset = 'trainval'
     rate = '1.0'
     pointobb_sort_method = 'best'

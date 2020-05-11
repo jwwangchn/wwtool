@@ -19,22 +19,16 @@ class Core():
     def __init__(self,
                 release_version,
                 imageset,
-                rate,
-                pointobb_sort_method,
-                extra_info,
                 multi_processing=False,
                 binary_mask=False,
                 vis=False):
         self.release_version = release_version
         self.imageset = imageset
-        self.rate = rate
-        self.pointobb_sort_method = pointobb_sort_method
-        self.extra_info = extra_info
         self.binary_mask = binary_mask
         self.vis = vis
 
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
-        self.annFile = './data/{}/{}/coco/annotations/{}_{}_{}_{}_{}_{}.json'.format(core_dataset, self.release_version, core_dataset, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
         if binary_mask == True:
             self.save_path = './data/{}/{}/{}/obb_seg_binary'.format(core_dataset, self.release_version, self.imageset)
             self.stuffEndId = 1
@@ -71,20 +65,16 @@ class Core():
 
 if __name__ == '__main__':
     core_dataset = 'dota'
-    release_version = 'v1'
+    release_version = 'DJ'
     imageset = 'trainval'
-    rate = '1.0'
-    pointobb_sort_method = 'best'
-    extra_info = 'keypoint'
+
+    ann_file_name = [core_dataset, imageset, release_version, 'best']
 
     binary_mask = False
     vis = False
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
-                rate=rate,
-                pointobb_sort_method=pointobb_sort_method,
-                extra_info=extra_info,
                 multi_processing=False,
                 binary_mask=binary_mask,
                 vis=vis)

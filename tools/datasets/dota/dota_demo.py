@@ -1,6 +1,5 @@
 from pycocotools.coco import COCO
 import numpy as np
-import skimage.io as io
 import matplotlib.pyplot as plt
 import pylab
 import cv2
@@ -29,10 +28,15 @@ def show_bbox(imgDir, img, anns):
     cv2.waitKey(10000)
 
 def show_maskobb(imgDir, img, anns):
-    I = io.imread(imgDir + img['file_name'])
+    I = cv2.imread(imgDir + img['file_name'])
     plt.imshow(I); 
     coco.showAnns(anns)
+    plt.xticks([])
+    plt.yticks([])
+    plt.axis('off')
     plt.show()
+    # plt.savefig(save_name, bbox_inches='tight', dpi=600, pad_inches=0.0)
+    # plt.clf()
 
 def show_pointobb(imgDir, img, anns):
     im = cv2.imread(imgDir + img['file_name'])
@@ -178,18 +182,19 @@ if __name__ == '__main__':
                   'thetaobb': show_thetaobb, 
                   'hobb': show_hobb,
                   'keypoint': show_keypoint}
-    show_flag = 'maskobb'
+    show_flag = 'bbox'
 
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
-    release_version = 'v1'
+    release_version = 'DJ'
     imageset = 'trainval'
     rate = '1.0'
     pointobb_sort_method = 'best'
     extra_info = 'keypoint'
 
-    imgDir = './data/dota/{}/coco/{}/'.format(release_version, imageset)
-    annFile='./data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
+    imgDir = './data/dota-v1.0/{}/coco/{}/'.format(release_version, imageset)
+    # annFile='./data/dota/{}/coco/annotations/dota_{}_{}_{}_{}_{}.json'.format(release_version, imageset, release_version, rate, pointobb_sort_method, extra_info)
+    annFile = '/home/jwwangchn/Documents/100-Work/170-Codes/wwtool/data/dota-v1.0/DJ/coco/annotations/dota-v1.0_trainval_DJ_best_keypoint.json'
 
     coco=COCO(annFile)
 
@@ -198,9 +203,8 @@ if __name__ == '__main__':
 
     for idx, imgId in enumerate(imgIds):
         img = coco.loadImgs(imgIds[idx])[0]
-
-        if img['file_name'] != 'P0002__1.0__1533___0.png':
-            continue
+        # if img['file_name'] != 'P0002__1.0__1533___0.png':
+        #     continue
 
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)

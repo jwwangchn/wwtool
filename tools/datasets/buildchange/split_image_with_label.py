@@ -26,9 +26,9 @@ if __name__ == '__main__':
         anno_path = './data/{}/{}/{}/shp_4326'.format(core_dataset_name, src_version, imageset)
         geo_path = './data/{}/{}/{}/geo_info'.format(core_dataset_name, src_version, imageset)
 
-        image_save_path = '/data/{}/{}/{}/images'.format(core_dataset_name, dst_version, "{}_{}".format(imageset, subimage_size))
+        image_save_path = './data/{}/{}/{}/images'.format(core_dataset_name, dst_version, "{}_{}".format(imageset, subimage_size))
         wwtool.mkdir_or_exist(image_save_path)
-        label_save_path = '/data/{}/{}/{}/labels'.format(core_dataset_name, dst_version, "{}_{}".format(imageset, subimage_size))
+        label_save_path = './data/{}/{}/{}/labels'.format(core_dataset_name, dst_version, "{}_{}".format(imageset, subimage_size))
         wwtool.mkdir_or_exist(label_save_path)
 
         # print(os.listdir(label_path))

@@ -15,7 +15,6 @@ import xml.etree.ElementTree as ET
 from pycocotools import mask
 
 import rasterio as rio
-from descartes import PolygonPatch
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union, nearest_points
 import geopandas as gpd

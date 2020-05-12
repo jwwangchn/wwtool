@@ -6,6 +6,7 @@ class Convert2COCO():
     def __init__(self, 
                 imgpath=None,
                 annopath=None,
+                imageset_file=None,
                 image_format='.jpg',
                 anno_format='.txt',
                 data_categories=None,
@@ -31,12 +32,23 @@ class Convert2COCO():
         self.groundtruth = groundtruth
         self.max_object_num_per_image = 0
         self.sub_anno_fold = sub_anno_fold
+        self.imageset_file = imageset_file
 
         self.imlist = []
-        for img_name in os.listdir(self.imgpath):
-            img_name = img_name.split(self.image_format)[0]
-            self.imlist.append(img_name)
-        
+        if self.imageset_file:
+            with open(self.imageset_file, 'r') as f:
+                lines = f.readlines()
+            for img_name in lines:
+                img_name = img_name.strip('\n')
+                self.imlist.append(img_name)
+            print("Loading image names from imageset file, image number: {}".format(len(self.imlist)))
+        else:
+            for img_name in os.listdir(self.imgpath):
+                if img_name.endswith(self.image_format):
+                    img_name = img_name.split(self.image_format)[0]
+                    self.imlist.append(img_name)
+                else:
+                    continue
     def get_image_annotation_pairs(self):
         images = []
         annotations = []

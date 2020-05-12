@@ -19,22 +19,16 @@ class Core():
     def __init__(self,
                 release_version,
                 imageset,
-                rate,
-                pointobb_sort_method,
-                extra_info,
                 multi_processing=False,
                 binary_mask=False,
                 vis=False):
         self.release_version = release_version
         self.imageset = imageset
-        self.rate = rate
-        self.pointobb_sort_method = pointobb_sort_method
-        self.extra_info = extra_info
         self.binary_mask = binary_mask
         self.vis = vis
 
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
-        self.annFile = './data/{}/{}/coco/annotations/{}_{}_{}_{}_{}_{}.json'.format(core_dataset, self.release_version, core_dataset, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
         if binary_mask == True:
             self.save_path = './data/{}/{}/{}/obb_seg_binary'.format(core_dataset, self.release_version, self.imageset)
             self.stuffEndId = 1
@@ -52,6 +46,10 @@ class Core():
     def _core_(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
+
+        if os.path.exists(os.path.join(self.save_path, image_name)):
+            print("{} exist, skip".format(os.path.join(self.save_path, image_name)))
+            return
         # img_list = ['P0019__1.0__824___824.png', 'P0858__1.0__0___441.png', 'P1399__1.0__3296___3296.png', 'P1466__1.0__2472___2472.png', 'P0867__1.0__1794___1027.png']
         # img_list = ['P2802__1.0__4914___4225.png']
         # if image_name not in img_list:
@@ -70,21 +68,17 @@ class Core():
                 self.progress_bar.update()
 
 if __name__ == '__main__':
-    core_dataset = 'hrsc'
-    release_version = 'v2'
+    core_dataset = 'dota'
+    release_version = 'DJ'
     imageset = 'trainval'
-    rate = '1.0'
-    pointobb_sort_method = 'best'
-    extra_info = 'keypoint'
+
+    ann_file_name = [core_dataset, imageset, release_version, 'best']
 
     binary_mask = False
     vis = False
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
-                rate=rate,
-                pointobb_sort_method=pointobb_sort_method,
-                extra_info=extra_info,
                 multi_processing=False,
                 binary_mask=binary_mask,
                 vis=vis)

@@ -67,12 +67,11 @@ class DOTA2COCO(Convert2COCO):
     
     def __dota_parse__(self, dota_label_file, dota_image_file):
         objects = []
+        small_object_num = 0
+        large_object_num = 0
+        total_object_num = 0
         if self.groundtruth:
             dota_labels = open(dota_label_file, 'r').readlines()
-            total_object_num = len(dota_labels)
-            small_object_num = 0
-            large_object_num = 0
-            total_object_num = 0
             for dota_label in dota_labels:
                 # only save single category
                 if single_category is not None:
@@ -182,13 +181,12 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
     core_dataset_name = 'dota-v1.0'
-    imagesets = ['evaluation_sample']
+    imagesets = ['trainval']
     dota_version = 'v1.0'
-    release_version = 'v1'
-    rate = '1.0'
+    release_version = 'DJ'
     groundtruth = True
     single_category = None
-    keypoint = False
+    keypoint = True
 
     just_keep_small = False
     generate_small_dataset = False
@@ -239,8 +237,11 @@ if __name__ == "__main__":
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
+        imageset_file = './data/{}/{}/{}/{}.txt'.format(core_dataset_name, release_version, imageset, imageset)
+
         dota = DOTA2COCO(imgpath=imgpath,
                         annopath=annopath,
+                        imageset_file=imageset_file,
                         image_format=image_format,
                         anno_format=anno_format,
                         data_categories=converted_dota_class,
@@ -259,5 +260,5 @@ if __name__ == "__main__":
                     "annotations" : annotations,
                     "categories" : dota.categories}
 
-        with open(os.path.join(save_path, "{}_".format(core_dataset_name) + imageset + "_" + release_version + "_" + rate + "_" + pointobb_sort_method + extra_info + ".json"), "w") as jsonfile:
+        with open(os.path.join(save_path, "{}_".format(core_dataset_name) + imageset + "_" + release_version + "_" + pointobb_sort_method + extra_info + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

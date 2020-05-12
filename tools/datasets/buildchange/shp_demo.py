@@ -25,8 +25,10 @@ def show_maskobb(imgDir, img, anns, save_name):
     I = cv2.imread(imgDir + img['file_name'])
     plt.imshow(I); 
     coco.showAnns(anns)
-    
-    plt.savefig(save_name)
+    plt.xticks([])
+    plt.yticks([])
+    plt.axis('off')
+    plt.savefig(save_name, bbox_inches='tight', dpi=600, pad_inches=0.0)
     plt.clf()
     # plt.show()
 
@@ -39,13 +41,14 @@ if __name__ == '__main__':
     pylab.rcParams['figure.figsize'] = (8.0, 10.0)
 
     release_version = 'v1'
-    imageset = 'val_xian'
+    imageset = 'train_shanghai_512'
     core_dataset_name = 'buildchange'
 
     save_flag = True
+    anno_file = [core_dataset_name, release_version, imageset]
 
     imgDir = './data/{}/{}/coco/{}/'.format(core_dataset_name, release_version, imageset)
-    annFile = './data/{}/{}/coco/annotations/{}_{}_{}.json'.format(core_dataset_name, release_version, core_dataset_name, imageset, release_version)
+    annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset_name, release_version, "_".join(anno_file))
     save_dir = './data/{}/{}/coco/vis_annotation/{}'.format(core_dataset_name, release_version, imageset)
     mmcv.mkdir_or_exist(save_dir)
     coco=COCO(annFile)
@@ -62,5 +65,7 @@ if __name__ == '__main__':
         annIds = coco.getAnnIds(imgIds=img['id'], catIds=catIds, iscrowd=None)
         anns = coco.loadAnns(annIds)
         print("idx: {}, image file name: {}".format(idx, img['file_name']))
-        save_name = os.path.join(save_dir, img['file_name'])
+        img_fn = img['file_name'].split('.')[0]
+        img_format = img['file_name'].split('.')[1]
+        save_name = os.path.join(save_dir, img_fn + '_gt.' + img_format)
         show_items[show_flag](imgDir, img, anns, save_name)

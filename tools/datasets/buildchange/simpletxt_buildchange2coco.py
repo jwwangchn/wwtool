@@ -3,14 +3,15 @@ import argparse
 import os
 import cv2
 import json
+import csv
 import shutil
 import numpy as np
-import rasterio as rio
+import xml.etree.ElementTree as ET
 
 import wwtool
 from wwtool.datasets import Convert2COCO
 
-class SHP2COCO(Convert2COCO):
+class SIMPLETXT2COCO(Convert2COCO):
     def __generate_coco_annotation__(self, annotpath, imgpath):
         """
         docstring here
@@ -18,7 +19,7 @@ class SHP2COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__shp_parse__(annotpath, imgpath)
+        objects = self.__simpletxt_parse__(annotpath, imgpath)
         
         coco_annotations = []
 
@@ -45,40 +46,34 @@ class SHP2COCO(Convert2COCO):
             
         return coco_annotations
     
-    def __shp_parse__(self, label_file, image_file):
+    def __simpletxt_parse__(self, label_file, image_file):
         """
         (xmin, ymin, xmax, ymax)
         """
-        img_fn = os.path.splitext(os.path.basename(image_file))[0]
-
-        if 'train' in imageset:
-            geo_info_file = os.path.join(geopath, img_fn + '.png')
-            geo_info = rio.open(geo_info_file)
-            coord_flag = '4326'
-        else:
-            geo_info = rio.open(image_file)
-            coord_flag = 'pixel'
-
+        with open(label_file, 'r') as f:
+            lines = f.readlines()
+    
         objects = []
-        masks = shp_parser(label_file, geo_info, coord=coord_flag)
-        total_object_num = len(masks)
-        for mask in masks:
-            object_struct = {}
+        total_object_num = 0
 
-            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask['segmentation'])
+        for line in lines:
+            object_struct = {}
+            line = line.rstrip().split(' ')
+            label = " ".join(line[-1])
+            mask = [float(_) for _ in line[0:-1]]
+
+            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
             bbox_w = xmax - xmin
             bbox_h = ymax - ymin
 
+            total_object_num += 1
+
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
-            object_struct['segmentation'] = mask['segmentation']
+            object_struct['segmentation'] = mask
             object_struct['label'] = 1
             
             objects.append(object_struct)
         
-        if total_object_num > self.max_object_num_per_image:
-            self.max_object_num_per_image = total_object_num
-
-        geo_info.close()
         return objects
 
 def parse_args():
@@ -98,10 +93,11 @@ if __name__ == "__main__":
 
     # basic dataset information
     info = {"year" : 2019,
-            "version" : "1.0",
-            "description" : "SHP-COCO",
-            "contributor" : "Jinwang Wang",
-            "date_created" : "2020"
+                "version" : "1.0",
+                "description" : "SIMPLETXT-Building-COCO",
+                "contributor" : "Jinwang Wang",
+                "url" : "jwwangchn.cn",
+                "date_created" : "2019"
             }
     
     licenses = [{"id": 1,
@@ -109,60 +105,53 @@ if __name__ == "__main__":
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    # dataset's information
-    image_format='.jpg'
-    anno_format='.shp'
+    original_simpletxt_class = {'building': 1}
 
-    shp_class = [{'supercategory': 'none', 'id': 1,  'name': 'footprint',                 }]
+    converted_simpletxt_class = [{'supercategory': 'none', 'id': 1,  'name': 'building',                   }]
+
+    # dataset's information
+    image_format='.png'
+    anno_format='.txt'
 
     core_dataset_name = 'buildchange'
-    imagesets = ['val_xian']
-    release_version = 'v0'
-    keypoint = False
-
-    shp_parser = wwtool.ShpParse()
+    imagesets = ['train_shanghai_1024', 'val_xian_1024']
+    release_version = 'v1'
+    groundtruth = True
 
     anno_name = [core_dataset_name, release_version]
-    if keypoint:
-        for idx in range(len(shp_class)):
-            shp_class[idx]["keypoints"] = ['top', 'right', 'bottom', 'left']
-            shp_class[idx]["skeleton"] = [[1,2], [2,3], [3,4], [4,1]]
-        anno_name.append('keypoint')
     
-    for imageset in imagesets:
+    if groundtruth == False:
+        anno_name.append('no_ground_truth')
+
+    for idx, imageset in enumerate(imagesets):
         imgpath = './data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
-        annopath = './data/{}/{}/{}/shp_4326'.format(core_dataset_name, release_version, imageset)
-        geopath = './data/{}/{}/{}/geo_info'.format(core_dataset_name, release_version, imageset)
+        annopath = './data/{}/{}/{}/labels'.format(core_dataset_name, release_version, imageset)
         save_path = './data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
-        if 'val' in imageset:
-            sub_anno_fold = True
-        else:
-            sub_anno_fold = False
-
-        shp = SHP2COCO(imgpath=imgpath,
+        simpletxt2coco = SIMPLETXT2COCO(imgpath=imgpath,
                         annopath=annopath,
                         image_format=image_format,
                         anno_format=anno_format,
-                        data_categories=shp_class,
+                        data_categories=converted_simpletxt_class,
                         data_info=info,
                         data_licenses=licenses,
                         data_type="instances",
-                        groundtruth=True,
-                        small_object_area=0,
-                        sub_anno_fold=sub_anno_fold)
+                        groundtruth=groundtruth,
+                        small_object_area=0)
 
-        images, annotations = shp.get_image_annotation_pairs()
+        images, annotations = simpletxt2coco.get_image_annotation_pairs()
 
-        json_data = {"info" : shp.info,
+        json_data = {"info" : simpletxt2coco.info,
                     "images" : images,
-                    "licenses" : shp.licenses,
-                    "type" : shp.type,
+                    "licenses" : simpletxt2coco.licenses,
+                    "type" : simpletxt2coco.type,
                     "annotations" : annotations,
-                    "categories" : shp.categories}
-
-        anno_name.insert(1, imageset)
+                    "categories" : simpletxt2coco.categories}
+        if idx == 0:
+            anno_name.insert(2, imageset)
+        else:
+            anno_name[2] = imageset
         with open(os.path.join(save_path, "_".join(anno_name) + ".json"), "w") as jsonfile:
             json.dump(json_data, jsonfile, sort_keys=True, indent=4)

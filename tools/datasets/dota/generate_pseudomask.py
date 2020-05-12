@@ -1,6 +1,5 @@
 from pycocotools.coco import COCO
 import numpy as np
-import skimage.io as io
 import matplotlib.pyplot as plt
 import pylab
 import cv2
@@ -21,9 +20,6 @@ class PseudomaskGenerate():
     def __init__(self,
                 release_version,
                 imageset,
-                rate,
-                pointobb_sort_method,
-                extra_info,
                 save_vis=False,
                 show_pseudomask=False,
                 encode='centerness',
@@ -33,19 +29,16 @@ class PseudomaskGenerate():
                 multi_processing=False):
         self.release_version = release_version
         self.imageset = imageset
-        self.rate = rate
-        self.pointobb_sort_method = pointobb_sort_method
-        self.extra_info = extra_info
         self.encode = encode
         self.factor = factor
         self.method = method
 
         self.save_dir_names = {'centerness': 'centerness_seg',
-                            'gaussian': 'gaussian_seg',
-                            'ellipse': 'ellipse_seg'}
+                                'gaussian': 'gaussian_seg',
+                                'ellipse': 'ellipse_seg'}
 
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
-        self.annFile = './data/{}/{}/coco/annotations/{}_{}_{}_{}_{}_{}.json'.format(core_dataset, self.release_version, core_dataset, self.imageset, self.release_version, self.rate, self.pointobb_sort_method, self.extra_info)
+        self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
         
         self.save_vis = save_vis
         self.show_pseudomask = show_pseudomask
@@ -75,6 +68,9 @@ class PseudomaskGenerate():
     def __generate_pseudomask(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
+
+        if os.path.exists(os.path.join(self.save_path, image_name)):
+            return
         # if image_name != 'P2802__1.0__4914___4225.png':
         #     return
         annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)
@@ -132,11 +128,11 @@ class PseudomaskGenerate():
 
 if __name__ == '__main__':
     core_dataset = 'dota'
-    release_version = 'v1'
+    release_version = 'DJ'
     imageset = 'trainval'
-    rate = '1.0'
-    pointobb_sort_method = 'best'
-    extra_info = 'keypoint'
+
+    ann_file_name = [core_dataset, imageset, release_version, 'best']
+
     encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5
     factor = 4
@@ -146,9 +142,6 @@ if __name__ == '__main__':
 
     pseudomask_gen = PseudomaskGenerate(release_version=release_version,
                 imageset=imageset,
-                rate=rate,
-                pointobb_sort_method=pointobb_sort_method,
-                extra_info=extra_info,
                 save_vis=save_vis,
                 show_pseudomask=show_pseudomask,
                 encode=encode,

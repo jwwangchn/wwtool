@@ -68,6 +68,9 @@ class PseudomaskGenerate():
     def __generate_pseudomask(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
+
+        if os.path.exists(os.path.join(self.save_path, image_name)):
+            return
         # if image_name != 'P2802__1.0__4914___4225.png':
         #     return
         annIds = self.coco.getAnnIds(imgIds=img_info['id'], catIds=self.catIds, iscrowd=None)

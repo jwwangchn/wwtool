@@ -39,7 +39,7 @@ class Core():
 
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
-        self.imgIds = self.coco.getImgIds(catIds=self.catIds)
+        self.imgIds = self.coco.getImgIds(catIds=self.catIds).sort()
         self.progress_bar = mmcv.ProgressBar(len(self.imgIds))
         self.multi_processing = multi_processing
 

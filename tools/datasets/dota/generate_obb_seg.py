@@ -48,6 +48,7 @@ class Core():
         image_name = img_info['file_name']
 
         if os.path.exists(os.path.join(self.save_path, image_name)):
+            print("{} exist, skip".format(os.path.join(self.save_path, image_name)))
             return
         # img_list = ['P0019__1.0__824___824.png', 'P0858__1.0__0___441.png', 'P1399__1.0__3296___3296.png', 'P1466__1.0__2472___2472.png', 'P0867__1.0__1794___1027.png']
         # img_list = ['P2802__1.0__4914___4225.png']

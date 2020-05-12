@@ -44,9 +44,11 @@ class Convert2COCO():
             print("Loading image names from imageset file, image number: {}".format(len(self.imlist)))
         else:
             for img_name in os.listdir(self.imgpath):
-                img_name = img_name.split(self.image_format)[0]
-                self.imlist.append(img_name)
-        
+                if img_name.endswith(self.image_format):
+                    img_name = img_name.split(self.image_format)[0]
+                    self.imlist.append(img_name)
+                else:
+                    continue
     def get_image_annotation_pairs(self):
         images = []
         annotations = []

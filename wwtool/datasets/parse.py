@@ -8,11 +8,16 @@ import numpy as np
 import wwtool
 from tqdm import tqdm
 import pandas as pd
+import networkx as nx
+
 from collections import defaultdict
 import xml.etree.ElementTree as ET
 from pycocotools import mask
+
 import rasterio as rio
+from descartes import PolygonPatch
 from shapely.geometry import Polygon, MultiPolygon
+from shapely.ops import unary_union, nearest_points
 import geopandas as gpd
 
 def voc_parse(label_file):
@@ -428,14 +433,56 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
+    def _merge_polygon(self, polygons, mode=2):
+        if mode == 1:
+            result = unary_union(polygons)
+        if mode == 2:
+            result = []
+            num_polygon = len(polygons)
+            node_list = range(num_polygon)
+            link_list = []
+            for i in range(num_polygon):
+                for j in range(i+1, num_polygon):
+                    polygon1, polygon2 = polygons[i], polygons[j]
+                    if polygon1.is_valid and polygon2.is_valid:
+                        inter = polygon1.intersection(polygon2)
+                        if inter.geom_type in ["LineString", "MULTILINESTRING"]:
+                            link_list.append([i, j])
+                    else:
+                        continue
+            
+            G = nx.Graph()
+            for node in node_list:
+                G.add_node(node)
+
+            for link in link_list:
+                G.add_edge(link[0], link[1])
+
+            for c in nx.connected_components(G):
+                nodeSet = G.subgraph(c).nodes()
+                nodeSet = list(nodeSet)
+
+                if len(nodeSet) == 1:
+                    single_polygon = polygons[nodeSet[0]]
+                    result.append(single_polygon.wkt)
+                else:
+                    pre_merge = [polygons[node] for node in nodeSet]
+                    post_merge = unary_union(pre_merge)
+                    if post_merge.geom_type == 'MultiPolygon':
+                        for sub_polygon in post_merge:
+                            result.append(sub_polygon.wkt)
+                    else:
+                        result.append(post_merge.wkt)
+        return result
+
     def __call__(self, shp_fn, geom_img, coord='4326'):
         try:
-            
             shp = gpd.read_file(shp_fn, encoding='utf-8')
         except:
             print("\nCan't open this shp file: {}".format(shp_fn))
             return []
         masks = []
+        polygons = []
         geom_list = []
 
         for idx, row_data in shp.iterrows():
@@ -460,18 +507,27 @@ class ShpParse():
                         geom_list.append(sub_polygon)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
-            
+        
+        geom_list = self._merge_polygon(geom_list, mode=2)
+
         for polygon_pixel in geom_list:
-            wkt = polygon_pixel
-            wkt  = str(wkt)
+            polygons.append(polygon_pixel)
+            wkt  = str(polygon_pixel)
             mask = self._wkt2coord(wkt)
             masks.append(mask)
 
         objects = []
-        for mask in masks:
+        for mask, polygon in zip(masks, polygons):
             object_struct = dict()
             mask = [abs(_) for _ in mask]
+
+            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
+            bbox_w = xmax - xmin
+            bbox_h = ymax - ymin
+
             object_struct['segmentation'] = mask
+            object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
+            object_struct['polygon'] = polygon
             object_struct['label'] = "1"
             objects.append(object_struct)
         

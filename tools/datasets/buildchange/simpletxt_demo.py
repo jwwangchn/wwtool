@@ -20,39 +20,38 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 
-png_img_fn = '/data/buildchange/v1/train_shanghai/geo_info/L18_106968_219352.png'
-jpg_img_fn = '/data/buildchange/v1/train_shanghai/images/L18_106968_219352.jpg'
-shp_fn = '/data/buildchange/v1/train_shanghai/shp_4326/L18_106968_219352.shp'
+image_file = '/home/jwwangchn/Documents/100-Work/170-Codes/wwtool/data/buildchange/v1/train_shanghai_512/images/L18_106968_219320__0_0.png'
+label_file = '/home/jwwangchn/Documents/100-Work/170-Codes/wwtool/data/buildchange/v1/train_shanghai_512/labels/L18_106968_219320__0_0.txt'
 
-ori_img = rio.open(png_img_fn)
-rgb_img = cv2.imread(jpg_img_fn)
+img = cv2.imread(image_file)
 
-shp_parser = wwtool.ShpParse()
-
-objects = shp_parser(shp_fn, ori_img)
+with open(label_file, 'r') as f:
+    lines = f.readlines()
 
 gt_masks = []
-for obj in objects:
-    mask = obj['segmentation']
+for line in lines:
+    object_struct = {}
+    line = line.rstrip().split(' ')
+    mask = [float(_) for _ in line[0:-1]]
     gt_masks.append([mask])
 
-img = wwtool.generate_image(2048, 2048, (0, 0, 0))
+img_mask = wwtool.generate_image(512, 512, (0, 0, 0))
 
 COLORS = {'Blue': (0, 130, 200), 'Red': (230, 25, 75), 'Yellow': (255, 225, 25), 'Green': (60, 180, 75), 'Orange': (245, 130, 48), 'Purple': (145, 30, 180), 'Cyan': (70, 240, 240), 'Magenta': (240, 50, 230), 'Lavender': (230, 190, 255), 'Lime': (210, 245, 60), 'Teal': (0, 128, 128), 'Pink': (250, 190, 190), 'Brown': (170, 110, 40), 'Beige': (255, 250, 200), 'Maroon': (128, 0, 0), 'Mint': (170, 255, 195), 'Olive': (128, 128, 0), 'Apricot': (255, 215, 180), 'Navy': (0, 0, 128), 'Grey': (128, 128, 128), 'White': (255, 255, 255), 'Black': (0, 0, 0)}
 
 color_list = list(COLORS.keys())
 
-masks = wwtool.generate_image(2048, 2048)
+masks = wwtool.generate_image(512, 512)
 for gt_mask in gt_masks:
-    mask = poly2mask(gt_mask, 2048, 2048) * 1
+    mask = poly2mask(gt_mask, 512, 512) * 1
     masks[:, :, 0] = mask * COLORS[color_list[np.random.randint(0, 20)]][2]
     masks[:, :, 1] = mask * COLORS[color_list[np.random.randint(0, 20)]][1]
     masks[:, :, 2] = mask * COLORS[color_list[np.random.randint(0, 20)]][0]
-    img += masks
+    img_mask += masks
 
-heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)
+heatmap = wwtool.show_grayscale_as_heatmap(img_mask / 255.0, show=False, return_img=True)
 alpha = 0.5
 beta = (1.0 - alpha)
-fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
+fusion = cv2.addWeighted(heatmap, alpha, img, beta, 0.0)
 
 wwtool.show_image(fusion)

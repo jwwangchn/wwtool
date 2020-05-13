@@ -186,7 +186,7 @@ if __name__ == "__main__":
     release_version = 'DJ'
     groundtruth = True
     single_category = None
-    keypoint = False
+    keypoint = True
 
     just_keep_small = False
     generate_small_dataset = False

@@ -13,7 +13,7 @@ coco_small_class = {    1: 'airplane',
 
 coco_dota_class = {}
 
-ann_file_name = ['dota-v1.5', 'trainval', 'v1', '1.0']
+ann_file_name = ['dota', 'trainval', 'v1', '1.0', 'best_keypoint']
 # ann_file_name.append('small_object')
 ann_file = './data/{}/v1/coco/annotations/{}.json'.format(ann_file_name[0], '_'.join(ann_file_name))
 

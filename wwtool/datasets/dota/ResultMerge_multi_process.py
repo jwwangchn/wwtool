@@ -156,6 +156,12 @@ def mergesingle(dstpath, nms, nms_thresh, fullname):
     name = util.custombasename(fullname)
     #print('name:', name)
     dstname = os.path.join(dstpath, name + '.txt')
+    image_file_name = os.path.splitext(os.path.basename(fullname))[0]
+    classname = image_file_name.split('_')[1]
+    if isinstance(nms_thresh, dict):
+        nms_thresh_ = nms_thresh[classname]
+    else:
+        nms_thresh_ = nms_thresh
     with open(fullname, 'r') as f_in:
         # print('fullname: ', fullname)
         nameboxdict = {}
@@ -184,7 +190,7 @@ def mergesingle(dstpath, nms, nms_thresh, fullname):
             if (oriname not in nameboxdict):
                 nameboxdict[oriname] = []
             nameboxdict[oriname].append(det)
-        nameboxnmsdict = nmsbynamedict(nameboxdict, nms, nms_thresh)
+        nameboxnmsdict = nmsbynamedict(nameboxdict, nms, nms_thresh_)
         with open(dstname, 'w') as f_out:
             for imgname in nameboxnmsdict:
                 for det in nameboxnmsdict[imgname]:

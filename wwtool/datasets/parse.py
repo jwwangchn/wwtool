@@ -15,6 +15,7 @@ import xml.etree.ElementTree as ET
 from pycocotools import mask
 
 import rasterio as rio
+import shapely
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union, nearest_points
 import geopandas as gpd
@@ -508,6 +509,11 @@ class ShpParse():
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
         
         geom_list = self._merge_polygon(geom_list, mode=1)
+
+        if isinstance(geom_list, (list, shapely.geometry.multipolygon.MultiPolygon)):
+            pass
+        else:
+            geom_list = [geom_list]
 
         for polygon_pixel in geom_list:
             polygons.append(polygon_pixel)

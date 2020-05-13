@@ -463,15 +463,15 @@ class ShpParse():
 
                 if len(nodeSet) == 1:
                     single_polygon = polygons[nodeSet[0]]
-                    result.append(single_polygon.wkt)
+                    result.append(single_polygon)
                 else:
                     pre_merge = [polygons[node] for node in nodeSet]
                     post_merge = unary_union(pre_merge)
                     if post_merge.geom_type == 'MultiPolygon':
                         for sub_polygon in post_merge:
-                            result.append(sub_polygon.wkt)
+                            result.append(sub_polygon)
                     else:
-                        result.append(post_merge.wkt)
+                        result.append(post_merge)
         return result
 
     def __call__(self, shp_fn, geom_img, coord='4326'):

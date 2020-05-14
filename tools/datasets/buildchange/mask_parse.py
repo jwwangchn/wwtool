@@ -19,17 +19,13 @@ def poly2mask(mask_ann, img_h, img_w):
     mask = maskUtils.decode(rle)
     return mask
 
+image_file = '/data/buildchange/v0/train_shanghai/images/L18_106968_219320.jpg'
+mask_file = '/data/buildchange/v0/train_shanghai/anno_v2/L18_106968_219320.png'
 
-png_img_fn = './data/buildchange/v0/train_shanghai/geo_info/L18_106968_219352.png'
-jpg_img_fn = './data/buildchange/v0/train_shanghai/images/L18_106968_219352.jpg'
-shp_fn = './data/buildchange/v0/train_shanghai/shp_4326/L18_106968_219352.shp'
+rgb_img = cv2.imread(image_file)
+mask_parser = wwtool.MaskParse()
 
-ori_img = rio.open(png_img_fn)
-rgb_img = cv2.imread(jpg_img_fn)
-
-shp_parser = wwtool.ShpParse()
-
-objects = shp_parser(shp_fn, ori_img)
+objects = mask_parser(mask_file)
 
 gt_masks = []
 for obj in objects:
@@ -51,7 +47,7 @@ for gt_mask in gt_masks:
     img += masks
 
 heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)
-alpha = 0.5
+alpha = 0.4
 beta = (1.0 - alpha)
 fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
 

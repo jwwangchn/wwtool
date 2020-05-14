@@ -2,18 +2,27 @@ import os
 import json
 import csv
 import re
+import cv2
 import geojson
 import shapely.wkt
 import numpy as np
 import wwtool
 from tqdm import tqdm
 import pandas as pd
+import networkx as nx
+
 from collections import defaultdict
 import xml.etree.ElementTree as ET
 from pycocotools import mask
+from PIL import Image
+
 import rasterio as rio
+import shapely
 from shapely.geometry import Polygon, MultiPolygon
+from shapely.ops import unary_union, nearest_points
 import geopandas as gpd
+
+from skimage import measure                        # (pip install scikit-image)
 
 def voc_parse(label_file):
     """parse VOC style dataset label file
@@ -418,6 +427,8 @@ class ShpParse():
     def _wkt2coord(self, wkt):
         wkt = shapely.wkt.loads(wkt)
         geo = geojson.Feature(geometry=wkt, properties={})
+        if geo.geometry == None:
+            return []
         coordinate = geo.geometry["coordinates"][0]     # drop the polygon of hole
         mask = []
         for idx, point in enumerate(coordinate):
@@ -428,14 +439,56 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
+    def _merge_polygon(self, polygons, mode=2):
+        if mode == 1:
+            result = unary_union(polygons)
+        if mode == 2:
+            result = []
+            num_polygon = len(polygons)
+            node_list = range(num_polygon)
+            link_list = []
+            for i in range(num_polygon):
+                for j in range(i+1, num_polygon):
+                    polygon1, polygon2 = polygons[i], polygons[j]
+                    if polygon1.is_valid and polygon2.is_valid:
+                        inter = polygon1.intersection(polygon2)
+                        if inter.geom_type in ["LineString", "MULTILINESTRING"]:
+                            link_list.append([i, j])
+                    else:
+                        continue
+            
+            G = nx.Graph()
+            for node in node_list:
+                G.add_node(node)
+
+            for link in link_list:
+                G.add_edge(link[0], link[1])
+
+            for c in nx.connected_components(G):
+                nodeSet = G.subgraph(c).nodes()
+                nodeSet = list(nodeSet)
+
+                if len(nodeSet) == 1:
+                    single_polygon = polygons[nodeSet[0]]
+                    result.append(single_polygon)
+                else:
+                    pre_merge = [polygons[node] for node in nodeSet]
+                    post_merge = unary_union(pre_merge)
+                    if post_merge.geom_type == 'MultiPolygon':
+                        for sub_polygon in post_merge:
+                            result.append(sub_polygon)
+                    else:
+                        result.append(post_merge)
+        return result
+
     def __call__(self, shp_fn, geom_img, coord='4326'):
         try:
-            
             shp = gpd.read_file(shp_fn, encoding='utf-8')
         except:
             print("\nCan't open this shp file: {}".format(shp_fn))
             return []
         masks = []
+        polygons = []
         geom_list = []
 
         for idx, row_data in shp.iterrows():
@@ -460,18 +513,99 @@ class ShpParse():
                         geom_list.append(sub_polygon)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
-            
+        
+        geom_list = self._merge_polygon(geom_list, mode=1)
+
+        if isinstance(geom_list, (list, shapely.geometry.multipolygon.MultiPolygon)):
+            pass
+        else:
+            geom_list = [geom_list]
+
         for polygon_pixel in geom_list:
-            wkt = polygon_pixel
-            wkt  = str(wkt)
+            polygons.append(polygon_pixel)
+            wkt  = str(polygon_pixel)
             mask = self._wkt2coord(wkt)
             masks.append(mask)
 
         objects = []
-        for mask in masks:
+        for mask, polygon in zip(masks, polygons):
+            if mask == []:
+                continue
             object_struct = dict()
             mask = [abs(_) for _ in mask]
+
+            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
+            bbox_w = xmax - xmin
+            bbox_h = ymax - ymin
+
             object_struct['segmentation'] = mask
+            object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
+            object_struct['polygon'] = polygon
+            object_struct['label'] = "1"
+            objects.append(object_struct)
+        
+        return objects
+
+
+class MaskParse():
+    def create_sub_masks(self, mask_image):
+        height, width, _ = mask_image.shape
+        ret_image = wwtool.generate_image(height, width, color=0)
+        gray_mask_image = mask_image[:, :, 0]
+
+        keep_bool = np.logical_or(gray_mask_image == 1, gray_mask_image == 3)
+
+        ret_image[keep_bool] = 1
+
+        return ret_image
+
+    def create_sub_mask_annotation(self, sub_mask):
+        contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+
+        segmentations = []
+        polygons = []
+
+        for contour in contours:
+            for i in range(len(contour)):
+                row, col = contour[i]
+                contour[i] = (col - 1, row - 1)
+
+            if contour.shape[0] < 3:
+                continue
+            
+            poly = Polygon(contour)
+            poly = poly.simplify(1.0, preserve_topology=False)
+            if poly.geom_type == 'MultiPolygon':
+                for poly_ in poly:
+                    polygons.append(poly_)
+                    segmentation = np.array(poly_.exterior.coords).ravel().tolist()
+                    segmentations.append(segmentation)
+            else:
+                polygons.append(poly)
+                segmentation = np.array(poly.exterior.coords).ravel().tolist()
+                segmentations.append(segmentation)
+
+        return segmentations, polygons
+
+    def __call__(self, mask_file):
+        mask_image = cv2.imread(mask_file)
+        ret_image = self.create_sub_masks(mask_image)
+        masks, polygons = self.create_sub_mask_annotation(ret_image)
+
+        objects = []
+        for mask, polygon in zip(masks, polygons):
+            if mask == []:
+                continue
+            object_struct = dict()
+            mask = [abs(_) for _ in mask]
+
+            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
+            bbox_w = xmax - xmin
+            bbox_h = ymax - ymin
+
+            object_struct['segmentation'] = mask
+            object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
+            object_struct['polygon'] = polygon
             object_struct['label'] = "1"
             objects.append(object_struct)
         

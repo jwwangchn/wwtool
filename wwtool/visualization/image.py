@@ -159,8 +159,16 @@ def imshow_rbboxes(img_or_path,
         colors = dict()
         colors[color_name] = color_val(color_name)
     else:
-        max_label = max(labels)
+        max_label = 16
         colors = [color_val(_) for _ in range(max_label + 1)]
+
+        # labels_vis = [list(label.keys())[0] for label in labels]
+        # class_idxs = [list(label.values())[0] for label in labels]
+        # max_label_idx = max(class_idxs)
+        # if max_label_idx > 20:
+        #     max_label_idx = max_label_idx % 20
+        # color_dict = {list(label.keys())[0]:color_val(list(label.values())[0]) for label in labels}
+
 
     for rbbox, label, score in zip(rbboxes, labels_vis, scores_vis):
         if score < score_threshold:
@@ -175,7 +183,7 @@ def imshow_rbboxes(img_or_path,
         if labels is None:
             current_color = color_val()
         else:
-            current_color = color_dict[label]
+            current_color = colors[label]
 
         for idx in range(-1, 3, 1):
             cv2.line(img, (int(rbbox[idx*2]), int(rbbox[idx*2+1])), (int(rbbox[(idx+1)*2]), int(rbbox[(idx+1)*2+1])), current_color, thickness=thickness)

@@ -429,6 +429,8 @@ class ShpParse():
     def _wkt2coord(self, wkt):
         wkt = shapely.wkt.loads(wkt)
         geo = geojson.Feature(geometry=wkt, properties={})
+        if geo.geometry == None:
+            return []
         coordinate = geo.geometry["coordinates"][0]     # drop the polygon of hole
         mask = []
         for idx, point in enumerate(coordinate):
@@ -529,6 +531,8 @@ class ShpParse():
 
         objects = []
         for mask, polygon in zip(masks, polygons):
+            if mask == []:
+                continue
             object_struct = dict()
             mask = [abs(_) for _ in mask]
 

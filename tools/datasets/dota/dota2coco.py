@@ -249,7 +249,7 @@ if __name__ == "__main__":
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
-                        small_object_area=0)
+                        small_object_area=80)
 
         images, annotations = dota.get_image_annotation_pairs()
 

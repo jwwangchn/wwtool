@@ -20,9 +20,9 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 
-png_img_fn = '/data/buildchange/v1/train_shanghai/geo_info/L18_106968_219352.png'
-jpg_img_fn = '/data/buildchange/v1/train_shanghai/images/L18_106968_219352.jpg'
-shp_fn = '/data/buildchange/v1/train_shanghai/shp_4326/L18_106968_219352.shp'
+png_img_fn = './data/buildchange/v0/train_shanghai/geo_info/L18_106968_219352.png'
+jpg_img_fn = './data/buildchange/v0/train_shanghai/images/L18_106968_219352.jpg'
+shp_fn = './data/buildchange/v0/train_shanghai/shp_4326/L18_106968_219352.shp'
 
 ori_img = rio.open(png_img_fn)
 rgb_img = cv2.imread(jpg_img_fn)

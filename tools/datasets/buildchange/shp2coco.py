@@ -116,9 +116,9 @@ if __name__ == "__main__":
     shp_class = [{'supercategory': 'none', 'id': 1,  'name': 'footprint',                 }]
 
     core_dataset_name = 'buildchange'
-    imagesets = ['val_xian']
+    imagesets = ['train_shanghai']
     release_version = 'v0'
-    keypoint = False
+    keypoint = True
 
     shp_parser = wwtool.ShpParse()
 

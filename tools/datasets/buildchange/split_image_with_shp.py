@@ -65,8 +65,9 @@ if __name__ == '__main__':
 
             mask_centroids = []
             for obj in objects:
-                wkt = shapely.wkt.loads(shapely.wkt.loads(obj['polygon']).centroid.wkt)
-                geo = geojson.Feature(geometry=wkt, properties={})
+                geometry = obj['polygon'].centroid
+                # wkt = shapely.wkt.loads(shapely.wkt.loads(obj['polygon']).centroid.wkt)
+                geo = geojson.Feature(geometry=geometry, properties={})
                 coordinate = geo.geometry["coordinates"]
                 coordinate[0], coordinate[1] = abs(coordinate[0]), abs(coordinate[1])
                 mask_centroids.append(coordinate)

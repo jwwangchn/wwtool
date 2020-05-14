@@ -572,9 +572,15 @@ class MaskParse():
 
             poly = Polygon(contour)
             poly = poly.simplify(1.0, preserve_topology=False)
-            polygons.append(poly)
-            segmentation = np.array(poly.exterior.coords).ravel().tolist()
-            segmentations.append(segmentation)
+            if poly.geom_type == 'MultiPolygon':
+                for poly_ in poly:
+                    polygons.append(poly_)
+                    segmentation = np.array(poly_.exterior.coords).ravel().tolist()
+                    segmentations.append(segmentation)
+            else:
+                polygons.append(poly)
+                segmentation = np.array(poly.exterior.coords).ravel().tolist()
+                segmentations.append(segmentation)
 
         return segmentations, polygons
 

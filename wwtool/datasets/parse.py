@@ -2,6 +2,7 @@ import os
 import json
 import csv
 import re
+import cv2
 import geojson
 import shapely.wkt
 import numpy as np
@@ -21,10 +22,7 @@ from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union, nearest_points
 import geopandas as gpd
 
-from PIL import Image # (pip install Pillow)
-import numpy as np                                 # (pip install numpy)
 from skimage import measure                        # (pip install scikit-image)
-from shapely.geometry import Polygon, MultiPolygon # (pip install Shapely)
 
 def voc_parse(label_file):
     """parse VOC style dataset label file
@@ -580,7 +578,8 @@ class MaskParse():
 
         return segmentations, polygons
 
-    def __call__(self, mask_image):
+    def __call__(self, mask_file):
+        mask_image = cv2.imread(mask_file)
         ret_image = self.create_sub_masks(mask_image)
         masks, polygons = self.create_sub_mask_annotation(ret_image)
 

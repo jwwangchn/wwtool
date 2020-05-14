@@ -13,12 +13,18 @@ import networkx as nx
 from collections import defaultdict
 import xml.etree.ElementTree as ET
 from pycocotools import mask
+from PIL import Image
 
 import rasterio as rio
 import shapely
 from shapely.geometry import Polygon, MultiPolygon
 from shapely.ops import unary_union, nearest_points
 import geopandas as gpd
+
+from PIL import Image # (pip install Pillow)
+import numpy as np                                 # (pip install numpy)
+from skimage import measure                        # (pip install scikit-image)
+from shapely.geometry import Polygon, MultiPolygon # (pip install Shapely)
 
 def voc_parse(label_file):
     """parse VOC style dataset label file
@@ -523,6 +529,61 @@ class ShpParse():
 
         objects = []
         for mask, polygon in zip(masks, polygons):
+            object_struct = dict()
+            mask = [abs(_) for _ in mask]
+
+            xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
+            bbox_w = xmax - xmin
+            bbox_h = ymax - ymin
+
+            object_struct['segmentation'] = mask
+            object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
+            object_struct['polygon'] = polygon
+            object_struct['label'] = "1"
+            objects.append(object_struct)
+        
+        return objects
+
+
+class MaskParse():
+    def create_sub_masks(self, mask_image):
+        height, width, _ = mask_image.shape
+        ret_image = wwtool.generate_image(height, width, color=0)
+        gray_mask_image = mask_image[:, :, 0]
+
+        keep_bool = np.logical_or(gray_mask_image == 1, gray_mask_image == 3)
+
+        ret_image[keep_bool] = 1
+
+        return ret_image
+
+    def create_sub_mask_annotation(self, sub_mask):
+        contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+
+        segmentations = []
+        polygons = []
+
+        for contour in contours:
+            for i in range(len(contour)):
+                row, col = contour[i]
+                contour[i] = (col - 1, row - 1)
+
+            poly = Polygon(contour)
+            poly = poly.simplify(1.0, preserve_topology=False)
+            polygons.append(poly)
+            segmentation = np.array(poly.exterior.coords).ravel().tolist()
+            segmentations.append(segmentation)
+
+        return segmentations, polygons
+
+    def __call__(self, mask_image):
+        ret_image = self.create_sub_masks(mask_image)
+        masks, polygons = self.create_sub_mask_annotation(ret_image)
+
+        objects = []
+        for mask, polygon in zip(masks, polygons):
+            if mask == []:
+                continue
             object_struct = dict()
             mask = [abs(_) for _ in mask]
 

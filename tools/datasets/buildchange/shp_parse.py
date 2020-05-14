@@ -55,4 +55,4 @@ alpha = 0.5
 beta = (1.0 - alpha)
 fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
 
-wwtool.show_image(fusion, save_name='./a.png')
+wwtool.show_image(fusion)

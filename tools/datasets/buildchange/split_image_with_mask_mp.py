@@ -149,7 +149,7 @@ if __name__ == '__main__':
                                         imageset=imageset,
                                         subimage_size=subimage_size,
                                         gap=gap,
-                                        num_processor=4)
+                                        num_processor=16)
 
         split_with_mask.core()
         print("Finish processing {} set.".format(imageset))

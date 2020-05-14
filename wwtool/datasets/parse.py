@@ -514,7 +514,7 @@ class ShpParse():
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
         
-        geom_list = self._merge_polygon(geom_list, mode=1)
+        geom_list = self._merge_polygon(geom_list, mode=2)
 
         if isinstance(geom_list, (list, shapely.geometry.multipolygon.MultiPolygon)):
             pass

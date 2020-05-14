@@ -13,6 +13,8 @@ import mmcv
 from multiprocessing import Pool
 from functools import partial
 
+import tqdm
+
 Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 
 
@@ -116,9 +118,10 @@ class SplitWithMask():
 
     def core(self):
         image_fn_list = os.listdir(self.image_path)
-        print(image_fn_list)
+        num_image = len(image_fn_list)
         worker = partial(self.split_image_with_mask)
-        self.pool.map(worker, image_fn_list)
+        # self.pool.map(worker, image_fn_list)
+        ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()
@@ -146,7 +149,7 @@ if __name__ == '__main__':
                                         imageset=imageset,
                                         subimage_size=subimage_size,
                                         gap=gap,
-                                        num_processor=16)
+                                        num_processor=4)
 
         split_with_mask.core()
         print("Finish processing {} set.".format(imageset))

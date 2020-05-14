@@ -572,6 +572,7 @@ class MaskParse():
 
             if contour.shape[0] < 3:
                 continue
+            
             poly = Polygon(contour)
             poly = poly.simplify(1.0, preserve_topology=False)
             if poly.geom_type == 'MultiPolygon':

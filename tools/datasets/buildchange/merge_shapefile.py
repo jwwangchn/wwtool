@@ -67,10 +67,12 @@ class MergeShapefile():
             coord_flag = 'pixel'
 
         objects = self.shp_parser(annot_file, 
-                             geo_info,
-                             coord=coord_flag, 
-                             connection_mode='floor')
+                                geo_info,
+                                coord=coord_flag, 
+                                connection_mode='floor')
         if objects == []:
+            with open(self.bad_shapefile, 'a') as f:
+                f.write("{} {}".format(self.imageset, file_name + '.shp'))
             return
 
         id_num = []

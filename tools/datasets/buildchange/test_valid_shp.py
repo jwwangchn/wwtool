@@ -3,7 +3,7 @@ import geopandas as gpd
 
 trainset = 'train_shanghai'
 
-shp_path = '/data/buildchange/v0/{}/shp_4326'.format(trainset)
+shp_path = './data/buildchange/v0/{}/shp_4326'.format(trainset)
 
 for shp_fn in os.listdir(shp_path):
     if not shp_fn.endswith('shp'):

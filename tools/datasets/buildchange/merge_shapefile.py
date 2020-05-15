@@ -45,6 +45,12 @@ class MergeShapefile():
 
         image_file = os.path.join(self.image_path, image_fn)
         file_name = os.path.splitext(os.path.basename(image_file))[0]
+
+        merged_shapefile = os.path.join(self.merged_shapefile_save_path, file_name + '.shp')
+
+        if os.path.exists(merged_shapefile):
+            return
+
         if 'val' in self.imageset:
             annot_file = os.path.join(self.anno_path, file_name, file_name + '.shp')
         else:
@@ -62,6 +68,8 @@ class MergeShapefile():
                              geo_info,
                              coord=coord_flag, 
                              connection_mode='floor')
+        if objects == []:
+            return
 
         id_num = []
         floors = []
@@ -77,8 +85,6 @@ class MergeShapefile():
             
         df = pd.DataFrame({'Id': id_num, "Floor": floors})
         gdf = gpd.GeoDataFrame(df, geometry=polygons, crs='EPSG:4326')
-
-        merged_shapefile = os.path.join(self.merged_shapefile_save_path, file_name + '.shp')
 
         gdf.to_file(merged_shapefile)
 
@@ -115,7 +121,7 @@ if __name__ == '__main__':
                                          src_version=src_version,
                                          imageset=imageset,
                                          multi_processing=True,
-                                         num_processor=12)
+                                         num_processor=32)
         merge_shapefile.core()
         print("Finish processing {} set.".format(imageset))
             

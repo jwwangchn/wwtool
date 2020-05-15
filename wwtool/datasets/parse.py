@@ -539,7 +539,11 @@ class ShpParse():
         
         for idx, row_data in shp.iterrows():
             polygon = row_data.geometry
-            floor = row_data.Floor
+            try:
+                floor = row_data.Floor
+            except:
+                print("\nThis file does not floor key: {}".format(shp_fn))
+                return []
 
             if polygon == None:
                 continue

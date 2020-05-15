@@ -72,7 +72,7 @@ class MergeShapefile():
                                 connection_mode='floor')
         if objects == []:
             with open(self.bad_shapefile, 'a') as f:
-                f.write("{} {}".format(self.imageset, file_name + '.shp'))
+                f.write("{} {}\n".format(self.imageset, file_name + '.shp'))
             return
 
         id_num = []

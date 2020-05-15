@@ -39,6 +39,8 @@ if __name__ == '__main__':
 
             image_file = os.path.join(image_path, image_fn)
             mask_file = os.path.join(mask_path, image_fn.replace('jpg', 'png'))
+            if not os.path.exists(mask_file):
+                continue
             file_name = os.path.splitext(os.path.basename(image_file))[0]
 
 

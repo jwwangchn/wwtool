@@ -29,6 +29,8 @@ class MergeShapefile():
         self.anno_path = './data/{}/{}/{}/shp_4326'.format(core_dataset_name, src_version, imageset)
         self.geo_path = './data/{}/{}/{}/geo_info'.format(core_dataset_name, src_version, imageset)
 
+        self.bad_shapefile = './data/{}/{}/{}/bad_shapefile.txt'.format(core_dataset_name, src_version, imageset)
+
         self.merged_shapefile_save_path = './data/{}/{}/{}/merged_shp'.format(core_dataset_name, src_version, imageset)
         wwtool.mkdir_or_exist(self.merged_shapefile_save_path)
 

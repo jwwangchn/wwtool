@@ -3,6 +3,8 @@ import numpy as np
 import rasterio as rio
 import pycocotools.mask as maskUtils
 import cv2
+import pandas as pd
+import geopandas as gpd
 
 def poly2mask(mask_ann, img_h, img_w):
     if isinstance(mask_ann, list):
@@ -20,21 +22,42 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 
-png_img_fn = './data/buildchange/v0/train_shanghai/geo_info/L18_106968_219352.png'
-jpg_img_fn = './data/buildchange/v0/train_shanghai/images/L18_106968_219352.jpg'
-shp_fn = './data/buildchange/v0/train_shanghai/shp_4326/L18_106968_219352.shp'
+png_img_fn = './data/buildchange/v0/train_shanghai/geo_info/L18_106968_219488.png'
+jpg_img_fn = './data/buildchange/v0/train_shanghai/images/L18_106968_219488.jpg'
+shp_fn = './data/buildchange/v0/train_shanghai/shp_4326/L18_106968_219488.shp'
+
+merged_shp = './data/buildchange/v0/train_shanghai/merged_shp/L18_106968_219488.shp'
 
 ori_img = rio.open(png_img_fn)
 rgb_img = cv2.imread(jpg_img_fn)
 
 shp_parser = wwtool.ShpParse()
 
-objects = shp_parser(shp_fn, ori_img)
+objects = shp_parser(shp_fn, ori_img, connection_mode='floor')
 
 gt_masks = []
-for obj in objects:
+
+id_num = []
+floors = []
+polygons = []
+
+for idx, obj in enumerate(objects):
     mask = obj['segmentation']
+    ori_polygon = obj['ori_polygon']
+    ori_floor = obj['ori_floor']
+
+    id_num.append(idx)
+    floors.append(ori_floor)
+    polygons.append(ori_polygon)
+    
     gt_masks.append([mask])
+
+df = pd.DataFrame({'Id': id_num, "Floor": floors})
+gdf = gpd.GeoDataFrame(df, geometry=polygons)
+
+print(gdf.head())
+
+gdf.to_file(merged_shp)
 
 img = wwtool.generate_image(2048, 2048, (0, 0, 0))
 
@@ -43,11 +66,11 @@ COLORS = {'Blue': (0, 130, 200), 'Red': (230, 25, 75), 'Yellow': (255, 225, 25),
 color_list = list(COLORS.keys())
 
 masks = wwtool.generate_image(2048, 2048)
-for gt_mask in gt_masks:
+for idx, gt_mask in enumerate(gt_masks):
     mask = poly2mask(gt_mask, 2048, 2048) * 1
-    masks[:, :, 0] = mask * COLORS[color_list[np.random.randint(0, 20)]][2]
-    masks[:, :, 1] = mask * COLORS[color_list[np.random.randint(0, 20)]][1]
-    masks[:, :, 2] = mask * COLORS[color_list[np.random.randint(0, 20)]][0]
+    masks[:, :, 0] = mask * COLORS[color_list[idx % 20]][2]
+    masks[:, :, 1] = mask * COLORS[color_list[idx % 20]][1]
+    masks[:, :, 2] = mask * COLORS[color_list[idx % 20]][0]
     img += masks
 
 heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)

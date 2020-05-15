@@ -25,6 +25,6 @@ for shp_fn in os.listdir(shp_path):
             floor = row_data.Floor
         except:
             print("\nThis file does not floor key: {}".format(shp_fn))
-            continue
+            break
         
     

@@ -1,7 +1,7 @@
 import os
 import geopandas as gpd
 
-trainsets = ['train_beijing', 'train_shanghai', 'train_chengdu', 'train_jinan', 'train_haerbin']
+trainsets = ['val_xian']
 
 for trainset in trainsets:
     shp_path = './data/buildchange/v0/{}/shp_4326'.format(trainset)
@@ -25,5 +25,3 @@ for trainset in trainsets:
                 print("\nThis file does not floor key: {}".format(shp_fn))
                 print(shp.head())
                 break
-        
-    

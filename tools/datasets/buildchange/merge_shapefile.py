@@ -117,7 +117,7 @@ class MergeShapefile():
 if __name__ == '__main__':
     core_dataset_name = 'buildchange'
     src_version = 'v0'
-    imagesets = ['train_shanghai']
+    imagesets = ['train_beijing']
 
     for imageset in imagesets:
         print("Begin processing {} set.".format(imageset))
@@ -125,7 +125,7 @@ if __name__ == '__main__':
                                          src_version=src_version,
                                          imageset=imageset,
                                          multi_processing=True,
-                                         num_processor=8)
+                                         num_processor=16)
         merge_shapefile.core()
         print("Finish processing {} set.".format(imageset))
             

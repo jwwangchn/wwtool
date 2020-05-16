@@ -513,7 +513,8 @@ class ShpParse():
     def __call__(self, 
                 shp_fn, 
                 geom_img, 
-                coord='4326', 
+                coord='4326',
+                merge_flag=False,
                 merge_mode=2,
                 connection_mode='floor'):
         """Parse shapefile of building change
@@ -524,6 +525,7 @@ class ShpParse():
 
         Keyword Arguments:
             coord {str} -- coordinate system (default: {'4326'})
+            merge_flag {bool} -- False: skip the polygon merge, True: output objects after merging (default: {False})
             merge_mode {int} -- 1: merge by intersection, 2: merge by rule (default: {2})
             connection_mode {str} -- "line": merge by line intersection, "floor": merge by floor (default: {'floor'})
 
@@ -557,18 +559,22 @@ class ShpParse():
             if polygon == None:
                 continue
             
-
             ori_polygon_list.append(polygon)
             ori_floor_list.append(floor)
             ori_property_list.append(property_)
 
-        # merge the splitted building when annotation
-        merged_polygon_list, merged_property_list = self._merge_polygon(
-            ori_polygon_list, 
-            ori_floor_list,
-            ori_property_list,
-            merge_mode=merge_mode,
-            connection_mode=connection_mode)
+        if merge_flag:
+            # merge the splitted building when annotation
+            merged_polygon_list, merged_property_list = self._merge_polygon(
+                ori_polygon_list, 
+                ori_floor_list,
+                ori_property_list,
+                merge_mode=merge_mode,
+                connection_mode=connection_mode)
+        else:
+            merged_polygon_list = ori_polygon_list
+            merged_property_list = ori_property_list
+
         # converted coordinate
         converted_polygons = []
         converted_properties = []

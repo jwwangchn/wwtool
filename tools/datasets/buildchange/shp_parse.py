@@ -22,18 +22,18 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 
-png_img_fn = './data/buildchange/v0/train_shanghai/geo_info/L18_106968_219488.png'
-jpg_img_fn = './data/buildchange/v0/train_shanghai/images/L18_106968_219488.jpg'
-shp_fn = './data/buildchange/v0/train_shanghai/shp_4326/L18_106968_219488.shp'
+png_img_fn = './data/buildchange/v0/shanghai/geo_info/L18_106968_219344.png'
+jpg_img_fn = './data/buildchange/v0/shanghai/images/L18_106968_219344.jpg'
+# shp_fn = './data/buildchange/v0/shanghai/shp_4326/L18_106968_219320.shp'
+shp_fn = './data/buildchange/v0/shanghai/merged_shp/L18_106968_219344.shp'
 
-merged_shp = './data/buildchange/v0/train_shanghai/merged_shp/L18_106968_219488.shp'
 
 ori_img = rio.open(png_img_fn)
 rgb_img = cv2.imread(jpg_img_fn)
 
 shp_parser = wwtool.ShpParse()
 
-objects = shp_parser(shp_fn, ori_img, connection_mode='floor')
+objects = shp_parser(shp_fn, ori_img)
 
 gt_masks = []
 
@@ -43,21 +43,9 @@ polygons = []
 
 for idx, obj in enumerate(objects):
     mask = obj['segmentation']
-    ori_polygon = obj['ori_polygon']
-    ori_floor = obj['ori_floor']
-
-    id_num.append(idx)
-    floors.append(ori_floor)
-    polygons.append(ori_polygon)
-    
     gt_masks.append([mask])
 
-df = pd.DataFrame({'Id': id_num, "Floor": floors})
-gdf = gpd.GeoDataFrame(df, geometry=polygons)
-
-print(gdf.head())
-
-gdf.to_file(merged_shp)
+print("Finish to parse shapefile!")
 
 img = wwtool.generate_image(2048, 2048, (0, 0, 0))
 

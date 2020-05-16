@@ -76,20 +76,20 @@ class MergeShapefile():
             return
 
         id_num = []
-        floors = []
+        properties = []
         polygons = []
 
         for idx, obj in enumerate(objects):
             ori_polygon = obj['ori_polygon']
-            ori_floor = obj['ori_floor']
+            ori_property = obj['ori_property']
+            property_dict = ori_property.to_dict()
+            property_dict['Id'] = idx
 
-            id_num.append(idx)
-            floors.append(ori_floor)
+            properties.append(property_dict)
             polygons.append(ori_polygon)
             
-        df = pd.DataFrame({'Id': id_num, "Floor": floors})
+        df = pd.DataFrame(properties)
         gdf = gpd.GeoDataFrame(df, geometry=polygons, crs='EPSG:4326')
-
         gdf.to_file(merged_shapefile)
 
     def core(self):

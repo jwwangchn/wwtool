@@ -533,7 +533,7 @@ class ShpParse():
         try:
             shp = gpd.read_file(shp_fn, encoding='utf-8')
         except:
-            print("\nCan't open this shp file: {}".format(shp_fn))
+            print("Can't open this shp file: {}".format(shp_fn))
             return []
 
         ori_polygon_list = []
@@ -546,12 +546,12 @@ class ShpParse():
             try:
                 floor = row_data.Floor
             except:
-                print("\nThis file does not floor key: {}".format(shp_fn))
+                print("This file does not floor key: {}".format(shp_fn))
                 # for processing beijing shapefile
                 try:
                     floor = row_data.half_H
                 except:
-                    print("\nThis file does not half_H key: {}".format(shp_fn))
+                    print("This file does not half_H key: {}".format(shp_fn))
                     return []
 
             if polygon == None:

@@ -125,7 +125,7 @@ if __name__ == '__main__':
                                          src_version=src_version,
                                          imageset=imageset,
                                          multi_processing=True,
-                                         num_processor=32)
+                                         num_processor=8)
         merge_shapefile.core()
         print("Finish processing {} set.".format(imageset))
             

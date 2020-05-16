@@ -1,7 +1,7 @@
 import os
 import geopandas as gpd
 
-trainset = 'train_shanghai'
+trainset = 'train_jinan'
 
 shp_path = './data/buildchange/v0/{}/shp_4326'.format(trainset)
 
@@ -18,7 +18,7 @@ for shp_fn in os.listdir(shp_path):
 
     ori_polygon_list = []
     ori_floor_list = []
-
+    print(shp.head())
     for idx, row_data in shp.iterrows():
         polygon = row_data.geometry
         try:

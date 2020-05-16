@@ -441,16 +441,17 @@ class ShpParse():
 
     def _merge_polygon(self, 
                        polygons, 
-                       floors=None, 
+                       floors=None,
+                       properties=None, 
                        merge_mode=2,
                        connection_mode='floor',
                        merge_boundary=False):
         if merge_mode == 1:
             merged_polygons = unary_union(polygons)
-            merged_floors = []  #TODO: fix the length of merged_floor
+            merged_properties = []  #TODO: fix the length of merged_floor
         if merge_mode == 2:
             merged_polygons = []
-            merged_floors = []
+            merged_properties = []
 
             num_polygon = len(polygons)
             node_list = range(num_polygon)
@@ -483,7 +484,7 @@ class ShpParse():
             
             G = nx.Graph()
             for node in node_list:
-                G.add_node(node, floor=floors[node])
+                G.add_node(node, properties=properties[node])
 
             for link in link_list:
                 G.add_edge(link[0], link[1])
@@ -495,19 +496,19 @@ class ShpParse():
                 if len(nodeSet) == 1:
                     single_polygon = polygons[nodeSet[0]]
                     merged_polygons.append(single_polygon)
-                    merged_floors.append(floors[nodeSet[0]])
+                    merged_properties.append(properties[nodeSet[0]])
                 else:
                     pre_merge = [polygons[node] for node in nodeSet]
                     post_merge = unary_union(pre_merge)
                     if post_merge.geom_type == 'MultiPolygon':
                         for sub_polygon in post_merge:
                             merged_polygons.append(sub_polygon)
-                            merged_floors.append(floors[nodeSet[0]])
+                            merged_properties.append(properties[nodeSet[0]])
                     else:
                         merged_polygons.append(post_merge)
-                        merged_floors.append(floors[nodeSet[0]])
+                        merged_properties.append(properties[nodeSet[0]])
         
-        return merged_polygons, merged_floors
+        return merged_polygons, merged_properties
 
     def __call__(self, 
                 shp_fn, 
@@ -534,60 +535,72 @@ class ShpParse():
         except:
             print("\nCan't open this shp file: {}".format(shp_fn))
             return []
+
         ori_polygon_list = []
         ori_floor_list = []
-        
+        ori_property_list = []
+
         for idx, row_data in shp.iterrows():
             polygon = row_data.geometry
+            property_ = row_data[:-1]
             try:
                 floor = row_data.Floor
             except:
                 print("\nThis file does not floor key: {}".format(shp_fn))
-                return []
+                # for processing beijing shapefile
+                try:
+                    floor = row_data.half_H
+                except:
+                    print("\nThis file does not half_H key: {}".format(shp_fn))
+                    return []
 
             if polygon == None:
                 continue
+            
 
             ori_polygon_list.append(polygon)
             ori_floor_list.append(floor)
+            ori_property_list.append(property_)
 
         # merge the splitted building when annotation
-        merged_polygon_list, merged_floor_list = self._merge_polygon(ori_polygon_list, 
-                                                        ori_floor_list, 
-                                                        merge_mode=merge_mode,
-                                                        connection_mode=connection_mode)
+        merged_polygon_list, merged_property_list = self._merge_polygon(
+            ori_polygon_list, 
+            ori_floor_list,
+            ori_property_list,
+            merge_mode=merge_mode,
+            connection_mode=connection_mode)
         # converted coordinate
         converted_polygons = []
-        converted_floors = []
+        converted_properties = []
 
         # original coordinate, add these to handle multipolygons after merging
         merged_ori_polygons = []
-        merged_ori_floor = []
+        merged_ori_properties = []
 
-        for polygon, floor in zip(merged_polygon_list, merged_floor_list):
+        for polygon, property_ in zip(merged_polygon_list, merged_property_list):
             if polygon.geom_type == 'Polygon':
                 if coord == '4326':
                     polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
                     polygon_pixel = Polygon(polygon_pixel)
                     converted_polygons.append(polygon_pixel)
-                    converted_floors.append(floor)
+                    converted_properties.append(property_)
                 else:
                     converted_polygons.append(polygon)
                 
                 merged_ori_polygons.append(polygon)
-                merged_ori_floor.append(floor)
+                merged_ori_properties.append(property_)
             elif polygon.geom_type == 'MultiPolygon':
                 for sub_polygon in polygon:
                     if coord == '4326':
                         polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
                         polygon_pixel = Polygon(polygon_pixel)
                         converted_polygons.append(polygon_pixel)
-                        converted_floors.append(floor)
+                        converted_properties.append(property_)
                     else:
                         converted_polygons.append(sub_polygon)
                     
                     merged_ori_polygons.append(sub_polygon)
-                    merged_ori_floor.append(floor)
+                    merged_ori_properties.append(property_)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
 
@@ -598,7 +611,7 @@ class ShpParse():
 
         masks = []
         final_polygons = []
-        final_floors = converted_floors
+        final_properties = converted_properties
         for polygon_pixel in converted_polygons:
             final_polygons.append(polygon_pixel)
             wkt  = str(polygon_pixel)
@@ -606,7 +619,8 @@ class ShpParse():
             masks.append(mask)
 
         objects = []
-        for mask, converted_polygon, converted_floor, ori_polygon, ori_floor in zip(masks, final_polygons, final_floors, merged_ori_polygons, merged_ori_floor):
+        # ori -> original coordinate, converted -> converted coordinate
+        for mask, converted_polygon, converted_property, ori_polygon, ori_property in zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties):
             if mask == []:
                 continue
             object_struct = dict()
@@ -619,9 +633,9 @@ class ShpParse():
             object_struct['segmentation'] = mask
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
             object_struct['converted_polygon'] = converted_polygon
-            object_struct['converted_floor'] = converted_floor
+            object_struct['converted_property'] = converted_property
             object_struct['ori_polygon'] = ori_polygon
-            object_struct['ori_floor'] = ori_floor
+            object_struct['ori_property'] = ori_property
             object_struct['label'] = "1"
             objects.append(object_struct)
         

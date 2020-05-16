@@ -53,18 +53,11 @@ class MergeShapefile():
         if os.path.exists(merged_shapefile):
             return
 
-        if 'val' in self.imageset:
-            annot_file = os.path.join(self.anno_path, file_name, file_name + '.shp')
-        else:
-            annot_file = os.path.join(self.anno_path, file_name + '.shp')
+        annot_file = os.path.join(self.anno_path, file_name + '.shp')
 
-        if 'train' in self.imageset:
-            geo_info_file = os.path.join(self.geo_path, file_name + '.png')
-            geo_info = rio.open(geo_info_file)
-            coord_flag = '4326'
-        else:
-            geo_info = rio.open(image_file)
-            coord_flag = 'pixel'
+        geo_info_file = os.path.join(self.geo_path, file_name + '.png')
+        geo_info = rio.open(geo_info_file)
+        coord_flag = '4326'
 
         objects = self.shp_parser(annot_file, 
                                 geo_info,
@@ -117,7 +110,7 @@ class MergeShapefile():
 if __name__ == '__main__':
     core_dataset_name = 'buildchange'
     src_version = 'v0'
-    imagesets = ['train_beijing']
+    imagesets = ['val_xian']
 
     for imageset in imagesets:
         print("Begin processing {} set.".format(imageset))

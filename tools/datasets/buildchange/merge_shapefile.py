@@ -75,7 +75,6 @@ class MergeShapefile():
                 f.write("{} {}\n".format(self.imageset, file_name + '.shp'))
             return
 
-        id_num = []
         properties = []
         polygons = []
 
@@ -90,7 +89,7 @@ class MergeShapefile():
             
         df = pd.DataFrame(properties)
         gdf = gpd.GeoDataFrame(df, geometry=polygons, crs='EPSG:4326')
-        gdf.to_file(merged_shapefile)
+        gdf.to_file(merged_shapefile, encoding='utf-8')
 
     def core(self):
         image_fn_list = os.listdir(self.image_path)
@@ -117,7 +116,7 @@ class MergeShapefile():
 if __name__ == '__main__':
     core_dataset_name = 'buildchange'
     src_version = 'v0'
-    imagesets = ['train_shanghai']
+    imagesets = ['train_beijing']
 
     for imageset in imagesets:
         print("Begin processing {} set.".format(imageset))

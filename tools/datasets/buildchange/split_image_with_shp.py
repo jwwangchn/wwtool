@@ -9,13 +9,12 @@ import rasterio as rio
 
 import wwtool
 
-Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 
 if __name__ == '__main__':
     core_dataset_name = 'buildchange'
     src_version = 'v0'
     dst_version = 'v1'
-    imagesets = ['train_shanghai', 'val_xian']
+    imagesets = ['shanghai']
     subimage_size = 1024
     gap = subimage_size // 2
 

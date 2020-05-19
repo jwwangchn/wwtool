@@ -439,27 +439,52 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
-    def _merge_polygon(self, polygons, mode=2):
-        if mode == 1:
-            result = unary_union(polygons)
-        if mode == 2:
-            result = []
+    def _merge_polygon(self, 
+                       polygons, 
+                       floors=None,
+                       properties=None, 
+                       merge_mode=2,
+                       connection_mode='floor',
+                       merge_boundary=False):
+        if merge_mode == 1:
+            merged_polygons = unary_union(polygons)
+            merged_properties = []  #TODO: fix the length of merged_floor
+        if merge_mode == 2:
+            merged_polygons = []
+            merged_properties = []
+
             num_polygon = len(polygons)
             node_list = range(num_polygon)
             link_list = []
             for i in range(num_polygon):
-                for j in range(i+1, num_polygon):
+                for j in range(i + 1, num_polygon):
                     polygon1, polygon2 = polygons[i], polygons[j]
+                    floor1, floor2 = floors[i], floors[j]
                     if polygon1.is_valid and polygon2.is_valid:
                         inter = polygon1.intersection(polygon2)
-                        if inter.geom_type in ["LineString", "MULTILINESTRING"]:
-                            link_list.append([i, j])
+
+                        if connection_mode == 'floor':
+                            if (inter.area > 0.0 or inter.geom_type in ["LineString", "MULTILINESTRING"]) and floor1 == floor2:
+                                link_list.append([i, j])
+                        elif connection_mode == 'line':
+                            if inter.geom_type in ["LineString", "MULTILINESTRING"]:
+                                link_list.append([i, j])
+                        else:
+                            raise(RuntimeError("Wrong connection_mode flag: {}".format(connection_mode)))
+
+                        if merge_boundary:
+                            if polygon1.area > polygon2.area:
+                                difference = polygon1.difference(polygon2)
+                                polygons[i] = difference
+                            else:
+                                difference = polygon2.difference(polygon1)
+                                polygons[j] = difference
                     else:
                         continue
             
             G = nx.Graph()
             for node in node_list:
-                G.add_node(node)
+                G.add_node(node, properties=properties[node])
 
             for link in link_list:
                 G.add_edge(link[0], link[1])
@@ -470,65 +495,138 @@ class ShpParse():
 
                 if len(nodeSet) == 1:
                     single_polygon = polygons[nodeSet[0]]
-                    result.append(single_polygon)
+                    merged_polygons.append(single_polygon)
+                    merged_properties.append(properties[nodeSet[0]])
                 else:
                     pre_merge = [polygons[node] for node in nodeSet]
                     post_merge = unary_union(pre_merge)
                     if post_merge.geom_type == 'MultiPolygon':
                         for sub_polygon in post_merge:
-                            result.append(sub_polygon)
+                            merged_polygons.append(sub_polygon)
+                            merged_properties.append(properties[nodeSet[0]])
                     else:
-                        result.append(post_merge)
-        return result
+                        merged_polygons.append(post_merge)
+                        merged_properties.append(properties[nodeSet[0]])
+        
+        return merged_polygons, merged_properties
 
-    def __call__(self, shp_fn, geom_img, coord='4326'):
+    def __call__(self, 
+                shp_fn, 
+                geom_img, 
+                coord='4326',
+                merge_flag=False,
+                merge_mode=2,
+                connection_mode='floor'):
+        """Parse shapefile of building change
+
+        Arguments:
+            shp_fn {str} -- file path of shapefile
+            geom_img {rasterio type} -- png image contain coordinate information
+
+        Keyword Arguments:
+            coord {str} -- coordinate system (default: {'4326'})
+            merge_flag {bool} -- False: skip the polygon merge, True: output objects after merging (default: {False})
+            merge_mode {int} -- 1: merge by intersection, 2: merge by rule (default: {2})
+            connection_mode {str} -- "line": merge by line intersection, "floor": merge by floor (default: {'floor'})
+
+        Returns:
+            [dict] -- dict which contains core information
+        """
         try:
             shp = gpd.read_file(shp_fn, encoding='utf-8')
         except:
-            print("\nCan't open this shp file: {}".format(shp_fn))
+            print("Can't open this shp file: {}".format(shp_fn))
             return []
-        masks = []
-        polygons = []
-        geom_list = []
+
+        ori_polygon_list = []
+        ori_floor_list = []
+        ori_property_list = []
 
         for idx, row_data in shp.iterrows():
             polygon = row_data.geometry
+            property_ = row_data[:-1]
+            try:
+                floor = row_data.Floor
+            except:
+                print("This file does not floor key: {}".format(shp_fn))
+                # for processing beijing shapefile
+                try:
+                    floor = row_data.half_H
+                except:
+                    print("This file does not half_H key: {}".format(shp_fn))
+                    return []
+
             if polygon == None:
                 continue
+            
+            ori_polygon_list.append(polygon)
+            ori_floor_list.append(floor)
+            ori_property_list.append(property_)
+
+        if merge_flag:
+            # merge the splitted building when annotation
+            merged_polygon_list, merged_property_list = self._merge_polygon(
+                ori_polygon_list, 
+                ori_floor_list,
+                ori_property_list,
+                merge_mode=merge_mode,
+                connection_mode=connection_mode)
+        else:
+            merged_polygon_list = ori_polygon_list
+            merged_property_list = ori_property_list
+
+        # converted coordinate
+        converted_polygons = []
+        converted_properties = []
+
+        # original coordinate, add these to handle multipolygons after merging
+        merged_ori_polygons = []
+        merged_ori_properties = []
+
+        for polygon, property_ in zip(merged_polygon_list, merged_property_list):
             if polygon.geom_type == 'Polygon':
                 if coord == '4326':
                     polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
                     polygon_pixel = Polygon(polygon_pixel)
-                    geom_list.append(polygon_pixel)
+                    converted_polygons.append(polygon_pixel)
+                    converted_properties.append(property_)
                 else:
-                    geom_list.append(polygon)
+                    converted_polygons.append(polygon)
+                
+                merged_ori_polygons.append(polygon)
+                merged_ori_properties.append(property_)
             elif polygon.geom_type == 'MultiPolygon':
-                polygon_pixel = []
                 for sub_polygon in polygon:
                     if coord == '4326':
                         polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
                         polygon_pixel = Polygon(polygon_pixel)
-                        geom_list.append(polygon_pixel)
+                        converted_polygons.append(polygon_pixel)
+                        converted_properties.append(property_)
                     else:
-                        geom_list.append(sub_polygon)
+                        converted_polygons.append(sub_polygon)
+                    
+                    merged_ori_polygons.append(sub_polygon)
+                    merged_ori_properties.append(property_)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
-        
-        geom_list = self._merge_polygon(geom_list, mode=1)
 
-        if isinstance(geom_list, (list, shapely.geometry.multipolygon.MultiPolygon)):
+        if isinstance(converted_polygons, (list, shapely.geometry.multipolygon.MultiPolygon)):
             pass
         else:
-            geom_list = [geom_list]
+            converted_polygons = [converted_polygons]
 
-        for polygon_pixel in geom_list:
-            polygons.append(polygon_pixel)
+        masks = []
+        final_polygons = []
+        final_properties = converted_properties
+        for polygon_pixel in converted_polygons:
+            final_polygons.append(polygon_pixel)
             wkt  = str(polygon_pixel)
             mask = self._wkt2coord(wkt)
             masks.append(mask)
 
         objects = []
-        for mask, polygon in zip(masks, polygons):
+        # ori -> original coordinate, converted -> converted coordinate
+        for mask, converted_polygon, converted_property, ori_polygon, ori_property in zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties):
             if mask == []:
                 continue
             object_struct = dict()
@@ -540,7 +638,10 @@ class ShpParse():
 
             object_struct['segmentation'] = mask
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
-            object_struct['polygon'] = polygon
+            object_struct['converted_polygon'] = converted_polygon
+            object_struct['converted_property'] = converted_property
+            object_struct['ori_polygon'] = ori_polygon
+            object_struct['ori_property'] = ori_property
             object_struct['label'] = "1"
             objects.append(object_struct)
         

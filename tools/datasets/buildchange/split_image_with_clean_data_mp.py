@@ -122,7 +122,7 @@ class SplitImage():
         else:
             center_lines = center_lines
 
-        wwtool.clean_polygon(subimage_mask_polygons)
+        subimage_mask_polygons = wwtool.clean_polygon(subimage_mask_polygons)
         subimage_mask_df = geopandas.GeoDataFrame({'geometry': subimage_mask_polygons, 'submask_df':range(len(subimage_mask_polygons))})
         center_line_df = geopandas.GeoDataFrame({'geometry': center_lines, 'center_df':range(len(center_lines))})
 
@@ -280,5 +280,3 @@ if __name__ == '__main__':
 
         split_image.core()
         print("Finish processing {} set.".format(imageset))
-
-        

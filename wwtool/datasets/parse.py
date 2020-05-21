@@ -549,6 +549,8 @@ class ShpParse():
         if ignore_file:
             mask_parser = wwtool.MaskParse()
             objects = mask_parser(ignore_file, category=255)
+            if objects == []:
+                return []
             ignore_polygons = [obj['polygon'] for obj in objects]
 
         ori_polygon_list = []
@@ -725,8 +727,13 @@ class MaskParse():
         return segmentations, polygons
 
     def __call__(self, mask_image, category=(1, 3)):
-        if isinstance(mask_image, str):
-            mask_image = cv2.imread(mask_image)
+        assert(isinstance(mask_image, str), "Please input filename rather than np.array")
+        mask_file_name = mask_image[:]
+        mask_image = cv2.imread(mask_image)
+
+        if mask_image == None:
+            print("Can not open this mask file: {}".format(mask_file_name))
+            return []
 
         sub_mask_anno = self.generate_sub_mask_anno(mask_image, category=category)
         masks, polygons = self.generate_polygon(sub_mask_anno)

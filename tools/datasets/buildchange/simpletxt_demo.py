@@ -21,10 +21,10 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 if __name__ == '__main__':
-
-    image_dir = '/data/buildchange/v1/beijing_1024/images'
-    label_dir = '/data/buildchange/v1/beijing_1024/labels'
-    save_dir = '/data/buildchange/v1/beijing_1024/vis'
+    image_dir = '/data/buildchange/v1/shanghai_1024/images'
+    label_dir = '/data/buildchange/v1/shanghai_1024/labels'
+    save_dir = '/data/buildchange/v1/shanghai_1024/vis'
+    wwtool.mkdir_or_exist(save_dir)
 
     img_scale = 1024
     for image_fn in os.listdir(image_dir):
@@ -60,6 +60,7 @@ if __name__ == '__main__':
         heatmap = wwtool.show_grayscale_as_heatmap(img_mask / 255.0, show=False, return_img=True)
         alpha = 0.5
         beta = (1.0 - alpha)
+
         fusion = cv2.addWeighted(heatmap, alpha, img, beta, 0.0)
 
-        wwtool.show_image(fusion, save_name=save_file)
+        wwtool.show_image(fusion, save_name=save_file, wait_time=50)

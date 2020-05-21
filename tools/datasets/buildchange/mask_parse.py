@@ -44,15 +44,15 @@ def poly2mask(mask_ann, img_h, img_w):
     mask = maskUtils.decode(rle)
     return mask
 
-image_file = '/data/buildchange/v0/train_shanghai/images/L18_106968_219520.jpg'
-mask_file = '/data/buildchange/v0/train_shanghai/anno_v2/L18_106968_219520.png'
+image_file = '/data/buildchange/v0/shanghai/images/L18_106968_219320.jpg'
+mask_file = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219320.png'
 
 image_file_name = os.path.splitext(os.path.basename(image_file))[0]
 
 rgb_img = cv2.imread(image_file)
 mask_parser = wwtool.MaskParse()
 
-objects = mask_parser(mask_file)
+objects = mask_parser(mask_file, category=(1, 3))
 
 gt_masks = []
 for obj in objects:

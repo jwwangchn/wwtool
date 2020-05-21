@@ -61,7 +61,8 @@ class MergeShapefile():
 
         objects = self.shp_parser(annot_file, 
                                 geo_info,
-                                coord=coord_flag, 
+                                coord=coord_flag,
+                                merge_flag=True,
                                 connection_mode='floor')
         if objects == []:
             with open(self.bad_shapefile, 'a') as f:
@@ -93,9 +94,7 @@ class MergeShapefile():
             ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
         else:
             for image_fn in image_fn_list:
-                print(image_fn)
-                if image_fn == 'L18_106968_219440.jpg':
-                    self.merge_shapefile(image_fn)
+                self.merge_shapefile(image_fn)
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()
@@ -109,7 +108,7 @@ class MergeShapefile():
 if __name__ == '__main__':
     core_dataset_name = 'buildchange'
     src_version = 'v0'
-    imagesets = ['beijing']
+    imagesets = ['shanghai']
 
     for imageset in imagesets:
         print("Begin processing {} set.".format(imageset))

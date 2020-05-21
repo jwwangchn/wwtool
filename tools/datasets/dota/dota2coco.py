@@ -180,10 +180,10 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 14, 'name': 'ground-track-field',    },
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
-    core_dataset_name = 'dota-v1.0'
-    imagesets = ['trainval']
+    core_dataset_name = 'dota'
+    imagesets = ['evaluation_sample']
     dota_version = 'v1.0'
-    release_version = 'DJ'
+    release_version = 'v1'
     groundtruth = True
     single_category = None
     keypoint = True
@@ -200,8 +200,8 @@ if __name__ == "__main__":
         extra_info += '_small_object'
 
     if generate_small_dataset:
-        dst_image_path = '/data/small/{}/images'.format(core_dataset_name)
-        dst_label_path = '/data/small/{}/labels'.format(core_dataset_name)
+        dst_image_path = './data/small/{}/images'.format(core_dataset_name)
+        dst_label_path = './data/small/{}/labels'.format(core_dataset_name)
         wwtool.mkdir_or_exist(dst_image_path)
         wwtool.mkdir_or_exist(dst_label_path)
 
@@ -231,9 +231,9 @@ if __name__ == "__main__":
         original_dota_class['container-crane'] = 16
 
     for imageset in imagesets:
-        imgpath = '/data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
-        annopath = '/data/{}/{}/{}/labelTxt-{}'.format(core_dataset_name, release_version, imageset, dota_version)
-        save_path = '/data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
+        imgpath = './data/{}/{}/{}/images'.format(core_dataset_name, release_version, imageset)
+        annopath = './data/{}/{}/{}/labelTxt-{}'.format(core_dataset_name, release_version, imageset, dota_version)
+        save_path = './data/{}/{}/coco/annotations'.format(core_dataset_name, release_version)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -241,7 +241,7 @@ if __name__ == "__main__":
 
         dota = DOTA2COCO(imgpath=imgpath,
                         annopath=annopath,
-                        imageset_file=imageset_file,
+                        imageset_file=None,
                         image_format=image_format,
                         anno_format=anno_format,
                         data_categories=converted_dota_class,

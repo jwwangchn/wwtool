@@ -512,16 +512,19 @@ class ShpParse():
 
     def __call__(self, 
                 shp_fn, 
-                geom_img, 
+                geom_img,
+                ignore_file=None,
+                show_ignored_polygons=False,
                 coord='4326',
                 merge_flag=False,
                 merge_mode=2,
-                connection_mode='floor'):
+                connection_mode='floor',
+                filter_small_size=0):
         """Parse shapefile of building change
 
         Arguments:
             shp_fn {str} -- file path of shapefile
-            geom_img {rasterio type} -- png image contain coordinate information
+            geom_img {rasterio class or string} -- png image contain coordinate information
 
         Keyword Arguments:
             coord {str} -- coordinate system (default: {'4326'})
@@ -537,6 +540,16 @@ class ShpParse():
         except:
             print("Can't open this shp file: {}".format(shp_fn))
             return []
+
+        # open geometry information file when input is string (file path)
+        if isinstance(geom_img, str):
+            geom_img = rio.open(geom_img)
+
+        # open the ignore file
+        if ignore_file:
+            mask_parser = wwtool.MaskParse()
+            objects = mask_parser(ignore_file, category=255)
+            ignore_polygons = [obj['polygon'] for obj in objects]
 
         ori_polygon_list = []
         ori_floor_list = []
@@ -586,23 +599,31 @@ class ShpParse():
         for polygon, property_ in zip(merged_polygon_list, merged_property_list):
             if polygon.geom_type == 'Polygon':
                 if coord == '4326':
-                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
+                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
                     polygon_pixel = Polygon(polygon_pixel)
+                    if polygon_pixel.area < filter_small_size:
+                        continue
                     converted_polygons.append(polygon_pixel)
                     converted_properties.append(property_)
                 else:
+                    if polygon.area < filter_small_size:
+                        continue
                     converted_polygons.append(polygon)
-                
                 merged_ori_polygons.append(polygon)
                 merged_ori_properties.append(property_)
+
             elif polygon.geom_type == 'MultiPolygon':
                 for sub_polygon in polygon:
                     if coord == '4326':
-                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
+                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
                         polygon_pixel = Polygon(polygon_pixel)
+                        if polygon_pixel.area < filter_small_size:
+                            continue
                         converted_polygons.append(polygon_pixel)
                         converted_properties.append(property_)
                     else:
+                        if sub_polygon.area < filter_small_size:
+                            continue
                         converted_polygons.append(sub_polygon)
                     
                     merged_ori_polygons.append(sub_polygon)
@@ -625,6 +646,16 @@ class ShpParse():
             masks.append(mask)
 
         objects = []
+        
+        if ignore_file:
+            _, ignore_indexes = wwtool.cleaning_polygon_by_polygon(final_polygons, ignore_polygons, show=show_ignored_polygons)
+            for ignore_index in ignore_indexes[::-1]:
+                masks.pop(ignore_index)
+                final_polygons.pop(ignore_index)
+                final_properties.pop(ignore_index)
+                merged_ori_polygons.pop(ignore_index)
+                merged_ori_properties.pop(ignore_index)
+
         # ori -> original coordinate, converted -> converted coordinate
         for mask, converted_polygon, converted_property, ori_polygon, ori_property in zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties):
             if mask == []:
@@ -649,19 +680,22 @@ class ShpParse():
 
 
 class MaskParse():
-    def create_sub_masks(self, mask_image):
+    def generate_sub_mask_anno(self, mask_image, category=(1, 3)):
         height, width, _ = mask_image.shape
-        ret_image = wwtool.generate_image(height, width, color=0)
+        sub_mask_anno = wwtool.generate_image(height, width, color=0)
         gray_mask_image = mask_image[:, :, 0]
+        
+        if isinstance(category, (list, tuple)):
+            keep_bool = np.logical_or(gray_mask_image == category[0], gray_mask_image == category[1])
+        else:
+            keep_bool = (gray_mask_image == category)
 
-        keep_bool = np.logical_or(gray_mask_image == 1, gray_mask_image == 3)
+        sub_mask_anno[keep_bool] = 1
 
-        ret_image[keep_bool] = 1
+        return sub_mask_anno
 
-        return ret_image
-
-    def create_sub_mask_annotation(self, sub_mask):
-        contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+    def generate_polygon(self, sub_mask_anno):
+        contours = measure.find_contours(sub_mask_anno, 0.5, positive_orientation='low')
 
         segmentations = []
         polygons = []
@@ -675,6 +709,8 @@ class MaskParse():
                 continue
             
             poly = Polygon(contour)
+            if poly.area < 5:
+                continue
             poly = poly.simplify(1.0, preserve_topology=False)
             if poly.geom_type == 'MultiPolygon':
                 for poly_ in poly:
@@ -688,17 +724,18 @@ class MaskParse():
 
         return segmentations, polygons
 
-    def __call__(self, mask_file):
-        mask_image = cv2.imread(mask_file)
-        ret_image = self.create_sub_masks(mask_image)
-        masks, polygons = self.create_sub_mask_annotation(ret_image)
+    def __call__(self, mask_image, category=(1, 3)):
+        if isinstance(mask_image, str):
+            mask_image = cv2.imread(mask_image)
+
+        sub_mask_anno = self.generate_sub_mask_anno(mask_image, category=category)
+        masks, polygons = self.generate_polygon(sub_mask_anno)
 
         objects = []
         for mask, polygon in zip(masks, polygons):
             if mask == []:
                 continue
             object_struct = dict()
-            mask = [abs(_) for _ in mask]
 
             xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
             bbox_w = xmax - xmin

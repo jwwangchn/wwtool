@@ -114,7 +114,7 @@ if __name__ == "__main__":
     anno_format='.txt'
 
     core_dataset_name = 'buildchange'
-    imagesets = ['train_beijing_1024', 'train_chengdu_1024', 'train_haerbin_1024', 'train_jinan_1024', 'train_shanghai_1024', 'val_xian_1024']
+    imagesets = ['train_zbeijing_1024', 'train_chengdu_1024', 'train_haerbin_1024', 'train_jinan_1024', 'train_shanghai_1024', 'val_xian_1024']
     release_version = 'v2'
     groundtruth = True
 

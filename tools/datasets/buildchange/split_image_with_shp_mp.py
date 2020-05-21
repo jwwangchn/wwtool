@@ -18,7 +18,6 @@ import tqdm
 Image.MAX_IMAGE_PIXELS = int(2048 * 2048 * 2048 // 4 // 3)
 
 
-
 class SplitImage():
     def __init__(self, 
                  core_dataset_name='buildchange',

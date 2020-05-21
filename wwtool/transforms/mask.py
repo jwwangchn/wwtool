@@ -44,10 +44,7 @@ def clip_polygon(polygons, image_size=(1024, 1024)):
     h, w = image_size
     image_boundary_polygon = Polygon([(0, 0), (w-1, 0), (w-1, h-1), (0, h-1), (0, 0)])
 
-    # delete invalid polygon
-    for idx, polygon in enumerate(polygons):
-        if not polygon.is_valid:
-            polygons.pop(idx)
+    polygons = clean_polygon(polygons)
 
     polygons = geopandas.GeoDataFrame({'geometry': polygons, 'polygon_df':range(len(polygons))})
 

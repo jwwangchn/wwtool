@@ -54,17 +54,9 @@ def clip_polygon(polygons, image_size=(1024, 1024)):
     clipped_polygons = geopandas.clip(polygons, image_boundary_polygon).to_dict()
     clipped_polygons = list(clipped_polygons['geometry'].values())
 
-    results = []
-    for clipped_polygon in clipped_polygons:
-        if type(clipped_polygon) == MultiPolygon:
-            for single_polygon in clipped_polygon:
-                results.append(single_polygon)
-        elif type(clipped_polygon) == Polygon:
-            results.append(clipped_polygon)
-        else:
-            continue
+    clipped_polygons = clean_polygon(clipped_polygons)
 
-    return results
+    return clipped_polygons
 
 def clip_mask(masks, image_size=(1024, 1024)):
     polygons = [mask2polygon(mask) for mask in masks]
@@ -72,3 +64,31 @@ def clip_mask(masks, image_size=(1024, 1024)):
     masks = [polygon2mask(clipped_polygon) for clipped_polygon in clipped_polygons]
 
     return masks
+
+
+def clean_polygon(polygons):
+    """convert polygon to valid polygon
+
+    Arguments:
+        polygons {list} -- list of polygon
+
+    Returns:
+        list -- cleaned polygons
+    """
+    polygons_ = []
+    for polygon in polygons:
+        if not polygon.is_valid:
+            continue
+        if type(polygon) == MultiPolygon:
+            for single_polygon in polygon:
+                if len(list(single_polygon.exterior.coords)) < 3:
+                    continue
+                polygons_.append(single_polygon)
+        elif type(polygon) == Polygon:
+            if len(list(polygon.exterior.coords)) < 3:
+                continue
+            polygons_.append(polygon)
+        else:
+            continue
+
+    return polygons_

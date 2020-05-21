@@ -3,12 +3,15 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import geopandas
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, MultiPolygon
 
 import wwtool
 
 
 def cleaning_polygon_by_polygon(origin_polygons, ignore_polygons, show=False):
+    origin_polygons = wwtool.clean_polygon(origin_polygons)
+    ignore_polygons = wwtool.clean_polygon(ignore_polygons)
+
     foot_polygons = geopandas.GeoSeries(origin_polygons)
     ignore_polygons = geopandas.GeoSeries(ignore_polygons)
 

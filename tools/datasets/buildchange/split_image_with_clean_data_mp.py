@@ -100,7 +100,6 @@ class SplitImage():
         subimage_mask_polygons = []
         for subimage_mask in subimage_masks:
             subimage_mask_polygon = wwtool.mask2polygon(subimage_mask)
-            # print(subimage_mask_polygon.is_valid, subimage_mask)
             subimage_mask_polygons.append(subimage_mask_polygon)
             subimage_mask_area.append(subimage_mask_polygon.area)
 
@@ -123,6 +122,7 @@ class SplitImage():
         else:
             center_lines = center_lines
 
+        wwtool.clean_polygon(subimage_mask_polygons)
         subimage_mask_df = geopandas.GeoDataFrame({'geometry': subimage_mask_polygons, 'submask_df':range(len(subimage_mask_polygons))})
         center_line_df = geopandas.GeoDataFrame({'geometry': center_lines, 'center_df':range(len(center_lines))})
 

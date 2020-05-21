@@ -731,7 +731,9 @@ class MaskParse():
         mask_file_name = mask_image[:]
         mask_image = cv2.imread(mask_image)
 
-        if mask_image == None:
+        if mask_image:
+            pass
+        else:
             print("Can not open this mask file: {}".format(mask_file_name))
             return []
 

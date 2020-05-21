@@ -26,14 +26,14 @@ png_img_fn = './data/buildchange/v0/shanghai/geo_info/L18_106968_219344.png'
 jpg_img_fn = './data/buildchange/v0/shanghai/images/L18_106968_219344.jpg'
 # shp_fn = './data/buildchange/v0/shanghai/shp_4326/L18_106968_219320.shp'
 shp_fn = './data/buildchange/v0/shanghai/merged_shp/L18_106968_219344.shp'
-
+pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219344.png'
 
 ori_img = rio.open(png_img_fn)
 rgb_img = cv2.imread(jpg_img_fn)
 
 shp_parser = wwtool.ShpParse()
 
-objects = shp_parser(shp_fn, ori_img)
+objects = shp_parser(shp_fn, ori_img, ignore_file=pixel_anno)
 
 gt_masks = []
 
@@ -62,7 +62,7 @@ for idx, gt_mask in enumerate(gt_masks):
     img += masks
 
 heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)
-alpha = 0.5
+alpha = 0.4
 beta = (1.0 - alpha)
 fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
 

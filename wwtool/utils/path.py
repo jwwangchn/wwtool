@@ -11,3 +11,7 @@ def mkdir_or_exist(dir_name, mode=0o777):
     else:
         if not os.path.isdir(dir_name):
             os.makedirs(dir_name, mode=mode)
+
+def get_basename(file_path):
+    basename = os.path.splitext(os.path.basename(file_path))[0]
+    return basename

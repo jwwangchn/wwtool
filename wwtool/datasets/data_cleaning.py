@@ -19,7 +19,7 @@ def cleaning_polygon_by_polygon(origin_polygons, ignore_polygons, show=False):
     ignore_df = geopandas.GeoDataFrame({'geometry': ignore_polygons, 'ignore_df':range(len(ignore_polygons))})
 
     if show:
-        fig, ax = plt.subplots(1, 2)   
+        fig, ax = plt.subplots(1, 2)
 
         ignore_df.plot(ax=ax[0], color='red')
         foot_df.plot(ax=ax[0], facecolor='none', edgecolor='k')

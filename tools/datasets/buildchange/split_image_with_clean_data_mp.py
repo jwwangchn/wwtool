@@ -82,8 +82,6 @@ class SplitImage():
         Returns:
             drop flag -- True: drop the subimage, False: keep the subimage
         """
-
-
         # black image
         if np.mean(subimages[subimage_coordinate]) == 0:
             return True
@@ -140,7 +138,8 @@ class SplitImage():
             plt.yticks([])
             plt.axis('off')
 
-            plt.show()
+            # plt.show()
+            plt.savefig('./{}_{}_{}.png'.format(self.image_fn.replace('.jpg', ''), subimage_coordinate[0], subimage_coordinate[1]), bbox_inches='tight', dpi=600, pad_inches=0.0)
 
         res_intersection = geopandas.overlay(subimage_mask_df, center_line_df, how='intersection')
         inter_dict = res_intersection.to_dict()
@@ -156,6 +155,7 @@ class SplitImage():
             return False
 
     def split_image(self, image_fn):
+        self.image_fn = image_fn
         if not image_fn.endswith('.jpg'):
             return
         image_file = os.path.join(self.image_path, image_fn)
@@ -275,8 +275,8 @@ if __name__ == '__main__':
                                 subimage_size=subimage_size,
                                 gap=gap,
                                 multi_processing=True,
-                                num_processor=16,
-                                show=False)
+                                num_processor=4,
+                                show=True)
 
         split_image.core()
         print("Finish processing {} set.".format(imageset))

@@ -283,21 +283,21 @@ if __name__ == '__main__':
     dota_version = 'v1.0'
     rate = 1.0
 
-    src = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/evaluation_sample'
-    dst = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v1/evaluation_sample'
+    # src = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/evaluation_sample'
+    # dst = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v1/evaluation_sample'
 
-    # trainval_base_path = "./data/dota-v1.5/v0/trainval"
-    # test_base_path = "./data/dota1.0/v0/test"
+    trainval_base_path = "./data/dota/v0/train"
+    trainval_out_path = "./data/dota/v1/train"
 
-    # trainval_out_path = "./data/dota-v1.5/v1/trainval"
-    # test_out_path = "./data/dota1.0/v1/test"
+    test_base_path = "./data/dota/v0/val"
+    test_out_path = "./data/dota/v1/val"
 
-    # print(trainval_out_path, test_out_path)
+    print(trainval_out_path, test_out_path)
 
     print("Begin to split trainval set")
-    split = splitbase(src, dst, gap=200, subsize=1024, num_process=8, dota_version=dota_version)
+    split = splitbase(trainval_base_path, trainval_out_path, gap=200, subsize=1024, num_process=8, dota_version=dota_version)
     split.splitdata(rate)
 
-    # print("Begin to split test set")
-    # split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=4, dota_version=dota_version)
-    # split.splitdata(rate)
+    print("Begin to split test set")
+    split = splitbase(test_base_path, test_out_path, gap=200, subsize=1024, num_process=8, dota_version=dota_version)
+    split.splitdata(rate)

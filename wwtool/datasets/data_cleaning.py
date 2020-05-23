@@ -42,7 +42,10 @@ def cleaning_polygon_by_polygon(origin_polygons, ignore_polygons, show=False):
         ignore_df.plot(ax=ax[1], color='red')
         foot_df.plot(ax=ax[1], facecolor='none', edgecolor='k')
         ax[1].set_title('After ignoring')
-    
+        # plt.axis('off')
+
+        plt.savefig('./a.png', bbox_inches='tight', dpi=600, pad_inches=0.5)
+
         plt.show()
 
     return converted_polygon, ignore_indexes

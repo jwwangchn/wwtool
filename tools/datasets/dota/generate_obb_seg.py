@@ -72,7 +72,7 @@ if __name__ == '__main__':
     release_version = 'v1'
     imageset = 'train'
 
-    ann_file_name = [core_dataset, imageset, release_version, 'best']
+    ann_file_name = [core_dataset, imageset, release_version, 'best_keypoint']
 
     binary_mask = False
     vis = False

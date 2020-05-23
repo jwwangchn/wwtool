@@ -131,7 +131,7 @@ if __name__ == '__main__':
     release_version = 'v1'
     imageset = 'train'
 
-    ann_file_name = [core_dataset, imageset, release_version, 'best']
+    ann_file_name = [core_dataset, imageset, release_version, 'best_keypoint']
 
     encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5

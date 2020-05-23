@@ -439,27 +439,52 @@ class ShpParse():
             mask.append(int(y))
         return mask
 
-    def _merge_polygon(self, polygons, mode=2):
-        if mode == 1:
-            result = unary_union(polygons)
-        if mode == 2:
-            result = []
+    def _merge_polygon(self, 
+                       polygons, 
+                       floors=None,
+                       properties=None, 
+                       merge_mode=2,
+                       connection_mode='floor',
+                       merge_boundary=False):
+        if merge_mode == 1:
+            merged_polygons = unary_union(polygons)
+            merged_properties = []  #TODO: fix the length of merged_floor
+        if merge_mode == 2:
+            merged_polygons = []
+            merged_properties = []
+
             num_polygon = len(polygons)
             node_list = range(num_polygon)
             link_list = []
             for i in range(num_polygon):
-                for j in range(i+1, num_polygon):
+                for j in range(i + 1, num_polygon):
                     polygon1, polygon2 = polygons[i], polygons[j]
+                    floor1, floor2 = floors[i], floors[j]
                     if polygon1.is_valid and polygon2.is_valid:
                         inter = polygon1.intersection(polygon2)
-                        if inter.geom_type in ["LineString", "MULTILINESTRING"]:
-                            link_list.append([i, j])
+
+                        if connection_mode == 'floor':
+                            if (inter.area > 0.0 or inter.geom_type in ["LineString", "MULTILINESTRING"]) and floor1 == floor2:
+                                link_list.append([i, j])
+                        elif connection_mode == 'line':
+                            if inter.geom_type in ["LineString", "MULTILINESTRING"]:
+                                link_list.append([i, j])
+                        else:
+                            raise(RuntimeError("Wrong connection_mode flag: {}".format(connection_mode)))
+
+                        if merge_boundary:
+                            if polygon1.area > polygon2.area:
+                                difference = polygon1.difference(polygon2)
+                                polygons[i] = difference
+                            else:
+                                difference = polygon2.difference(polygon1)
+                                polygons[j] = difference
                     else:
                         continue
             
             G = nx.Graph()
             for node in node_list:
-                G.add_node(node)
+                G.add_node(node, properties=properties[node])
 
             for link in link_list:
                 G.add_edge(link[0], link[1])
@@ -470,65 +495,171 @@ class ShpParse():
 
                 if len(nodeSet) == 1:
                     single_polygon = polygons[nodeSet[0]]
-                    result.append(single_polygon)
+                    merged_polygons.append(single_polygon)
+                    merged_properties.append(properties[nodeSet[0]])
                 else:
                     pre_merge = [polygons[node] for node in nodeSet]
                     post_merge = unary_union(pre_merge)
                     if post_merge.geom_type == 'MultiPolygon':
                         for sub_polygon in post_merge:
-                            result.append(sub_polygon)
+                            merged_polygons.append(sub_polygon)
+                            merged_properties.append(properties[nodeSet[0]])
                     else:
-                        result.append(post_merge)
-        return result
+                        merged_polygons.append(post_merge)
+                        merged_properties.append(properties[nodeSet[0]])
+        
+        return merged_polygons, merged_properties
 
-    def __call__(self, shp_fn, geom_img, coord='4326'):
+    def __call__(self, 
+                shp_fn, 
+                geom_img,
+                ignore_file=None,
+                show_ignored_polygons=False,
+                coord='4326',
+                merge_flag=False,
+                merge_mode=2,
+                connection_mode='floor',
+                filter_small_size=0):
+        """Parse shapefile of building change
+
+        Arguments:
+            shp_fn {str} -- file path of shapefile
+            geom_img {rasterio class or string} -- png image contain coordinate information
+
+        Keyword Arguments:
+            coord {str} -- coordinate system (default: {'4326'})
+            merge_flag {bool} -- False: skip the polygon merge, True: output objects after merging (default: {False})
+            merge_mode {int} -- 1: merge by intersection, 2: merge by rule (default: {2})
+            connection_mode {str} -- "line": merge by line intersection, "floor": merge by floor (default: {'floor'})
+
+        Returns:
+            [dict] -- dict which contains core information
+        """
         try:
             shp = gpd.read_file(shp_fn, encoding='utf-8')
         except:
-            print("\nCan't open this shp file: {}".format(shp_fn))
+            print("Can't open this shp file: {}".format(shp_fn))
             return []
-        masks = []
-        polygons = []
-        geom_list = []
+
+        # open geometry information file when input is string (file path)
+        if isinstance(geom_img, str):
+            geom_img = rio.open(geom_img)
+
+        # open the ignore file
+        if ignore_file:
+            mask_parser = wwtool.MaskParse()
+            objects = mask_parser(ignore_file, category=255)
+            if objects == []:
+                return []
+            ignore_polygons = [obj['polygon'] for obj in objects]
+
+        ori_polygon_list = []
+        ori_floor_list = []
+        ori_property_list = []
 
         for idx, row_data in shp.iterrows():
             polygon = row_data.geometry
+            property_ = row_data[:-1]
+            try:
+                floor = row_data.Floor
+            except:
+                print("This file does not floor key: {}".format(shp_fn))
+                # for processing beijing shapefile
+                try:
+                    floor = row_data.half_H
+                except:
+                    print("This file does not half_H key: {}".format(shp_fn))
+                    return []
+
             if polygon == None:
                 continue
+            
+            ori_polygon_list.append(polygon)
+            ori_floor_list.append(floor)
+            ori_property_list.append(property_)
+
+        if merge_flag:
+            # merge the splitted building when annotation
+            merged_polygon_list, merged_property_list = self._merge_polygon(
+                ori_polygon_list, 
+                ori_floor_list,
+                ori_property_list,
+                merge_mode=merge_mode,
+                connection_mode=connection_mode)
+        else:
+            merged_polygon_list = ori_polygon_list
+            merged_property_list = ori_property_list
+
+        # converted coordinate
+        converted_polygons = []
+        converted_properties = []
+
+        # original coordinate, add these to handle multipolygons after merging
+        merged_ori_polygons = []
+        merged_ori_properties = []
+
+        for polygon, property_ in zip(merged_polygon_list, merged_property_list):
             if polygon.geom_type == 'Polygon':
                 if coord == '4326':
-                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
+                    polygon_pixel = [(geom_img.index(c[0], c[1])[1], geom_img.index(c[0], c[1])[0]) for c in polygon.exterior.coords]
                     polygon_pixel = Polygon(polygon_pixel)
-                    geom_list.append(polygon_pixel)
+                    if polygon_pixel.area < filter_small_size:
+                        continue
+                    converted_polygons.append(polygon_pixel)
+                    converted_properties.append(property_)
                 else:
-                    geom_list.append(polygon)
+                    if polygon.area < filter_small_size:
+                        continue
+                    converted_polygons.append(polygon)
+                merged_ori_polygons.append(polygon)
+                merged_ori_properties.append(property_)
+
             elif polygon.geom_type == 'MultiPolygon':
-                polygon_pixel = []
                 for sub_polygon in polygon:
                     if coord == '4326':
-                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], -geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
+                        polygon_pixel = [(geom_img.index(c[0], c[1])[1], geom_img.index(c[0], c[1])[0]) for c in sub_polygon.exterior.coords]
                         polygon_pixel = Polygon(polygon_pixel)
-                        geom_list.append(polygon_pixel)
+                        if polygon_pixel.area < filter_small_size:
+                            continue
+                        converted_polygons.append(polygon_pixel)
+                        converted_properties.append(property_)
                     else:
-                        geom_list.append(sub_polygon)
+                        if sub_polygon.area < filter_small_size:
+                            continue
+                        converted_polygons.append(sub_polygon)
+                    
+                    merged_ori_polygons.append(sub_polygon)
+                    merged_ori_properties.append(property_)
             else:
                 raise(RuntimeError("type(polygon) = {}".format(type(polygon))))
-        
-        geom_list = self._merge_polygon(geom_list, mode=1)
 
-        if isinstance(geom_list, (list, shapely.geometry.multipolygon.MultiPolygon)):
+        if isinstance(converted_polygons, (list, shapely.geometry.multipolygon.MultiPolygon)):
             pass
         else:
-            geom_list = [geom_list]
+            converted_polygons = [converted_polygons]
 
-        for polygon_pixel in geom_list:
-            polygons.append(polygon_pixel)
+        masks = []
+        final_polygons = []
+        final_properties = converted_properties
+        for polygon_pixel in converted_polygons:
+            final_polygons.append(polygon_pixel)
             wkt  = str(polygon_pixel)
             mask = self._wkt2coord(wkt)
             masks.append(mask)
 
         objects = []
-        for mask, polygon in zip(masks, polygons):
+        
+        if ignore_file:
+            _, ignore_indexes = wwtool.cleaning_polygon_by_polygon(final_polygons, ignore_polygons, show=show_ignored_polygons)
+            for ignore_index in ignore_indexes[::-1]:
+                masks.pop(ignore_index)
+                final_polygons.pop(ignore_index)
+                final_properties.pop(ignore_index)
+                merged_ori_polygons.pop(ignore_index)
+                merged_ori_properties.pop(ignore_index)
+
+        # ori -> original coordinate, converted -> converted coordinate
+        for mask, converted_polygon, converted_property, ori_polygon, ori_property in zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties):
             if mask == []:
                 continue
             object_struct = dict()
@@ -540,7 +671,10 @@ class ShpParse():
 
             object_struct['segmentation'] = mask
             object_struct['bbox'] = [xmin, ymin, bbox_w, bbox_h]
-            object_struct['polygon'] = polygon
+            object_struct['converted_polygon'] = converted_polygon
+            object_struct['converted_property'] = converted_property
+            object_struct['ori_polygon'] = ori_polygon
+            object_struct['ori_property'] = ori_property
             object_struct['label'] = "1"
             objects.append(object_struct)
         
@@ -548,19 +682,22 @@ class ShpParse():
 
 
 class MaskParse():
-    def create_sub_masks(self, mask_image):
+    def generate_sub_mask_anno(self, mask_image, category=(1, 3)):
         height, width, _ = mask_image.shape
-        ret_image = wwtool.generate_image(height, width, color=0)
+        sub_mask_anno = wwtool.generate_image(height, width, color=0)
         gray_mask_image = mask_image[:, :, 0]
+        
+        if isinstance(category, (list, tuple)):
+            keep_bool = np.logical_or(gray_mask_image == category[0], gray_mask_image == category[1])
+        else:
+            keep_bool = (gray_mask_image == category)
 
-        keep_bool = np.logical_or(gray_mask_image == 1, gray_mask_image == 3)
+        sub_mask_anno[keep_bool] = 1
 
-        ret_image[keep_bool] = 1
+        return sub_mask_anno
 
-        return ret_image
-
-    def create_sub_mask_annotation(self, sub_mask):
-        contours = measure.find_contours(sub_mask, 0.5, positive_orientation='low')
+    def generate_polygon(self, sub_mask_anno):
+        contours = measure.find_contours(sub_mask_anno, 0.5, positive_orientation='low')
 
         segmentations = []
         polygons = []
@@ -574,6 +711,8 @@ class MaskParse():
                 continue
             
             poly = Polygon(contour)
+            if poly.area < 5:
+                continue
             poly = poly.simplify(1.0, preserve_topology=False)
             if poly.geom_type == 'MultiPolygon':
                 for poly_ in poly:
@@ -587,17 +726,23 @@ class MaskParse():
 
         return segmentations, polygons
 
-    def __call__(self, mask_file):
-        mask_image = cv2.imread(mask_file)
-        ret_image = self.create_sub_masks(mask_image)
-        masks, polygons = self.create_sub_mask_annotation(ret_image)
+    def __call__(self, mask_image, category=(1, 3)):
+        assert(isinstance(mask_image, str), "Please input filename rather than np.array")
+        mask_file_name = mask_image[:]
+        mask_image = cv2.imread(mask_image)
+
+        if mask_image is None:
+            print("Can not open this mask file: {}".format(mask_file_name))
+            return []
+
+        sub_mask_anno = self.generate_sub_mask_anno(mask_image, category=category)
+        masks, polygons = self.generate_polygon(sub_mask_anno)
 
         objects = []
         for mask, polygon in zip(masks, polygons):
             if mask == []:
                 continue
             object_struct = dict()
-            mask = [abs(_) for _ in mask]
 
             xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)
             bbox_w = xmax - xmin

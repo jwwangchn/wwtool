@@ -1,8 +1,33 @@
+import os
 import wwtool
 import numpy as np
 import rasterio as rio
 import pycocotools.mask as maskUtils
 import cv2
+
+def draw_grid(img, line_color=(0, 255, 0), thickness=3, type_=cv2.LINE_AA, pxstep=80):
+    '''(ndarray, 3-tuple, int, int) -> void
+    draw gridlines on img
+    line_color:
+        BGR representation of colour
+    thickness:
+        line thickness
+    type:
+        8, 4 or cv2.LINE_AA
+    pxstep:
+        grid line frequency in pixels
+    '''
+    x = pxstep
+    y = pxstep
+    while x < img.shape[1]:
+        cv2.line(img, (x, 0), (x, img.shape[0]), color=line_color, lineType=type_, thickness=thickness)
+        x += pxstep
+
+    while y < img.shape[0]:
+        cv2.line(img, (0, y), (img.shape[1], y), color=line_color, lineType=type_, thickness=thickness)
+        y += pxstep
+
+    return img
 
 def poly2mask(mask_ann, img_h, img_w):
     if isinstance(mask_ann, list):
@@ -19,13 +44,15 @@ def poly2mask(mask_ann, img_h, img_w):
     mask = maskUtils.decode(rle)
     return mask
 
-image_file = '/data/buildchange/v0/train_shanghai/images/L18_106968_219320.jpg'
-mask_file = '/data/buildchange/v0/train_shanghai/anno_v2/L18_106968_219320.png'
+image_file = '/data/buildchange/v0/shanghai/images/L18_106968_219320.jpg'
+mask_file = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219320.png'
+
+image_file_name = os.path.splitext(os.path.basename(image_file))[0]
 
 rgb_img = cv2.imread(image_file)
 mask_parser = wwtool.MaskParse()
 
-objects = mask_parser(mask_file)
+objects = mask_parser(mask_file, category=(1, 3))
 
 gt_masks = []
 for obj in objects:
@@ -39,11 +66,11 @@ COLORS = {'Blue': (0, 130, 200), 'Red': (230, 25, 75), 'Yellow': (255, 225, 25),
 color_list = list(COLORS.keys())
 
 masks = wwtool.generate_image(2048, 2048)
-for gt_mask in gt_masks:
+for idx, gt_mask in enumerate(gt_masks):
     mask = poly2mask(gt_mask, 2048, 2048) * 1
-    masks[:, :, 0] = mask * COLORS[color_list[np.random.randint(0, 20)]][2]
-    masks[:, :, 1] = mask * COLORS[color_list[np.random.randint(0, 20)]][1]
-    masks[:, :, 2] = mask * COLORS[color_list[np.random.randint(0, 20)]][0]
+    masks[:, :, 0] = mask * COLORS[color_list[idx % 20]][2]
+    masks[:, :, 1] = mask * COLORS[color_list[idx % 20]][1]
+    masks[:, :, 2] = mask * COLORS[color_list[idx % 20]][0]
     img += masks
 
 heatmap = wwtool.show_grayscale_as_heatmap(img / 255.0, show=False, return_img=True)
@@ -51,4 +78,5 @@ alpha = 0.4
 beta = (1.0 - alpha)
 fusion = cv2.addWeighted(heatmap, alpha, rgb_img, beta, 0.0)
 
-wwtool.show_image(fusion)
+draw_grid(fusion, pxstep=1024)
+wwtool.show_image(fusion, save_name='{}.png'.format(image_file_name))

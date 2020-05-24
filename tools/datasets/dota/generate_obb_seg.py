@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
-                multi_processing=True,
+                multi_processing=False,
                 num_processor=16,
                 binary_mask=binary_mask,
                 vis=vis)

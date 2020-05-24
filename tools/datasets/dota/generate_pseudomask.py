@@ -162,7 +162,7 @@ if __name__ == '__main__':
                 factor=factor,
                 heatmap_rate=heatmap_rate,
                 method=method,
-                multi_processing=True,
+                multi_processing=False,
                 num_processor=16)
 
     pseudomask_gen.generate_pseudomask_core()

@@ -274,7 +274,7 @@ if __name__ == '__main__':
                                 imageset=imageset,
                                 subimage_size=subimage_size,
                                 gap=gap,
-                                multi_processing=False,
+                                multi_processing=True,
                                 num_processor=16,
                                 show=False)
 

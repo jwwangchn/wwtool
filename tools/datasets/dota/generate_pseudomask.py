@@ -33,9 +33,9 @@ class PseudomaskGenerate():
         self.factor = factor
         self.method = method
 
-        self.save_dir_names = {'centerness': 'centerness_seg',
-                                'gaussian': 'gaussian_seg',
-                                'ellipse': 'ellipse_seg'}
+        self.save_dir_names = {'centerness': '{}_centerness_seg'.format(imageset),
+                                'gaussian': '{}_gaussian_seg'.format(imageset),
+                                'ellipse': '{}_ellipse_seg'.format(imageset)}
 
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
         self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
@@ -128,10 +128,10 @@ class PseudomaskGenerate():
 
 if __name__ == '__main__':
     core_dataset = 'dota'
-    release_version = 'DJ'
-    imageset = 'trainval'
+    release_version = 'v1'
+    imageset = 'train'
 
-    ann_file_name = [core_dataset, imageset, release_version, 'best']
+    ann_file_name = [core_dataset, imageset, release_version, 'best_keypoint']
 
     encode = 'centerness'   # centerness, gaussian, ellipse
     heatmap_rate = 0.5

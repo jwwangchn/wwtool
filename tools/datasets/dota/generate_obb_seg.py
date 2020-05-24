@@ -30,10 +30,10 @@ class Core():
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
         self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
         if binary_mask == True:
-            self.save_path = './data/{}/{}/{}/obb_seg_binary'.format(core_dataset, self.release_version, self.imageset)
+            self.save_path = './data/{}/{}/{}/{}_obb_seg_binary'.format(core_dataset, self.release_version, self.imageset, self.imageset)
             self.stuffEndId = 1
         else:
-            self.save_path = './data/{}/{}/{}/obb_seg'.format(core_dataset, self.release_version, self.imageset)
+            self.save_path = './data/{}/{}/{}/{}_obb_seg'.format(core_dataset, self.release_version, self.imageset, self.imageset)
             self.stuffEndId = 15
         mmcv.mkdir_or_exist(self.save_path)
 
@@ -69,10 +69,10 @@ class Core():
 
 if __name__ == '__main__':
     core_dataset = 'dota'
-    release_version = 'DJ'
-    imageset = 'trainval'
+    release_version = 'v1'
+    imageset = 'train'
 
-    ann_file_name = [core_dataset, imageset, release_version, 'best']
+    ann_file_name = [core_dataset, imageset, release_version, 'best_keypoint']
 
     binary_mask = False
     vis = False

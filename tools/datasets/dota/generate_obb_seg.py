@@ -1,13 +1,14 @@
 from pycocotools.coco import COCO
 import numpy as np
-import skimage.io as io
 import matplotlib.pyplot as plt
 import pylab
 import cv2
 import math
 import os
 import sys
-import concurrent.futures
+from multiprocessing import Pool
+from functools import partial
+import tqdm
 
 import mmcv
 from wwtool.transforms import pointobb_flip, thetaobb_flip, hobb_flip
@@ -20,12 +21,14 @@ class Core():
                 release_version,
                 imageset,
                 multi_processing=False,
+                num_processor=16,
                 binary_mask=False,
                 vis=False):
         self.release_version = release_version
         self.imageset = imageset
         self.binary_mask = binary_mask
         self.vis = vis
+        self.pool = Pool(num_processor)
 
         self.imgDir = './data/{}/{}/coco/{}/'.format(core_dataset, self.release_version, self.imageset)
         self.annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset, self.release_version, "_".join(ann_file_name))
@@ -40,7 +43,6 @@ class Core():
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
         self.imgIds = self.coco.getImgIds(catIds=self.catIds)
-        self.progress_bar = mmcv.ProgressBar(len(self.imgIds))
         self.multi_processing = multi_processing
 
     def _core_(self, imgId):
@@ -48,7 +50,7 @@ class Core():
         image_name = img_info['file_name']
 
         if os.path.exists(os.path.join(self.save_path, image_name)):
-            print("{} exist, skip".format(os.path.join(self.save_path, image_name)))
+            # print("{} exist, skip".format(os.path.join(self.save_path, image_name)))
             return
         # img_list = ['P0019__1.0__824___824.png', 'P0858__1.0__0___441.png', 'P1399__1.0__3296___3296.png', 'P1466__1.0__2472___2472.png', 'P0867__1.0__1794___1027.png']
         # img_list = ['P2802__1.0__4914___4225.png']
@@ -59,13 +61,25 @@ class Core():
 
     def generate_segmentation(self):
         if self.multi_processing:
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                for _ in executor.map(self._core_, self.imgIds):
-                    self.progress_bar.update()
+            image_id_list = self.imgIds
+            num_image = len(image_id_list)
+            worker = partial(self._core_)
+            # self.pool.map(worker, image_id_list)
+            ret = list(tqdm.tqdm(self.pool.imap(worker, image_id_list), total=num_image))
+            
         else:
+            progress_bar = mmcv.ProgressBar(len(self.imgIds))
             for _, imgId in enumerate(self.imgIds):
                 self._core_(imgId)
-                self.progress_bar.update()
+                progress_bar.update()
+
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 if __name__ == '__main__':
     core_dataset = 'dota'
@@ -79,7 +93,8 @@ if __name__ == '__main__':
 
     core = Core(release_version=release_version, 
                 imageset=imageset,
-                multi_processing=False,
+                multi_processing=True,
+                num_processor=16,
                 binary_mask=binary_mask,
                 vis=vis)
 

@@ -286,11 +286,11 @@ if __name__ == '__main__':
     # src = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/evaluation_sample'
     # dst = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v1/evaluation_sample'
 
-    trainval_base_path = "./data/dota/v0/train"
-    trainval_out_path = "./data/dota/v1/train"
+    trainval_base_path = "./data/dota/v0/trainval"
+    trainval_out_path = "./data/dota/v1/trainval"
 
-    test_base_path = "./data/dota/v0/val"
-    test_out_path = "./data/dota/v1/val"
+    test_base_path = "./data/dota/v0/test"
+    test_out_path = "./data/dota/v1/test"
 
     print(trainval_out_path, test_out_path)
 

@@ -26,14 +26,19 @@ png_img_fn = './data/buildchange/v0/shanghai/geo_info/L18_106968_219352.png'
 jpg_img_fn = './data/buildchange/v0/shanghai/images/L18_106968_219352.jpg'
 shp_fn = './data/buildchange/v0/shanghai/shp_4326/L18_106968_219352.shp'
 # shp_fn = './data/buildchange/v0/shanghai/merged_shp/L18_106968_219352.shp'
-pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219352.png'
+# pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219352.png'
+roof_fn = './data/buildchange/v0/shanghai/roof_shp_4326/L18_106968_219352.shp'
 
 ori_img = rio.open(png_img_fn)
 rgb_img = cv2.imread(jpg_img_fn)
 
 shp_parser = wwtool.ShpParse()
 
-objects = shp_parser(shp_fn, ori_img, ignore_file=None, merge_flag=True, connection_mode='line')
+objects = shp_parser(roof_fn, 
+                    ori_img, 
+                    ignore_file=None, 
+                    merge_flag=False, 
+                    connection_mode='line')
 
 gt_masks = []
 

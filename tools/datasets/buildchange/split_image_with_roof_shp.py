@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
     for imageset in imagesets:
         for sub_imageset_fold in sub_imageset_folds[imageset]:
-            print("Begin processing {} set.".format(imageset))
+            print("Begin processing {} {} set.".format(imageset, sub_imageset_fold))
             split_image = SplitImage(core_dataset_name=core_dataset_name,
                                     src_version=src_version,
                                     dst_version=dst_version,
@@ -280,6 +280,6 @@ if __name__ == '__main__':
                                     num_processor=16)
 
             split_image.core()
-            print("Finish processing {} set.".format(imageset))
+            print("Finish processing {} {} set.".format(imageset, sub_imageset_fold))
 
         

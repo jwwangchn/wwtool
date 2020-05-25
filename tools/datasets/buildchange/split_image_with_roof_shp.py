@@ -28,7 +28,7 @@ class SplitImage():
                  sub_imageset_fold='arg',
                  subimage_size=1024,
                  gap=512,
-                 multi_processing,
+                 multi_processing=False,
                  num_processor=16,
                  show=False):
         self.core_dataset_name = core_dataset_name

@@ -1,15 +1,15 @@
 import wwtool
 
-coco_small_class = {    1: 'airplane', 
-                       2: 'bridge', 
-                       3: 'storage-tank', 
-                       4: 'ship', 
-                       5: 'swimming-pool', 
-                       6: 'tennis-court', 
-                       7: 'vehicle', 
-                       8: 'person', 
-                       9: 'harbor', 
-                       10: 'wind-mill'}
+# coco_small_class = {    1: 'airplane', 
+#                        2: 'bridge', 
+#                        3: 'storage-tank', 
+#                        4: 'ship', 
+#                        5: 'swimming-pool', 
+#                        6: 'tennis-court', 
+#                        7: 'vehicle', 
+#                        8: 'person', 
+#                        9: 'harbor', 
+#                        10: 'wind-mill'}
 
 coco_dota_class = {}
 
@@ -27,7 +27,13 @@ else:
 
 class_instance = wwtool.Small()
 
-statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=None)
+statistic = wwtool.COCO_Statistic(ann_file, 
+                                  size_set=size_set, 
+                                  label_set=label_set, 
+                                  size_measure_by_ratio=size_measure_by_ratio, 
+                                  class_instance=wwtool.DOTA(),
+                                  min_area=36,
+                                  max_small_length=8)
 
 for pie_flag in [False, True]:
     statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])

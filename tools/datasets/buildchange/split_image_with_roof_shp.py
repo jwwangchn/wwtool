@@ -34,6 +34,7 @@ class SplitImage():
         self.src_version = src_version
         self.dst_version = dst_version
         self.imageset = imageset
+        self.sub_imageset_fold = sub_imageset_fold
         self.subimage_size = subimage_size
         self.gap = gap
         self.image_path = './data/{}/{}/{}/{}/images'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
@@ -215,8 +216,8 @@ class SplitImage():
 
             img = subimages[subimage_coordinate]
 
-            label_save_file = os.path.join(self.label_save_path, '{}__{}_{}.txt'.format(file_name, subimage_coordinate[0], subimage_coordinate[1]))
-            image_save_file = os.path.join(self.image_save_path, '{}__{}_{}.png'.format(file_name, subimage_coordinate[0], subimage_coordinate[1]))
+            label_save_file = os.path.join(self.label_save_path, '{}_{}__{}_{}.txt'.format(self.sub_imageset_fold, file_name, subimage_coordinate[0], subimage_coordinate[1]))
+            image_save_file = os.path.join(self.image_save_path, '{}_{}__{}_{}.png'.format(self.sub_imageset_fold, file_name, subimage_coordinate[0], subimage_coordinate[1]))
             cv2.imwrite(image_save_file, img)
             
             for subimage_mask in subimage_masks:

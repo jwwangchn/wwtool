@@ -238,7 +238,8 @@ class SplitImage():
             ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
         else:
             progress_bar = mmcv.ProgressBar(len(self.image_path))
-            for _, image_path in enumerate(self.image_path):
+            image_fn_list = os.listdir(self.image_path)
+            for _, image_path in enumerate(image_fn_list):
                 self.split_image(image_path)
                 progress_bar.update()
 
@@ -268,7 +269,7 @@ if __name__ == '__main__':
 
     for imageset in imagesets:
         for sub_imageset_fold in sub_imageset_folds[imageset]:
-            print("Begin processing {} set.".format(imageset))
+            print("Begin processing {} {} set.".format(imageset, sub_imageset_fold))
             split_image = SplitImage(core_dataset_name=core_dataset_name,
                                     src_version=src_version,
                                     dst_version=dst_version,
@@ -280,6 +281,6 @@ if __name__ == '__main__':
                                     num_processor=16)
 
             split_image.core()
-            print("Finish processing {} set.".format(imageset))
+            print("Finish processing {} {} set.".format(imageset, sub_imageset_fold))
 
         

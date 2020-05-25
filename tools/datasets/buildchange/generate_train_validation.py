@@ -25,6 +25,7 @@ if __name__ == '__main__':
 
     for imageset in imagesets:
         for sub_imageset_fold in sub_imageset_folds[imageset]:
+            print('Processing {} {}'.format(imageset, sub_imageset_fold))
             image_path = './data/{}/{}/{}/{}/images'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
             if image_path.endswith('.jpg') or image_path.endswith('.png'):
                 pass

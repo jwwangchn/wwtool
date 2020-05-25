@@ -28,6 +28,7 @@ class SplitImage():
                  sub_imageset_fold='arg',
                  subimage_size=1024,
                  gap=512,
+                 multi_processing,
                  num_processor=16,
                  show=False):
         self.core_dataset_name = core_dataset_name
@@ -47,6 +48,7 @@ class SplitImage():
         wwtool.mkdir_or_exist(self.label_save_path)
 
         self.shp_parser = wwtool.ShpParse()
+        self.multi_processing = multi_processing
         self.pool = Pool(num_processor)
         self.show = show
 
@@ -228,11 +230,17 @@ class SplitImage():
             wwtool.simpletxt_dump(objects, label_save_file, encode='mask')
 
     def core(self):
-        image_fn_list = os.listdir(self.image_path)
-        num_image = len(image_fn_list)
-        worker = partial(self.split_image)
-        # self.pool.map(worker, image_fn_list)
-        ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
+        if self.multi_processing:
+            image_fn_list = os.listdir(self.image_path)
+            num_image = len(image_fn_list)
+            worker = partial(self.split_image)
+            # self.pool.map(worker, image_fn_list)
+            ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
+        else:
+            progress_bar = mmcv.ProgressBar(len(self.image_path))
+            for _, image_path in enumerate(self.image_path):
+                self.split_image(image_path)
+                progress_bar.update()
 
     def __getstate__(self):
         self_dict = self.__dict__.copy()
@@ -268,6 +276,7 @@ if __name__ == '__main__':
                                     sub_imageset_fold=sub_imageset_fold,
                                     subimage_size=subimage_size,
                                     gap=gap,
+                                    multi_processing=False,
                                     num_processor=16)
 
             split_image.core()

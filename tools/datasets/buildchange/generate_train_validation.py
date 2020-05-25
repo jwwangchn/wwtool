@@ -27,11 +27,12 @@ if __name__ == '__main__':
         for sub_imageset_fold in sub_imageset_folds[imageset]:
             print('Processing {} {}'.format(imageset, sub_imageset_fold))
             image_path = './data/{}/{}/{}/{}/images'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
-            if image_path.endswith('.jpg') or image_path.endswith('.png'):
-                pass
-            else:
-                continue
+
             for image_fn in os.listdir(image_path):
+                if image_fn.endswith('.jpg') or image_fn.endswith('.png'):
+                    pass
+                else:
+                    continue
                 image_basename = wwtool.get_basename(image_fn)
                 imagename_sets[imageset].add(image_basename)
 

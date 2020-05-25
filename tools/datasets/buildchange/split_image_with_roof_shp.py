@@ -237,10 +237,10 @@ class SplitImage():
             # self.pool.map(worker, image_fn_list)
             ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
         else:
-            progress_bar = mmcv.ProgressBar(len(self.image_path))
             image_fn_list = os.listdir(self.image_path)
-            for _, image_path in enumerate(image_fn_list):
-                self.split_image(image_path)
+            progress_bar = mmcv.ProgressBar(len(image_fn_list))
+            for _, image_fn in enumerate(image_fn_list):
+                self.split_image(image_fn)
                 progress_bar.update()
 
     def __getstate__(self):

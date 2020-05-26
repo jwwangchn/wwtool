@@ -61,21 +61,22 @@ if __name__ == '__main__':
     
     release_version = 'v2'
     imageset = 'train'
-    
-    for city in cities:
-        src_ann_file_names = []
-        for sub_city_fold in sub_city_folds[city]:
-            src_ann_file_names.append(['buildchange', release_version, imageset, city, sub_city_fold])
+    for imageset in ['train', 'val']
+        for city in cities:
+            print('Processing {} {}'.format(train, city))
+            src_ann_file_names = []
+            for sub_city_fold in sub_city_folds[city]:
+                src_ann_file_names.append(['buildchange', release_version, imageset, city, sub_city_fold])
 
-        src_ann_files = ['./data/buildchange/{}/coco/annotations/{}.json'.format(release_version,  '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
+            src_ann_files = ['./data/buildchange/{}/coco/annotations/{}.json'.format(release_version,  '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
 
-        dst_ann_file = './data/buildchange/{}/coco/annotations/{}.json'.format(release_version, "_".join(['buildchange', release_version, imageset, city]))
-        
-        use_origin_info = True
-        if use_origin_info:
-            coco = COCO(src_ann_files[0])
-            # info = coco.dataset['info']
-            # licenses = coco.dataset['licenses']
-            categories = coco.dataset['categories']
+            dst_ann_file = './data/buildchange/{}/coco/annotations/{}.json'.format(release_version, "_".join(['buildchange', release_version, imageset, city]))
+            
+            use_origin_info = True
+            if use_origin_info:
+                coco = COCO(src_ann_files[0])
+                # info = coco.dataset['info']
+                # licenses = coco.dataset['licenses']
+                categories = coco.dataset['categories']
 
-        mergecoco(src_ann_files, info, licenses, categories, dst_ann_file)
+            mergecoco(src_ann_files, info, licenses, categories, dst_ann_file)

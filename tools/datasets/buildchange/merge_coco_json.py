@@ -60,7 +60,7 @@ if __name__ == '__main__':
                   'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
     
     release_version = 'v2'
-    imageset = 'val'
+    imageset = 'train'
     
     for city in cities:
         src_ann_file_names = []

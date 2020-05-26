@@ -5,6 +5,7 @@ from pycocotools.coco import COCO
 def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
     images, annotations = [], []
     img_id = 1
+    obj_id = 1
     for src_ann_file in src_ann_files:
         coco = COCO(src_ann_file)
         catIds = coco.getCatIds(catNms=[''])
@@ -13,11 +14,18 @@ def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
             img = coco.loadImgs(imgIds[idx])[0]
             annIds = coco.getAnnIds(imgIds = img['id'], catIds = catIds, iscrowd = None)
             img['id'] = img_id
-            img_id += 1
             anns = coco.loadAnns(annIds)
+            ann_save = []
+            for ann in anns:
+                ann['image_id'] = img_id
+                ann['id'] = obj_id
+                obj_id += 1
+                ann_save.append(ann)
+
+            img_id += 1
 
             images.append(img)
-            annotations = annotations + anns
+            annotations = annotations + ann_save
 
     json_data = {"info" : info,
                 "images" : images,
@@ -43,8 +51,8 @@ if __name__ == '__main__':
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-    # cities = ['jinan']
+    # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    cities = ['chengdu']
     sub_city_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                   'chengdu': ['arg', 'google', 'ms', 'tdt'],
                   'haerbin': ['arg', 'google', 'ms'],

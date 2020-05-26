@@ -4,6 +4,7 @@ from pycocotools.coco import COCO
 
 def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
     images, annotations = [], []
+    img_id = 1
     for src_ann_file in src_ann_files:
         coco = COCO(src_ann_file)
         catIds = coco.getCatIds(catNms=[''])
@@ -11,6 +12,8 @@ def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
         for idx, _ in enumerate(imgIds):
             img = coco.loadImgs(imgIds[idx])[0]
             annIds = coco.getAnnIds(imgIds = img['id'], catIds = catIds, iscrowd = None)
+            img['id'] = img_id
+            img_id += 1
             anns = coco.loadAnns(annIds)
 
             images.append(img)

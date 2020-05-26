@@ -4,6 +4,7 @@ from pycocotools.coco import COCO
 
 def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
     images, annotations = [], []
+    img_id = 1
     for src_ann_file in src_ann_files:
         coco = COCO(src_ann_file)
         catIds = coco.getCatIds(catNms=[''])
@@ -11,6 +12,8 @@ def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
         for idx, _ in enumerate(imgIds):
             img = coco.loadImgs(imgIds[idx])[0]
             annIds = coco.getAnnIds(imgIds = img['id'], catIds = catIds, iscrowd = None)
+            img['id'] = img_id
+            img_id += 1
             anns = coco.loadAnns(annIds)
 
             images.append(img)
@@ -41,6 +44,7 @@ if __name__ == '__main__':
                 }]
 
     cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    # cities = ['jinan']
     sub_city_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                   'chengdu': ['arg', 'google', 'ms', 'tdt'],
                   'haerbin': ['arg', 'google', 'ms'],
@@ -55,13 +59,9 @@ if __name__ == '__main__':
         for sub_city_fold in sub_city_folds[city]:
             src_ann_file_names.append(['buildchange', release_version, imageset, city, sub_city_fold])
 
-        src_ann_files = ['./data/{}/{}/coco/annotations/{}.json'.format(src_ann_file_name[0], release_version,  '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
+        src_ann_files = ['./data/buildchange/{}/coco/annotations/{}.json'.format(release_version,  '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
 
-        new_imageset_name = "_".join(['buildchange', release_version, imageset, city])
-        print(new_imageset_name)
-
-        dst_ann_file_name = ['buildchange', new_imageset_name]
-        dst_ann_file = './data/{}/{}/coco/annotations/{}.json'.format(dst_ann_file_name[0], release_version, '_'.join(dst_ann_file_name))
+        dst_ann_file = './data/buildchange/{}/coco/annotations/{}.json'.format(release_version, "_".join(['buildchange', release_version, imageset, city]))
         
         use_origin_info = True
         if use_origin_info:

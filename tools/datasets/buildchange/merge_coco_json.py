@@ -55,7 +55,7 @@ if __name__ == '__main__':
         for sub_city_fold in sub_city_folds[city]:
             src_ann_file_names.append(['buildchange', release_version, imageset, city, sub_city_fold])
 
-        src_ann_files = ['./data/{}/v1/coco/annotations/{}.json'.format(src_ann_file_name[0], '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
+        src_ann_files = ['./data/{}/{}/coco/annotations/{}.json'.format(src_ann_file_name[0], release_version,  '_'.join(src_ann_file_name)) for src_ann_file_name in src_ann_file_names]
 
         new_imageset_name = "_".join(['buildchange', release_version, imageset, city])
         print(new_imageset_name)

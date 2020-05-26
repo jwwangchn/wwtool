@@ -51,8 +51,8 @@ if __name__ == '__main__':
                     "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
                 }]
 
-    # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-    cities = ['chengdu']
+    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    # cities = ['chengdu']
     sub_city_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                   'chengdu': ['arg', 'google', 'ms', 'tdt'],
                   'haerbin': ['arg', 'google', 'ms'],

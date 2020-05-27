@@ -20,7 +20,9 @@ class COCO_Statistic():
                 class_instance=None,
                 show_title=False,
                 out_file_format='pdf',
-                max_object_num=2700):
+                max_object_num=2700,
+                min_area=0,
+                max_small_length=0):
         self.ann_file = ann_file
         self.coco = COCO(self.ann_file)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -33,6 +35,8 @@ class COCO_Statistic():
         self.show_title = show_title
         self.out_file_format = out_file_format
         self.max_object_num = max_object_num
+        self.min_area = min_area
+        self.max_small_length = max_small_length
 
         categories = self.coco.dataset['categories']
         self.coco_class = dict()
@@ -52,6 +56,9 @@ class COCO_Statistic():
             anns = self.coco.loadAnns(annIds)       # per image
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
             for ann in anns:
+                x1, y1, w, h = ann['bbox']
+                if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
+                    continue
                 bbox = ann['bbox']
                 object_size = bbox[2] * bbox[3]
                 if self.size_measure_by_ratio:
@@ -126,6 +133,9 @@ class COCO_Statistic():
             anns = self.coco.loadAnns(annIds)       # per image
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
             for ann in anns:
+                x1, y1, w, h = ann['bbox']
+                if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
+                    continue
                 if coco_class == None:
                     coco_class = self.coco_class
                 class_name = coco_class[ann['category_id']]
@@ -179,8 +189,15 @@ class COCO_Statistic():
             img = self.coco.loadImgs(self.imgIds[idx])[0]
             annIds = self.coco.getAnnIds(imgIds = img['id'], catIds = self.catIds, iscrowd = None)
             anns = self.coco.loadAnns(annIds)       # per image
+            object_num = 0
+            for ann in anns:
+                x1, y1, w, h = ann['bbox']
+                if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
+                    continue
+                else:
+                    object_num += 1
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
-            object_nums[idx] = len(anns)
+            object_nums[idx] = object_num
                 
         object_nums = np.array(object_nums)
         
@@ -208,6 +225,9 @@ class COCO_Statistic():
             anns = self.coco.loadAnns(annIds)       # per image
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
             for ann in anns:
+                x1, y1, w, h = ann['bbox']
+                if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
+                    continue
                 bbox = ann['bbox']
                 if bbox[3] == 0:
                     continue
@@ -238,6 +258,9 @@ class COCO_Statistic():
             anns = self.coco.loadAnns(annIds)       # per image
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
             for ann in anns:
+                x1, y1, w, h = ann['bbox']
+                if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
+                    continue
                 if coco_class == None:
                     coco_class = self.coco_class
                 class_name = coco_class[ann['category_id']]

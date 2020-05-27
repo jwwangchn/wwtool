@@ -54,7 +54,8 @@ class Convert2COCO():
         annotations = []
         index = 0
         progress_bar = mmcv.ProgressBar(len(self.imlist))
-        for imId, name in enumerate(self.imlist):
+        imId = 0
+        for name in self.imlist:
             imgpath = os.path.join(self.imgpath, name + self.image_format)
             if self.sub_anno_fold:
                 annotpath = os.path.join(self.annopath, name, name + self.anno_format)
@@ -82,10 +83,13 @@ class Convert2COCO():
                     annotation["id"] = index
                     annotations.append(annotation)
 
+                imId += 1
+
             if imId % 500 == 0:
                 print("\nImage ID: {}, Instance ID: {}, Small Object Counter: {}, Max Object Number: {}".format(imId, index, self.small_object_idx, self.max_object_num_per_image))
             
             progress_bar.update()
+            
 
         return images, annotations
 

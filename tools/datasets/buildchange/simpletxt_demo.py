@@ -21,8 +21,8 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 if __name__ == '__main__':
-    image_dir = '/data/buildchange/v1/shanghai_1024/images'
-    label_dir = '/data/buildchange/v1/shanghai_1024/labels'
+    image_dir = '/data/buildchange/v2/shanghai/arg/images'
+    label_dir = '/data/buildchange/v2/shanghai/arg/labels'
     save_dir = '/data/buildchange/v1/shanghai_1024/vis'
     wwtool.mkdir_or_exist(save_dir)
 

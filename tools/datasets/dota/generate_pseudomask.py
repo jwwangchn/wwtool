@@ -6,7 +6,9 @@ import cv2
 import math
 import os
 import sys
-import concurrent.futures
+import tqdm
+from multiprocessing import Pool
+from functools import partial
 
 import mmcv
 import wwtool
@@ -26,7 +28,8 @@ class PseudomaskGenerate():
                 heatmap_rate=0.5,
                 factor=4,
                 method='min_area',
-                multi_processing=False):
+                multi_processing=False,
+                num_processor=16):
         self.release_version = release_version
         self.imageset = imageset
         self.encode = encode
@@ -62,10 +65,10 @@ class PseudomaskGenerate():
         self.coco = COCO(self.annFile)
         self.catIds = self.coco.getCatIds(catNms=[''])
         self.imgIds = self.coco.getImgIds(catIds=self.catIds)
-        self.progress_bar = mmcv.ProgressBar(len(self.imgIds))
         self.multi_processing = multi_processing
+        self.pool = Pool(num_processor)
 
-    def __generate_pseudomask(self, imgId):
+    def generate_pseudomask(self, imgId):
         img_info = self.coco.loadImgs(imgId)[0]
         image_name = img_info['file_name']
 
@@ -118,13 +121,24 @@ class PseudomaskGenerate():
 
     def generate_pseudomask_core(self):
         if self.multi_processing:
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                for _ in executor.map(self.__generate_pseudomask, self.imgIds):
-                    self.progress_bar.update()
+            num_image = len(self.imgIds)
+            worker = partial(self.generate_pseudomask)
+            # self.pool.map(worker, self.imgIds)
+            ret = list(tqdm.tqdm(self.pool.imap(worker, self.imgIds), total=num_image))
+            
         else:
+            progress_bar = mmcv.ProgressBar(len(self.imgIds))
             for _, imgId in enumerate(self.imgIds):
-                self.__generate_pseudomask(imgId)
-                self.progress_bar.update()
+                self.generate_pseudomask(imgId)
+                progress_bar.update()
+
+    def __getstate__(self):
+        self_dict = self.__dict__.copy()
+        del self_dict['pool']
+        return self_dict
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
 if __name__ == '__main__':
     core_dataset = 'dota'
@@ -148,6 +162,7 @@ if __name__ == '__main__':
                 factor=factor,
                 heatmap_rate=heatmap_rate,
                 method=method,
-                multi_processing=False)
+                multi_processing=False,
+                num_processor=16)
 
     pseudomask_gen.generate_pseudomask_core()

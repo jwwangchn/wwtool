@@ -19,8 +19,7 @@ class SN62COCO(Convert2COCO):
             :param annotpath: the path of each annotation
             :param return: dict()  
         """
-        objects = self.__sn6_parse__(annotpath, imgpath)
-        
+        objects = self.__sn6_parse__(annotpath, imgpath) 
         coco_annotations = []
 
         if generate_small_dataset and len(objects) > 0:
@@ -41,11 +40,12 @@ class SN62COCO(Convert2COCO):
             segmentation = object_struct['segmentation']
             label = object_struct['label']
 
-            width = bbox[2]
-            height = bbox[3]
+            xmin, ymin, width, height = bbox
+            xmax = xmin + width
+            ymax = ymin + height
             area = height * width
 
-            if area <= self.small_object_area and self.groundtruth:
+            if (area <= self.small_object_area) and self.groundtruth:
                 self.small_object_idx += 1
                 continue
 
@@ -56,9 +56,9 @@ class SN62COCO(Convert2COCO):
             coco_annotation['area'] = np.float(area)
 
             coco_annotations.append(coco_annotation)
-            
+
         return coco_annotations
-    
+
     def __sn6_parse__(self, label_file, image_file):
         """
         (xmin, ymin, xmax, ymax)
@@ -69,13 +69,13 @@ class SN62COCO(Convert2COCO):
 
             image_name_postfix = image_file_name + '.tif'
             if imageset == 'val':
-                if image_name_postfix in valset_data:
+                if image_name_postfix in valset_image_names:
                     pass
                 else:
                     return []
 
             if imageset == 'train':
-                if image_name_postfix in valset_data:
+                if image_name_postfix in valset_image_names:
                     return []
                 else:
                     pass
@@ -98,9 +98,6 @@ class SN62COCO(Convert2COCO):
                 bbox_w = xmax - xmin
                 bbox_h = ymax - ymin
 
-                if bbox_w * bbox_h <= self.small_object_area:
-                    continue
-
                 total_object_num += 1
                 if bbox_h * bbox_w <= small_size:
                     small_object_num += 1
@@ -114,7 +111,7 @@ class SN62COCO(Convert2COCO):
                 object_struct_small = object_struct.copy()
                 object_struct_small['bbox'] = [xmin, ymin, xmax, ymax]
                 object_struct_small['label'] = 'building'
-                
+
                 objects_small_save.append(object_struct_small)
                 objects.append(object_struct)
 
@@ -237,7 +234,7 @@ if __name__ == "__main__":
                         data_licenses=licenses,
                         data_type="instances",
                         groundtruth=groundtruth,
-                        small_object_area=9)
+                        small_object_area=0)
 
         images, annotations = sn6.get_image_annotation_pairs()
 

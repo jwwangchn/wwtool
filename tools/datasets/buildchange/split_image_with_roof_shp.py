@@ -263,7 +263,7 @@ if __name__ == '__main__':
                          'chengdu': ['arg', 'google', 'ms', 'tdt'],
                          'haerbin': ['arg', 'google', 'ms'],
                          'jinan': ['arg', 'google', 'ms', 'tdt'],
-                         'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
+                         'shanghai': ['google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
     # sub_imageset_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                         #  'chengdu': ['arg', 'google', 'ms', 'tdt'],
                         #  'haerbin': ['arg', 'google', 'ms'],
@@ -282,8 +282,8 @@ if __name__ == '__main__':
                                     sub_imageset_fold=sub_imageset_fold,
                                     subimage_size=subimage_size,
                                     gap=gap,
-                                    multi_processing=False,
-                                    num_processor=16)
+                                    multi_processing=True,
+                                    num_processor=8)
 
             split_image.core()
             print("Finish processing {} {} set.".format(imageset, sub_imageset_fold))

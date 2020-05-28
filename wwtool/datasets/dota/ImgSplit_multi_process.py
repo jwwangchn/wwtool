@@ -284,9 +284,7 @@ if __name__ == '__main__':
     rate = 1.0
 
     # src = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v0/evaluation_sample'
-    # dst = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v1/evaluation_sample'
-
-
+    # dst = '/home/jwwangchn/Documents/100-Work/170-Codes/aidet/data/dota/v1/evaluation_sample
     trainval_base_path = "./data/dota/v0/train"
     trainval_out_path = "./data/dota/v1/train_1024_512"
 

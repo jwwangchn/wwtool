@@ -49,6 +49,7 @@ class Convert2COCO():
                     self.imlist.append(img_name)
                 else:
                     continue
+                
     def get_image_annotation_pairs(self):
         images = []
         annotations = []

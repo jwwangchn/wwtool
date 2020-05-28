@@ -170,7 +170,7 @@ class SplitImage():
 
         img = cv2.imread(image_file)
         geo_info = rio.open(geo_file)
-
+        print(pixel_anno_file)
         objects = self.shp_parser(shp_file, geo_info, ignore_file=pixel_anno_file, show_ignored_polygons=False)
 
         masks = np.array([obj['segmentation'] for obj in objects])

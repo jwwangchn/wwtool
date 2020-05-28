@@ -1,6 +1,8 @@
 import numpy as np
 import json
 from pycocotools.coco import COCO
+import mmcv
+
 
 def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
     images, annotations = [], []
@@ -10,6 +12,7 @@ def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
         coco = COCO(src_ann_file)
         catIds = coco.getCatIds(catNms=[''])
         imgIds = coco.getImgIds(catIds=catIds)
+        progressbar = mmcv.ProgressBar(len(imgIds))
         for idx, _ in enumerate(imgIds):
             img = coco.loadImgs(imgIds[idx])[0]
             annIds = coco.getAnnIds(imgIds = img['id'], catIds = catIds, iscrowd = None)
@@ -26,6 +29,8 @@ def mergecoco(src_ann_files, info, licenses, categories, dst_ann_file):
 
             images.append(img)
             annotations = annotations + ann_save
+            
+            progressbar.update()
 
     json_data = {"info" : info,
                 "images" : images,

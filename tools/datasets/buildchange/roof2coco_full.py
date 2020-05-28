@@ -63,7 +63,6 @@ class SIMPLETXT2COCO():
         for imgfile, annofile in zip(self.imgpaths, self.annotpaths):
             # imgpath = os.path.join(self.imgpath, name + self.image_format)
             # annotpath = os.path.join(self.annopath, name + self.anno_format)
-            print(imgfile)
             name = wwtool.get_basename(imgfile)
 
             annotations_coco = self.__generate_coco_annotation__(annofile, imgfile)

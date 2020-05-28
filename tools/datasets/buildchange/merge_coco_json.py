@@ -83,7 +83,7 @@ if __name__ == '__main__':
                 mergecoco(src_ann_files, info, licenses, categories, dst_ann_file)
         else:
             src_ann_file_names = []
-            print('Processing {} {}'.format(imageset))
+            print('Processing {}'.format(imageset))
             for city in cities:
                 src_ann_file_names.append(['buildchange', release_version, imageset, city])
 

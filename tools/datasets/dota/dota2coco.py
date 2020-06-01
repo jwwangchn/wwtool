@@ -181,9 +181,9 @@ if __name__ == "__main__":
                             {'supercategory': 'none', 'id': 15, 'name': 'basketball-court',      },]
 
     core_dataset_name = 'dota'
-    imagesets = ['test']
+    imagesets = ['trainval', 'test']
     dota_version = 'v1.0'
-    release_version = 'v1'
+    release_version = 'v2'
     groundtruth = True
     single_category = None
     keypoint = True

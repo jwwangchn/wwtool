@@ -611,6 +611,7 @@ class ShpParse():
                     if polygon.area < filter_small_size:
                         continue
                     converted_polygons.append(polygon)
+                    converted_properties.append(property_)
                 merged_ori_polygons.append(polygon)
                 merged_ori_properties.append(property_)
 
@@ -627,6 +628,7 @@ class ShpParse():
                         if sub_polygon.area < filter_small_size:
                             continue
                         converted_polygons.append(sub_polygon)
+                        converted_properties.append(property_)
                     
                     merged_ori_polygons.append(sub_polygon)
                     merged_ori_properties.append(property_)
@@ -677,7 +679,7 @@ class ShpParse():
             object_struct['ori_property'] = ori_property
             object_struct['label'] = "1"
             objects.append(object_struct)
-        
+
         return objects
 
 

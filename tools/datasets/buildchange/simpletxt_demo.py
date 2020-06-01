@@ -21,15 +21,15 @@ def poly2mask(mask_ann, img_h, img_w):
     return mask
 
 if __name__ == '__main__':
-    image_dir = '/data/buildchange/v2/shanghai/images'
-    label_dir = '/data/buildchange/v2/shanghai/labels'
-    save_dir = '/data/buildchange/v2/shanghai/vis'
+    image_dir = '/data/buildchange/v2/xian_fine/images'
+    label_dir = '/data/buildchange/v2/xian_fine/labels'
+    save_dir = '/data/buildchange/v2/xian_fine/vis'
     wwtool.mkdir_or_exist(save_dir)
 
     img_scale = 1024
     for image_fn in os.listdir(image_dir):
-        if 'L18_106968_219512' not in image_fn:
-            continue
+        # if 'L18_106968_219512' not in image_fn:
+        #     continue
         image_file = os.path.join(image_dir, image_fn)
         label_file = os.path.join(label_dir, image_fn.replace('png', 'txt'))
         save_file = os.path.join(save_dir, image_fn)

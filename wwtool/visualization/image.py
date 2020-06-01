@@ -314,9 +314,8 @@ def show_image(img,
                wait_time=0,
                save_name=None,
                no_resize=False):
-    if no_resize:
-        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(win_name, win_size, win_size)
+    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(win_name, win_size, win_size)
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
     if save_name != None:

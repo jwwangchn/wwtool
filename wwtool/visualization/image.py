@@ -312,13 +312,17 @@ def show_image(img,
                win_name='',
                win_size=600,
                wait_time=0,
-               save_name=None):
-    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(win_name, win_size, win_size)
+               save_name=None,
+               no_resize=False):
+    if no_resize:
+        cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(win_name, win_size, win_size)
     cv2.imshow(win_name, img)
     cv2.waitKey(wait_time)
     if save_name != None:
         cv2.imwrite(save_name, img)
+
+    return img
 
 def show_image_surface_curve(img, direction=0, show=True):
     """

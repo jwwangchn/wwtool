@@ -28,10 +28,16 @@ def colorize_mask(mask, palette):
     new_mask = new_mask.convert('RGB')
     return new_mask
 
-def show_mask(mask, num_classes):
+def show_mask(mask, 
+              num_classes=2, 
+              wait_time=0,
+              out_file=None):
     palette = get_palette(num_classes)
     colorized_mask = colorize_mask(mask, palette)
     colorized_mask_np = np.array(colorized_mask)
     colorized_mask_np = colorized_mask_np[:, :, ::-1].copy()
-    wwtool.show_image(colorized_mask_np, wait_time=500)
+    wwtool.show_image(colorized_mask_np, 
+                      wait_time=wait_time, 
+                      win_name='mask',
+                      save_name=out_file)
     

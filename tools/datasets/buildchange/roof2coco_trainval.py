@@ -116,12 +116,12 @@ if __name__ == "__main__":
     core_dataset_name = 'buildchange'
     # cities = ['shanghai']
     # sub_city_folds = {'shanghai': ['arg']}
-    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    cities = ['xian_fine']
     release_version = 'v2'
     groundtruth = True
 
     for idx, city in enumerate(cities):
-        anno_name = [core_dataset_name, release_version, 'trainval', city]
+        anno_name = [core_dataset_name, release_version, 'val', city]
         
         imgpath = './data/{}/{}/{}/images'.format(core_dataset_name, release_version, city)
         annopath = './data/{}/{}/{}/labels'.format(core_dataset_name, release_version, city)

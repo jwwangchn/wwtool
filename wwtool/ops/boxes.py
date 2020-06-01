@@ -51,12 +51,11 @@ def rotation_nms(rboxes, scores, iou_threshold=0.5):
         scores {np.array} -- [N * 1]
         iou_threshold {float} -- threshold for IoU
     """
-
     cx = rboxes[:, 0]
     cy = rboxes[:, 1]
     w = rboxes[:, 2]
     h = rboxes[:, 3]
-    theta = rboxes[:, 4]
+    theta = rboxes[:, 4] * 180.0 / np.pi
 
     order = scores.argsort()[::-1]
 

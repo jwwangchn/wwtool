@@ -22,7 +22,7 @@ class Simpletxt2Json():
                 num_processor=16):
         self.splitted_image_dir = './data/buildchange/{}/{}/images'.format(dst_version, city)
         self.splitted_label_dir = './data/buildchange/{}/{}/labels'.format(dst_version, city)
-        self.json_dir = '/data/buildchange/v2/{}/labels_json'.format(city)
+        self.json_dir = './data/buildchange/v2/{}/labels_json'.format(city)
         self.wrong_shp_file_dict = dict()
         for sub_fold in sub_imageset_folds[city]:
             wrong_file = './data/buildchange/v0/{}/{}/wrongShpFile.txt'.format(city, sub_fold)

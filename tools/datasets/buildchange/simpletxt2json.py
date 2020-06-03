@@ -201,5 +201,5 @@ if __name__ == '__main__':
                                  city=city,
                                  sub_imageset_folds=sub_imageset_folds,
                                  multi_processing=True,
-                                 num_processor=8)
+                                 num_processor=32)
         convert.core()

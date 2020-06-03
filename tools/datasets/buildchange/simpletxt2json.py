@@ -187,8 +187,8 @@ if __name__ == '__main__':
                     'haerbin': ['arg', 'google', 'ms'],
                     'jinan': ['arg', 'google', 'ms', 'tdt'],
                     'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
-    cities = ['shanghai']
-    sub_imageset_folds = {'shanghai': ['arg']}
+    # cities = ['shanghai']
+    # sub_imageset_folds = {'shanghai': ['arg']}
     
     core_dataset_name = 'buildchange'
     src_version = 'v0'

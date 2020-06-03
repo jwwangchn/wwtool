@@ -98,7 +98,7 @@ class Simpletxt2Json():
         #     return
         coord_x, coord_y = base_name.split("__")[1].split('_')    # top left corner
         coord_x, coord_y = int(coord_x), int(coord_y)
-        print(f"splitted items: {sub_fold}, {ori_image_fn}, {(coord_x, coord_y)}")
+        print(f"splitted items: {self.city}, {sub_fold}, {ori_image_fn}, {(coord_x, coord_y)}")
 
         ignore_file = './data/buildchange/{}/{}/{}/pixel_anno_v2/{}'.format(src_version, self.city, sub_fold, ori_image_fn + '.png')
         # print("ignore file name: ", ignore_file)

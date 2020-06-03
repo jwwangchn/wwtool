@@ -9,9 +9,13 @@ import wwtool
 
 
 if __name__ == '__main__':
-    shp_file = '/data/buildchange/v0/shanghai/merged_shp/L18_106968_219344.shp'
-    geo_info = '/data/buildchange/v0/shanghai/geo_info/L18_106968_219344.png'
-    pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219344.png'
+    # shp_file = '/data/buildchange/v0/shanghai/merged_shp/L18_106968_219344.shp'
+    # geo_info = '/data/buildchange/v0/shanghai/geo_info/L18_106968_219344.png'
+    # pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219344.png'
+
+    shp_file = '/data/buildchange/v0/shanghai/arg/roof_shp_4326/L18_106968_219520.shp'
+    geo_info = '/data/buildchange/v0/shanghai/arg/geo_info/L18_106968_219520.png'
+    pixel_anno = '/data/buildchange/v0/shanghai/anno_v2/L18_106968_219520.png'
 
     # 1. ignore polygons while parsing shapefile
     shp_parser = wwtool.ShpParse()

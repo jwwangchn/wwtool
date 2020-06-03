@@ -142,7 +142,6 @@ class SIMPLETXT2COCO():
         for line in lines:
             object_struct = {}
             line = line.rstrip().split(' ')
-            label = " ".join(line[-1])
             mask = [float(_) for _ in line[0:-1]]
 
             xmin, ymin, xmax, ymax = wwtool.pointobb2bbox(mask)

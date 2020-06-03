@@ -41,6 +41,7 @@ class SplitImage():
         self.image_path = './data/{}/{}/{}/{}/images'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
         self.roof_shp_path = './data/{}/{}/{}/{}/roof_shp_4326'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
         self.geo_path = './data/{}/{}/{}/{}/geo_info'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
+        self.pixel_anno_v2_path = './data/{}/{}/{}/{}/pixel_anno_v2'.format(core_dataset_name, src_version, imageset, sub_imageset_fold)
 
         self.image_save_path = './data/{}/{}/{}/{}/images'.format(core_dataset_name, dst_version, imageset, sub_imageset_fold)
         wwtool.mkdir_or_exist(self.image_save_path)
@@ -151,6 +152,7 @@ class SplitImage():
         image_file = os.path.join(self.image_path, image_fn)
         shp_file = os.path.join(self.roof_shp_path, image_fn.replace('jpg', 'shp'))
         geo_file = os.path.join(self.geo_path, image_fn.replace('jpg', 'png'))
+        ignore_file = os.path.join(self.pixel_anno_v2_path, image_fn.replace('jpg', 'png'))
         
         file_name = os.path.splitext(os.path.basename(image_file))[0]
 
@@ -160,9 +162,13 @@ class SplitImage():
         img = cv2.imread(image_file)
         geo_info = rio.open(geo_file)
 
-        objects = self.shp_parser(shp_file, geo_info)
+        objects = self.shp_parser(shp_fn=shp_file, 
+                                  geom_img=geo_info,
+                                  ignore_file=ignore_file,
+                                  return_ignore_index=True)
 
         masks = np.array([obj['segmentation'] for obj in objects])
+        ignore_indexes = np.array([obj['ignore_index'] for obj in objects])
 
         subimages = wwtool.split_image(img, subsize=self.subimage_size, gap=self.gap)
         subimage_coordinates = list(subimages.keys())
@@ -192,6 +198,7 @@ class SplitImage():
             cy_bool = np.logical_and(mask_centroids_[:, 1] >= 0, mask_centroids_[:, 1] < subimage_size)
 
             subimage_masks = masks[np.logical_and(cx_bool, cy_bool)]
+            
 
             subimage_masks_ = []
             for subimage_mask in subimage_masks:

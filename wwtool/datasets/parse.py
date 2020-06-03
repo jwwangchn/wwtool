@@ -514,6 +514,7 @@ class ShpParse():
                 shp_fn, 
                 geom_img,
                 ignore_file=None,
+                return_ignore_index=False,
                 show_ignored_polygons=False,
                 coord='4326',
                 merge_flag=False,
@@ -653,15 +654,22 @@ class ShpParse():
         
         if ignore_file:
             _, ignore_indexes = wwtool.cleaning_polygon_by_polygon(final_polygons, ignore_polygons, show=show_ignored_polygons)
-            for ignore_index in ignore_indexes[::-1]:
-                masks.pop(ignore_index)
-                final_polygons.pop(ignore_index)
-                final_properties.pop(ignore_index)
-                merged_ori_polygons.pop(ignore_index)
-                merged_ori_properties.pop(ignore_index)
-
+            if return_ignore_index:
+                # keep full polygons, and return ignored indexes
+                ignore_list = [0] * len(final_polygons)
+                for ignore_index in ignore_indexes[::-1]:
+                    ignore_list[ignore_index] = 1
+            else:
+                # return the ignored polygons
+                for ignore_index in ignore_indexes[::-1]:
+                    masks.pop(ignore_index)
+                    final_polygons.pop(ignore_index)
+                    final_properties.pop(ignore_index)
+                    merged_ori_polygons.pop(ignore_index)
+                    merged_ori_properties.pop(ignore_index)
+            
         # ori -> original coordinate, converted -> converted coordinate
-        for mask, converted_polygon, converted_property, ori_polygon, ori_property in zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties):
+        for idx, (mask, converted_polygon, converted_property, ori_polygon, ori_property) in enumerate(zip(masks, final_polygons, final_properties, merged_ori_polygons, merged_ori_properties)):
             if mask == []:
                 continue
             object_struct = dict()
@@ -678,6 +686,8 @@ class ShpParse():
             object_struct['ori_polygon'] = ori_polygon
             object_struct['ori_property'] = ori_property
             object_struct['label'] = "1"
+            if return_ignore_index:
+                object_struct['ignore_index'] = ignore_list[idx]
             objects.append(object_struct)
 
         return objects
@@ -729,9 +739,12 @@ class MaskParse():
         return segmentations, polygons
 
     def __call__(self, mask_image, category=(1, 3)):
-        assert(isinstance(mask_image, str), "Please input filename rather than np.array")
-        mask_file_name = mask_image[:]
-        mask_image = cv2.imread(mask_image)
+        # assert(isinstance(mask_image, str), "Please input filename rather than np.array")
+        if isinstance(mask_image, str):
+            mask_file_name = mask_image
+            mask_image = cv2.imread(mask_image)
+        else:
+            mask_file_name = "input is numpy array"
 
         if mask_image is None:
             print("Can not open this mask file: {}".format(mask_file_name))

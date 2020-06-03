@@ -93,9 +93,9 @@ class Simpletxt2Json():
         base_name = wwtool.get_basename(image_fn)
         sub_fold = base_name.split("__")[0].split('_')[0]
         ori_image_fn = "_".join(base_name.split("__")[0].split('_')[1:])
-        if ori_image_fn in self.wrong_shp_file_dict[sub_fold]:
-            print("Skip this wrong shape file")
-            return
+        # if ori_image_fn in self.wrong_shp_file_dict[sub_fold]:
+        #     print("Skip this wrong shape file")
+        #     return
         coord_x, coord_y = base_name.split("__")[1].split('_')    # top left corner
         coord_x, coord_y = int(coord_x), int(coord_y)
         print(f"splitted items: {sub_fold}, {ori_image_fn}, {(coord_x, coord_y)}")
@@ -162,6 +162,8 @@ class Simpletxt2Json():
             worker = partial(self.simpletxt2json)
             # self.pool.map(worker, image_fn_list)
             ret = list(tqdm.tqdm(self.pool.imap(worker, image_fn_list), total=num_image))
+            self.pool.close()
+            self.pool.join()
         else:
             image_fn_list = os.listdir(self.splitted_image_dir)
             progress_bar = mmcv.ProgressBar(len(image_fn_list))
@@ -185,8 +187,8 @@ if __name__ == '__main__':
                     'haerbin': ['arg', 'google', 'ms'],
                     'jinan': ['arg', 'google', 'ms', 'tdt'],
                     'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
-    # cities = ['shanghai']
-    # sub_imageset_folds = {'shanghai': ['arg']}
+    cities = ['shanghai']
+    sub_imageset_folds = {'shanghai': ['arg']}
     
     core_dataset_name = 'buildchange'
     src_version = 'v0'
@@ -201,5 +203,5 @@ if __name__ == '__main__':
                                  city=city,
                                  sub_imageset_folds=sub_imageset_folds,
                                  multi_processing=True,
-                                 num_processor=32)
+                                 num_processor=8)
         convert.core()

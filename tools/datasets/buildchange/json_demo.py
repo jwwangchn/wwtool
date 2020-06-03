@@ -49,8 +49,8 @@ if __name__ == '__main__':
     img_scale = 1024
     for image_fn in os.listdir(image_dir):
         print(image_fn)
-        # if 'L18_106968_219512' not in image_fn:
-        #     continue
+        if 'arg_L18_106968_219352__1024_1024' not in image_fn:
+            continue
         image_file = os.path.join(image_dir, image_fn)
         label_file = os.path.join(label_dir, image_fn.replace('png', 'json'))
         save_file = os.path.join(save_dir, image_fn)

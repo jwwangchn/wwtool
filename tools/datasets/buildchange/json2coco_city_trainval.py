@@ -233,6 +233,7 @@ if __name__ == "__main__":
     groundtruth = True
     for idx, city in enumerate(cities):
         anno_name = [core_dataset_name, release_version, 'trainval', city, 'roof_footprint']
+        print("Begin processing: {}".format("_".join(anno_name)))
         
         imgpath = f'./data/{core_dataset_name}/{release_version}/{city}/images'
         annopath = f'./data/{core_dataset_name}/{release_version}/{city}/labels_json'

@@ -181,7 +181,7 @@ class Simpletxt2Json():
 
 
 if __name__ == '__main__':
-    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    cities = ['beijing', 'jinan', 'haerbin', 'chengdu']
     sub_imageset_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
                     'chengdu': ['arg', 'google', 'ms', 'tdt'],
                     'haerbin': ['arg', 'google', 'ms'],

@@ -225,7 +225,7 @@ if __name__ == "__main__":
     anno_format='.txt'
 
     core_dataset_name = 'buildchange'
-    cities = ['beijing']
+    cities = ['jinan', 'haerbin', 'chengdu']
     # sub_city_folds = {'shanghai': ['arg']}
     # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
 

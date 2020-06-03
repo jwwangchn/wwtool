@@ -80,7 +80,6 @@ class SIMPLETXT2COCO():
 
                 for annotation in annotations_coco:
                     index = index + 1
-                    annotation["iscrowd"] = 0
                     annotation["image_id"] = imId + 1
                     annotation["id"] = index
                     annotations.append(annotation)
@@ -227,9 +226,9 @@ if __name__ == "__main__":
     anno_format='.txt'
 
     core_dataset_name = 'buildchange'
-    # cities = ['shanghai']
+    cities = ['shanghai']
     # sub_city_folds = {'shanghai': ['arg']}
-    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
 
     release_version = 'v2'
     groundtruth = True

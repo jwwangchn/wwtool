@@ -110,6 +110,8 @@ class Simpletxt2Json():
         roof_property = [obj['converted_property'] for obj in objects]
 
         pixel_anno = cv2.imread(ignore_file)
+        if pixel_anno is None:
+            return
         objects = mask_parser(pixel_anno[coord_y:coord_y + sub_img_h, coord_x:coord_x + sub_img_w, :], category=255)
         if objects == []:
             return

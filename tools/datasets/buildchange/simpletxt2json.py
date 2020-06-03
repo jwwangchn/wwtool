@@ -184,7 +184,7 @@ if __name__ == '__main__':
                     'chengdu': ['arg', 'google', 'ms', 'tdt'],
                     'haerbin': ['arg', 'google', 'ms'],
                     'jinan': ['arg', 'google', 'ms', 'tdt'],
-                    'shanghai': ['google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
+                    'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
     # cities = ['shanghai']
     # sub_imageset_folds = {'shanghai': ['arg']}
     

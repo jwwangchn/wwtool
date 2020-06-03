@@ -28,9 +28,9 @@ def show_maskobb(imgDir, img, anns, save_name):
     plt.xticks([])
     plt.yticks([])
     plt.axis('off')
-    plt.savefig(save_name, bbox_inches='tight', dpi=600, pad_inches=0.0)
-    plt.clf()
-    # plt.show()
+    # plt.savefig(save_name, bbox_inches='tight', dpi=600, pad_inches=0.0)
+    # plt.clf()
+    plt.show()
 
 
 if __name__ == '__main__':
@@ -46,9 +46,9 @@ if __name__ == '__main__':
     core_dataset_name = 'buildchange'
 
     save_flag = True
-    anno_file = [core_dataset_name, release_version, 'train', city, sub_fold]
+    anno_file = [core_dataset_name, release_version, 'trainval', city, 'roof_footprint']
 
-    imgDir = './data/{}/{}/{}/{}/images/'.format(core_dataset_name, release_version, city, sub_fold)
+    imgDir = './data/{}/{}/{}/images/'.format(core_dataset_name, release_version, city)
     print(imgDir)
     annFile = './data/{}/{}/coco/annotations/{}.json'.format(core_dataset_name, release_version, "_".join(anno_file))
     save_dir = './data/{}/{}/coco/vis_annotation/{}'.format(core_dataset_name, release_version, city)

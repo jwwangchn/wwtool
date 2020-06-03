@@ -207,3 +207,4 @@ if __name__ == '__main__':
                                  multi_processing=True,
                                  num_processor=16)
         convert.core()
+        print(f"finish processing {city}")

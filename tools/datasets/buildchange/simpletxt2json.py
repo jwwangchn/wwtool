@@ -183,14 +183,14 @@ class Simpletxt2Json():
 
 
 if __name__ == '__main__':
-    cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-    sub_imageset_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
-                    'chengdu': ['arg', 'google', 'ms', 'tdt'],
-                    'haerbin': ['arg', 'google', 'ms'],
-                    'jinan': ['arg', 'google', 'ms', 'tdt'],
-                    'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
-    # cities = ['shanghai']
-    # sub_imageset_folds = {'shanghai': ['arg']}
+    # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
+    # sub_imageset_folds = {'beijing': ['arg', 'google', 'ms', 'tdt'],
+    #                 'chengdu': ['arg', 'google', 'ms', 'tdt'],
+    #                 'haerbin': ['arg', 'google', 'ms'],
+    #                 'jinan': ['arg', 'google', 'ms', 'tdt'],
+    #                 'shanghai': ['arg', 'google', 'ms', 'tdt', 'PHR2016', 'PHR2017']}
+    cities = ['shanghai']
+    sub_imageset_folds = {'shanghai': ['arg']}
     
     core_dataset_name = 'buildchange'
     src_version = 'v0'
@@ -205,6 +205,6 @@ if __name__ == '__main__':
                                  city=city,
                                  sub_imageset_folds=sub_imageset_folds,
                                  multi_processing=True,
-                                 num_processor=16)
+                                 num_processor=8)
         convert.core()
         print(f"finish processing {city}")

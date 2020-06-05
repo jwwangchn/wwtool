@@ -17,8 +17,8 @@ if __name__ == '__main__':
     label_list = sorted(label_list)
     np.random.shuffle(label_list)
 
-    dst_label_dir = '/data/buildchange/v2/sampling/labels_json'
-    dst_image_dir = '/data/buildchange/v2/sampling/images'
+    dst_label_dir = './data/buildchange/v2/sampling/labels_json'
+    dst_image_dir = './data/buildchange/v2/sampling/images'
     wwtool.mkdir_or_exist(dst_label_dir)
     wwtool.mkdir_or_exist(dst_image_dir)
 

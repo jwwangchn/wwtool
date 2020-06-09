@@ -15,6 +15,15 @@ def mask2polygon(mask):
     mask_coord = [(x, y) for x, y in zip(mask_x, mask_y)]
 
     polygon = Polygon(mask_coord)
+    if not polygon.is_valid:
+        print("invalid polygon: ", polygon)
+        polygon = polygon.buffer(0)
+        if type(polygon) == Polygon:
+            polygon = Polygon(polygon.exterior.coords)
+        else:
+            polygon = Polygon(polygon[0].exterior.coords)
+
+        print("fixed polygon: ", polygon)
 
     return polygon
 

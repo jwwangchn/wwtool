@@ -1,6 +1,11 @@
 import PIL
 import numpy as np
+import cv2
+import shapely
+import matplotlib.pyplot as plt
+
 import wwtool
+
 
 def get_palette(num_classes):
     n = num_classes
@@ -40,4 +45,44 @@ def show_mask(mask,
                       wait_time=wait_time, 
                       win_name='mask',
                       save_name=out_file)
+
+def show_polygons_on_image(masks, 
+                           img, 
+                           alpha=0.4, 
+                           output_file=None):
+    """show masks on image
+
+    Args:
+        masks (list): list of coordinate
+        img (np.array): original image
+        alpha (int): compress
+        output_file (str): save path
+    """
+    color_list = list(wwtool.COLORS.keys())
+    img_h, img_w, _ = img.shape
+
+    foreground = wwtool.generate_image(img_h, img_w, (0, 0, 0))
+    for idx, mask in enumerate(masks):
+        mask = np.array(mask).reshape(1, -1, 2)
+        cv2.fillPoly(foreground, mask, (wwtool.COLORS[color_list[idx % 20]][2], wwtool.COLORS[color_list[idx % 20]][1], wwtool.COLORS[color_list[idx % 20]][0]))
+
+    heatmap = wwtool.show_grayscale_as_heatmap(foreground / 255.0, show=False, return_img=True)
+    beta = (1.0 - alpha)
+    fusion = cv2.addWeighted(heatmap, alpha, img, beta, 0.0)
+
+    if output_file is not None:
+        cv2.imwrite(output_file, fusion)
+    else:
+        wwtool.show_image(fusion, save_name=None)
+
+    return fusion
+
+
+def show_polygon(polygon):
+    if type(polygon) == str:
+        polygon = shapely.wkt.loads(polygon)
+
+    plt.plot(*polygon.exterior.xy)
+    plt.show()
+
     

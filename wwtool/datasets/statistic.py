@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from matplotlib import cm
 from collections import defaultdict
+from shapely.geometry import Polygon
+
 import wwtool
 
 # plt.rcParams.update({'font.size': 14})    # ICPR paper
@@ -279,3 +281,29 @@ class COCO_Statistic():
         
         plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
         # plt.show()
+
+    def mask_ratio(self):
+        obb_ratio = []
+        hbb_ratio = []
+        for idx, _ in enumerate(self.imgIds):
+            img = self.coco.loadImgs(self.imgIds[idx])[0]
+            annIds = self.coco.getAnnIds(imgIds = img['id'], catIds = self.catIds, iscrowd = None)
+            anns = self.coco.loadAnns(annIds)       # per image
+            for ann in anns:
+                bbox = ann['bbox']
+                segmentation = ann['segmentation']
+                polygon = wwtool.mask2polygon(segmentation[0])
+                rbbox = polygon.minimum_rotated_rectangle
+                polygon_area = polygon.area
+                rbbox_area = rbbox.area
+
+                bbox_area = bbox[2] * bbox[3]
+
+                obb_ratio.append(polygon_area/rbbox_area)
+                hbb_ratio.append(polygon_area/bbox_area)
+
+        obb_ratio = np.array(obb_ratio)
+        hbb_ratio = np.array(hbb_ratio)
+
+        print("mean obb ratio: {}, mean hbb ratio: {}".format(obb_ratio.mean(), hbb_ratio.mean()))
+

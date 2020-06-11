@@ -16,14 +16,17 @@ def mask2polygon(mask):
 
     polygon = Polygon(mask_coord)
     if not polygon.is_valid:
-        print("invalid polygon: ", polygon)
+        # print("invalid polygon: ", polygon)
         polygon = polygon.buffer(0)
         if type(polygon) == Polygon:
             polygon = Polygon(polygon.exterior.coords)
         else:
             polygon = Polygon(polygon[0].exterior.coords)
 
-        print("fixed polygon: ", polygon)
+        # print("fixed polygon: ", polygon)
+    
+        if polygon.wkt == 'GEOMETRYCOLLECTION EMPTY':
+            return Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
 
     return polygon
 

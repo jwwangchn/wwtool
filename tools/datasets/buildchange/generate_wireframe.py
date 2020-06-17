@@ -156,7 +156,7 @@ class GenerateWireframe():
 
     def core(self):
         if self.multi_processing:
-            image_fn_list = os.listdir(self.splitted_image_dir)
+            image_fn_list = os.listdir(self.splitted_label_dir)
             num_image = len(image_fn_list)
             worker = partial(self.json2wireframe)
             # self.pool.map(worker, image_fn_list)
@@ -164,7 +164,7 @@ class GenerateWireframe():
             self.pool.close()
             self.pool.join()
         else:
-            image_fn_list = os.listdir(self.splitted_image_dir)
+            image_fn_list = os.listdir(self.splitted_label_dir)
             progress_bar = mmcv.ProgressBar(len(image_fn_list))
             for _, image_fn in enumerate(image_fn_list):
                 self.json2wireframe(image_fn)

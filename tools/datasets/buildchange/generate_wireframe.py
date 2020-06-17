@@ -183,7 +183,7 @@ class GenerateWireframe():
 
 if __name__ == '__main__':
     # cities = ['shanghai', 'beijing', 'jinan', 'haerbin', 'chengdu']
-    cities = ['shanghai']
+    cities = ['jinan']
     
     core_dataset_name = 'buildchange'
     dst_version = 'v2'

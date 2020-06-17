@@ -86,7 +86,9 @@ class GenerateWireframe():
                 rr, cc, value = skimage.draw.line_aa(*vint0, *vint1)
                 lneg.append([v0, v1, i0, i1, np.average(np.minimum(value, llmap[rr, cc]))])
 
-        assert len(lneg) != 0
+
+        if len(lneg) == 0:
+            return
         lneg.sort(key=lambda l: -l[-1])
 
         junc = np.array(junc, dtype=np.float32)

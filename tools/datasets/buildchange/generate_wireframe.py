@@ -194,6 +194,6 @@ if __name__ == '__main__':
         convert = GenerateWireframe(dst_version=dst_version, 
                                     city=city,
                                     multi_processing=True,
-                                    num_processor=8)
+                                    num_processor=16)
         convert.core()
         print(f"finish processing {city}")

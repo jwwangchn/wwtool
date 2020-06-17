@@ -41,5 +41,6 @@ objects = shp_parser(shp_fn,
                     merge_flag=False, 
                     connection_mode='floor')
 
-gt_masks = [obj['segmentation'] for obj in objects]    
+gt_masks = [obj['segmentation'] for obj in objects]
+print(gt_masks)
 wwtool.show_polygons_on_image(gt_masks, rgb_img, output_file=None)

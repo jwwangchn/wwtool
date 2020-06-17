@@ -64,17 +64,17 @@ class Simpletxt2Json():
         return objects
 
     def get_footprint(self, mask, coordinate, roof_polygons, roof_properties):
-        # print(mask, coordinate, roof_polygon, roof_property)
         transform_matrix = [1, 0, 0, 1, coordinate[0], coordinate[1]]
         roi_mask = affinity.affine_transform(mask, transform_matrix)
-        # print("move: ", mask, moved_mask, coordinate)
+        # print("move: ", mask.wkt, roi_mask.wkt, coordinate)
+        xoffset, yoffset = 0, 0
         for idx, roof_polygon in enumerate(roof_polygons):
-            if roof_polygon.equals(roi_mask):
+            # if roof_polygon.almost_equals(roi_mask):
+            intersection_area = roof_polygon.intersection(roi_mask).area
+            if intersection_area / roof_polygon.area > 0.95 and intersection_area / roi_mask.area > 0.95:
                 xoffset = roof_properties[idx].to_dict()['xoffset']
                 yoffset = roof_properties[idx].to_dict()['yoffset']
                 break
-            else:
-                xoffset, yoffset = 0, 0
 
         transform_matrix = [1, 0, 0, 1, -coordinate[0], -coordinate[1]]
         split_mask = affinity.affine_transform(roi_mask, transform_matrix)
@@ -97,8 +97,11 @@ class Simpletxt2Json():
 
         objects = shp_parser(roof_shp_file, 
                             geo_info_file,
-                            coord='pixel')
-        roof_polygon_4326 = [obj['converted_polygon'] for obj in objects]
+                            coord='pixel',
+                            merge_flag=True)
+        # roof_polygon_4326 = [obj['converted_polygon'] for obj in objects]
+        roof_polygon_4326 = [wwtool.mask2polygon(obj['segmentation']) for obj in objects]
+
         roof_property = [obj['converted_property'] for obj in objects]
 
         # 2. read the simpletxt file and convert to polygons

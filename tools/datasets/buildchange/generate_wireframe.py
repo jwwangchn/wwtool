@@ -98,17 +98,23 @@ class GenerateWireframe():
         lneg = np.array([l[:2] for l in lneg[:2000]], dtype=np.float32)
 
 
-        # plt.subplot(131)
+        # plt.subplot(121)
         # plt.imshow(lmap)
-        # plt.subplot(132)
-        # for i0, i1 in Lpos:
-        #     plt.scatter(junc[i0][1] * 4, junc[i0][0] * 4)
-        #     plt.scatter(junc[i1][1] * 4, junc[i1][0] * 4)
-        #     plt.plot([junc[i0][1] * 4, junc[i1][1] * 4], [junc[i0][0] * 4, junc[i1][0] * 4])
-        # plt.subplot(133), plt.imshow(lmap)
+        # plt.subplot(122)
+        for i0, i1 in Lpos:
+            plt.scatter(junc[i0][1] * 4, junc[i0][0] * 4)
+            plt.scatter(junc[i1][1] * 4, junc[i1][0] * 4)
+            plt.plot([junc[i0][1] * 4, junc[i1][1] * 4], [junc[i0][0] * 4, junc[i1][0] * 4])
+        # plt.subplot(133)
+        # plt.imshow(lmap)
         # for i0, i1 in Lneg[:150]:
         #     plt.plot([junc[i0][1], junc[i1][1]], [junc[i0][0], junc[i1][0]])
-        # plt.show()
+        plt.axis([-10, 1034, -10, 1034])
+        plt.xlim(-10, 1034)
+        plt.ylim(-10, 1034)
+        plt.gca().invert_yaxis()
+        # plt.axis('equal')
+        plt.show()
 
         # For junc, lpos, and lneg that stores the junction coordinates, the last
         # dimension is (y, x, t), where t represents the type of that junction.  In
@@ -193,7 +199,7 @@ if __name__ == '__main__':
     for city in cities:
         convert = GenerateWireframe(dst_version=dst_version, 
                                     city=city,
-                                    multi_processing=True,
+                                    multi_processing=False,
                                     num_processor=16)
         convert.core()
         print(f"finish processing {city}")

@@ -130,7 +130,7 @@ if __name__ == "__main__":
                   {'supercategory': 'plane', 'id': 9,  'name': 'ARJ21',     },
                   {'supercategory': 'plane', 'id': 10, 'name': 'other',          }]
 
-    imagesets = ['val']
+    imagesets = ['train', 'val']
     core_dataset = 'plane'
     groundtruth = True
     release_version = 'v1'

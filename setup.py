@@ -3,9 +3,8 @@ import platform
 import subprocess
 import time
 import numpy as np
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup, Extension
 
-from distutils.extension import Extension
 
 from Cython.Build import cythonize
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension

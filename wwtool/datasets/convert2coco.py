@@ -86,7 +86,7 @@ class Convert2COCO():
 
                 imId += 1
 
-            if imId % 500 == 0:
+            if imId % (len(self.imlist) // 50) == 0:
                 print("\nImage ID: {}, Instance ID: {}, Small Object Counter: {}, Max Object Number: {}".format(imId, index, self.small_object_idx, self.max_object_num_per_image))
             
             progress_bar.update()

@@ -50,29 +50,39 @@ class VOC2COCO(Convert2COCO):
         return coco_annotations
     
     def __voc_parse__(self, label_file, image_file):
-        tree = ET.parse(label_file)
-        root = tree.getroot()
         objects = []
-        objects_handle = root.find('objects')
-        for single_object in objects_handle.findall('object'):
-            points = single_object.find('points')
-            object_struct = {}
+        if self.groundtruth:
+            tree = ET.parse(label_file)
+            root = tree.getroot()
+            objects_handle = root.find('objects')
+            total_object_num = 0
+            for single_object in objects_handle.findall('object'):
+                points = single_object.find('points')
+                object_struct = {}
 
-            pointobb = []
-            for point in points[:-1]:
-                coords = [float(coord) for coord in point.text.split(',')]
-                pointobb += coords
+                pointobb = []
+                for point in points[:-1]:
+                    coords = [float(coord) for coord in point.text.split(',')]
+                    pointobb += coords
 
-            bbox = wwtool.pointobb2bbox(pointobb)
-            bbox = wwtool.xyxy2xywh(bbox)
+                bbox = wwtool.pointobb2bbox(pointobb)
+                bbox = wwtool.xyxy2xywh(bbox)
 
-            object_struct['segmentation'] = pointobb
-            object_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](pointobb)
-            object_struct['bbox'] = bbox
-            object_struct['label'] = voc_class[single_object.find('possibleresult').find('name').text]
-            
-            objects.append(object_struct)
-        return objects
+                object_struct['segmentation'] = pointobb
+                object_struct['pointobb'] = pointobb_sort_function[pointobb_sort_method](pointobb)
+                object_struct['bbox'] = bbox
+                object_struct['label'] = voc_class[single_object.find('possibleresult').find('name').text]
+                
+                objects.append(object_struct)
+
+                total_object_num += 1
+
+            if total_object_num > self.max_object_num_per_image:
+                self.max_object_num_per_image = total_object_num
+
+            return objects
+        else:
+            return []
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet test detector')
@@ -120,7 +130,7 @@ if __name__ == "__main__":
                   {'supercategory': 'plane', 'id': 9,  'name': 'ARJ21',     },
                   {'supercategory': 'plane', 'id': 10, 'name': 'other',          }]
 
-    imagesets = ['train']
+    imagesets = ['val']
     core_dataset = 'plane'
     groundtruth = True
     release_version = 'v1'
@@ -130,6 +140,10 @@ if __name__ == "__main__":
                             "extreme": pointobb_extreme_sort}
 
     for imageset in imagesets:
+        if imageset == 'train':
+            groundtruth = True
+        else:
+            groundtruth = False
         imgpath = './data/{}/{}/{}/images'.format(core_dataset, release_version, imageset)
         annopath = './data/{}/{}/{}/labels'.format(core_dataset, release_version, imageset)
         save_path = './data/{}/{}/coco/annotations'.format(core_dataset, release_version)

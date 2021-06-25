@@ -1,17 +1,25 @@
 import numpy as np
 from pycocotools.coco import COCO
 from matplotlib import pyplot as plt
+from matplotlib import rcParams
 from matplotlib.ticker import ScalarFormatter
 from matplotlib import cm
+import matplotlib
 from collections import defaultdict
 from shapely.geometry import Polygon
+from matplotlib.font_manager import FontProperties
 
 import wwtool
 
 # plt.rcParams.update({'font.size': 14})    # ICPR paper
-plt.rcParams.update({'font.size': 12})
+plt.rcParams.update({'font.size': 14})
 
-# plt.rcParams["font.family"] = "Times New Roman"
+plt.rcParams["font.family"] = "Times New Roman"
+
+# simsun = FontProperties(fname="/usr/share/fonts/msfonts/simsun.ttc")
+
+# matplotlib.rc("font", family='SimSun')
+# plt.rcParams["font.family"] = "Microsoft YaHei"
 
 class COCO_Statistic():
     def __init__(self, 
@@ -24,7 +32,9 @@ class COCO_Statistic():
                 out_file_format='pdf',
                 max_object_num=2700,
                 min_area=0,
-                max_small_length=0):
+                max_small_length=0,
+                chinese=False,
+                dpi=600):
         self.ann_file = ann_file
         self.coco = COCO(self.ann_file)
         self.catIds = self.coco.getCatIds(catNms=[''])
@@ -39,6 +49,8 @@ class COCO_Statistic():
         self.max_object_num = max_object_num
         self.min_area = min_area
         self.max_small_length = max_small_length
+        self.chinese = chinese
+        self.dpi = dpi
 
         categories = self.coco.dataset['categories']
         self.coco_class = dict()
@@ -51,12 +63,15 @@ class COCO_Statistic():
         object_sizes = []
         image_sizes = []
         size_nums = []
+        max_det = 0
         for idx, _ in enumerate(self.imgIds):
             img = self.coco.loadImgs(self.imgIds[idx])[0]
             img_size = img['height'] * img['width']
             annIds = self.coco.getAnnIds(imgIds = img['id'], catIds = self.catIds, iscrowd = None)
             anns = self.coco.loadAnns(annIds)       # per image
             # print("idx: {}, image file name: {}".format(idx, img['file_name']))
+            if len(anns) > max_det:
+                max_det = len(anns)
             for ann in anns:
                 x1, y1, w, h = ann['bbox']
                 if ann['area'] <= self.min_area or max(w, h) < self.max_small_length:
@@ -110,17 +125,23 @@ class COCO_Statistic():
             # sns_plot = sns.distplot(object_sizes, color="b", bins=30, kde_kws={"lw": 2})
             plt.hist(object_sizes, bins=np.arange(0, 64, 64//30), histtype='bar', facecolor='dodgerblue', alpha=0.75, rwidth=0.95)
             print("Total objects: {}".format(object_sizes.shape[0]))
+            print("Max Det: ", max_det)
             if self.show_title:
                 plt.title('Size Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
             ax = plt.gca()
             xfmt = ScalarFormatter(useMathText=True)
             xfmt.set_powerlimits((0, 0))
             ax.yaxis.set_major_formatter(xfmt)
-            plt.xlabel("Instances' sizes")
-            plt.ylabel("Instance Count")
+            if self.chinese:
+                plt.xlabel("目标绝对尺度", fontproperties='SimSun')
+                plt.ylabel("目标数量", fontproperties='SimSun')
+            else:
+                plt.xlabel("Instances' sizes")
+                plt.ylabel("Instance Count")
+
             save_file_name.append('hist')
         
-        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=self.dpi, pad_inches=0.1)
         # plt.show()
 
     def class_size_distribution(self, coco_class=None, save_file_name=[], number=True):
@@ -154,9 +175,14 @@ class COCO_Statistic():
             sorted_indices = np.argsort(bar_value)[::-1]
             plt.bar(bar_name[sorted_indices], bar_value[sorted_indices], color='dodgerblue', alpha=0.75)
             plt.xticks(range(len(bar_name)), bar_name[sorted_indices], rotation=0)
-            plt.xlabel('class')
-            plt.ylabel('Instance Count')
-            plt.yscale('log')
+            if self.chinese:
+                plt.xlabel('类别', fontproperties='SimSun')
+                plt.ylabel('目标数量', fontproperties='SimSun')
+                plt.yscale('log')
+            else:
+                plt.xlabel('Class')
+                plt.ylabel('Instance Count')
+                plt.yscale('log')
             save_file_name.append('bar')
         else:
             box_name = list(class_size.keys()) if self.class_instance == None else self.class_instance.full2abbr(list(class_size.keys()))
@@ -164,8 +190,12 @@ class COCO_Statistic():
         
             bplot = plt.boxplot(box_value, vert=True, whis=1.5, widths=0.6, patch_artist=True, showfliers=False, showmeans=True, labels=box_name, notch=True)
             # plt.xticks(range(1, len(box_name) + 1), box_name, rotation=0)
-            plt.ylabel("Instances' sizes")
-            plt.xlabel('Class')
+            if self.chinese:
+                plt.ylabel('目标尺度', fontproperties='SimSun')
+                plt.xlabel('类别', fontproperties='SimSun')
+            else:
+                plt.ylabel("Instances' sizes")
+                plt.xlabel('Class')
             plt.grid(axis='y')
 
             # fill with colors
@@ -179,7 +209,7 @@ class COCO_Statistic():
         if self.show_title:
             plt.title('Class Size Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         
-        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=self.dpi, pad_inches=0.1)
         # plt.show()
 
     def image_object_num_distribution(self, save_file_name=[]):
@@ -209,12 +239,18 @@ class COCO_Statistic():
         if self.show_title:
             plt.title('Object num Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         plt.xlim([-20, self.max_object_num])
-        plt.xlabel('Instances')
-        plt.ylabel('Image Count')
-        plt.yscale('log')
+        if self.chinese:
+            plt.xlabel('目标数量', fontproperties='SimSun')
+            plt.ylabel('图像数量', fontproperties='SimSun')
+            plt.yscale('log')
+        else:
+            plt.xlabel('Instances')
+            plt.ylabel('Image Count')
+            plt.yscale('log')
+        
         save_file_name.append('object_num')
         
-        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=self.dpi, pad_inches=0.1)
         # plt.show()
 
     def object_aspect_ratio_distribution(self, save_file_name=[]):
@@ -244,7 +280,7 @@ class COCO_Statistic():
         plt.xlabel('size')
         save_file_name.append('aspect_ratio')
         
-        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=self.dpi, pad_inches=0.1)
         # plt.show()
 
     def class_num_per_image(self, coco_class=None, save_file_name=[]):
@@ -279,7 +315,7 @@ class COCO_Statistic():
         if self.show_title:
             plt.title('Class Numbers Distribution of {} in\n{} Dataset'.format(save_file_name[0], save_file_name[1]))
         
-        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=600, pad_inches=0.1)
+        plt.savefig('{}.{}'.format("_".join(save_file_name), self.out_file_format), bbox_inches='tight', dpi=self.dpi, pad_inches=0.1)
         # plt.show()
 
     def mask_ratio(self):

@@ -156,7 +156,7 @@ def cocoSegmentationToPng(coco, imgId, pngPath, includeCrowd=False, vis=False, r
     # Get color map and convert to PIL's format
     cmap = getCMap(stuffStartId=stuffStartId, stuffEndId=stuffEndId, vis=vis)
     cmap = (cmap * 255).astype(int)
-    padding = np.zeros((256-cmap.shape[0], 3), np.int8)
+    padding = np.zeros((256 - cmap.shape[0], 3), np.int8)
     cmap = np.vstack((cmap, padding))
     cmap = cmap.reshape((-1))
     assert len(cmap) == 768, 'Error: Color map must have exactly 256*3 elements!'

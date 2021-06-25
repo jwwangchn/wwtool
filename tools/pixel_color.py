@@ -18,14 +18,16 @@ def onMouse(event, x, y, flag, param):
     bgr_str = 'B=' + str(B) + ' G=' + str(G) + ' R=' + str(R)
     hsv_str = 'H=' + str(H) + ' S=' + str(S) + ' V=' + str(V)
     font = cv2.FONT_HERSHEY_SIMPLEX
+    print(position_str)
     cv2.putText(img, position_str, (10, 30), font, 0.7, (0, 255, 0), 2)
     cv2.putText(img, bgr_str, (10, 60), font, 0.7, (0, 255, 0), 2)
     cv2.putText(img, hsv_str, (10, 90), font, 0.7, (0, 255, 0), 2)
     cv2.imshow("color", img)
 
-img_ori = cv2.imread("/data/buildchange/v0/shanghai/geo_info/L18_106968_219344.png")
+img_ori = cv2.imread("/home/jwwangchn/Documents/Nutstore/100-Work/110-Projects/2020-BS/01-CVPR/01-绘图/01-不同时间拍摄的图像/ms_L18_106968_219488.jpg")
 print(img_ori.max())
-cv2.namedWindow("color")
+cv2.namedWindow("color", cv2.WINDOW_NORMAL)
+cv2.resizeWindow("color", 800, 800)
 cv2.imshow("color", img_ori)
 cv2.setMouseCallback("color", onMouse, 0)
 

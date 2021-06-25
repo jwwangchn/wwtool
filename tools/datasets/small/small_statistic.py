@@ -1,8 +1,8 @@
 import wwtool
 import matplotlib
 
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['ps.fonttype'] = 42
+# matplotlib.rcParams['pdf.fonttype'] = 42
+# matplotlib.rcParams['ps.fonttype'] = 42
 
 coco_small_class = {   1: 'airplane', 
                        2: 'bridge', 
@@ -27,7 +27,7 @@ else:
 
 class_instance = wwtool.Small()
 
-statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=class_instance, show_title=False)
+statistic = wwtool.COCO_Statistic(ann_file, size_set=size_set, label_set=label_set, size_measure_by_ratio=size_measure_by_ratio, class_instance=class_instance, show_title=False, chinese=False, out_file_format='pdf', dpi=600)
 
 for pie_flag in [False, True]:
     statistic.total_size_distribution(plot_pie=pie_flag, save_file_name=ann_file_name[:])
